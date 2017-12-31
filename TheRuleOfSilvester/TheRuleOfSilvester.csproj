@@ -5,4 +5,8 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TheRuleOfSilvester.Core\TheRuleOfSilvester.Core.csproj" />
+  </ItemGroup>
+
 </Project>
