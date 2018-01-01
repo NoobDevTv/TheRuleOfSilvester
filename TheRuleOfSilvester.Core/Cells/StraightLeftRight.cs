@@ -6,7 +6,7 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     public class StraightLeftRight : Cell
     {
-        public StraightLeftRight() : base()
+        public StraightLeftRight(Map map) : base(map)
         {
             for (int i = 0; i < 5; i++)
             {

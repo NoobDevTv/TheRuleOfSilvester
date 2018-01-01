@@ -6,7 +6,7 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     public class Cross : Cell
     {
-        public Cross() : base()
+        public Cross(Map map) : base(map)
         {
             Lines[0, 0] = "┘";
             Lines[0, 4] = "└";

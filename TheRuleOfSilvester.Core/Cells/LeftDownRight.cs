@@ -6,7 +6,7 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     class LeftDownRight : Cell
     {
-        public LeftDownRight()
+        public LeftDownRight(Map map) : base(map)
         {
             Lines[2, 0] = "┐";
             Lines[2, 4] = "┌";

@@ -6,7 +6,7 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     class UpDownRight : Cell
     {
-        public UpDownRight()
+        public UpDownRight(Map map) : base(map)
         {
             Lines[2, 4] = "┌";
             Lines[0, 4] = "└";

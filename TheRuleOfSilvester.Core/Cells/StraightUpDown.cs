@@ -6,7 +6,7 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     public class StraightUpDown : Cell
     {
-        public StraightUpDown() : base()
+        public StraightUpDown(Map map) : base(map)
         {
             for (int i = 0; i < 3; i++)
             {

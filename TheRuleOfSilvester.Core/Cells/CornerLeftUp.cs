@@ -6,7 +6,7 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     public class CornerLeftUp : Cell
     {
-        public CornerLeftUp()
+        public CornerLeftUp(Map map) : base(map)
         {
             Lines[0, 4] = "│";
             Lines[0, 0] = "┘";
