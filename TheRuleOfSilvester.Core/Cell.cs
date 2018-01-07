@@ -13,7 +13,7 @@ namespace TheRuleOfSilvester.Core
         public int Width => Lines.GetLength(1);
         public int Height => Lines.GetLength(0);
         public bool Invalid { get; set; }
-
+        public bool Movable { get; set; }
         internal Map map;
 
         public string[,] Lines { get; internal set; }
@@ -37,6 +37,11 @@ namespace TheRuleOfSilvester.Core
         public virtual void Update(Game game)
         {
 
+        }
+
+        public override string ToString()
+        {
+            return $"{GetType()} | {Position.X} : {Position.Y}";
         }
     }
 }

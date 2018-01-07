@@ -14,10 +14,11 @@ namespace TheRuleOfSilvester.Core
         public List<Cell> Cells { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
-        public Map()
+
+        public Map(int height, int width)
         {
-            Height = 30;
-            Width = 120;
+            Height = height;
+            Width = width;
             Cells = new List<Cell>
             {
                 new CornerRightDown (this) { Position = new Point(0, 0) },
@@ -31,12 +32,17 @@ namespace TheRuleOfSilvester.Core
                 new CornerLeftUp    (this) { Position = new Point(2, 2) }
             };
         }
+        public Map(int height, int width, Cell[] cells) : this(height, width)
+        {
+            Cells = new List<Cell>(cells);
+        }
 
         public bool IsTileOccupied(Point pos)
         {
-            var cellList = Cells.Where(x =>
-             x.Position.X * x.Height < pos.X && (x.Position.X * x.Height + x.Height) > pos.X
-             && x.Position.Y * x.Width < pos.Y && (x.Position.Y * x.Width + x.Width) > pos.Y);
+            var cellList = Cells.Where(x=>x.GetType()!=typeof(Player)).Where(x =>
+             x.Position.X * x.Height <= pos.X && (x.Position.X * x.Height + x.Height) > pos.X
+             && x.Position.Y * x.Width <= pos.Y && (x.Position.Y * x.Width + x.Width) > pos.Y);
+
             foreach (var cell in cellList)
             {
                 if (cell.Lines[pos.X % cell.Height, pos.Y % cell.Width] != null)
