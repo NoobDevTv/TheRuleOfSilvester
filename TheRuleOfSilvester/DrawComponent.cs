@@ -33,7 +33,7 @@ namespace TheRuleOfSilvester
             }
             //TODO: Quick and Dirty, must be set to player pos later on
             //TODO: Unschön
-            Console.SetCursorPosition(110, 20);
+            Console.SetCursorPosition(1, 2);
         }
     }
 }

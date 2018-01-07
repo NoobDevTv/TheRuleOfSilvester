@@ -8,10 +8,10 @@ namespace TheRuleOfSilvester.Core.Cells
     {
         public LeftDownRight(Map map) : base(map)
         {
-            Lines[2, 0] = "┐";
-            Lines[2, 4] = "┌";
+            Lines[2, 0] = Movable ? "┐" : "╗";
+            Lines[2, 4] = Movable ? "┌" : "╔";
             for (int i = 0; i < 5; i++)
-                Lines[0, i] = "─";
+                Lines[0, i] = Movable ? "─" : "═";
         }
     }
 }
