@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester.Core
                 new LeftDownRight   (this) { Position = new Point(0, 1) },
                 new CornerLeftDown  (this) { Position = new Point(0, 2) },
                 new UpDownRight     (this) { Position = new Point(1, 0) },
-                new Cross           (this) { Position = new Point(1, 1) },
+                new CrossLeftRightUpDown           (this) { Position = new Point(1, 1) },
                 new UpDownLeft      (this) { Position = new Point(1, 2) },
                 new CornerRightUp   (this) { Position = new Point(2, 0) },
                 new LeftUpRight     (this) { Position = new Point(2, 1) },

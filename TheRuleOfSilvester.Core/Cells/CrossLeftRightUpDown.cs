@@ -4,9 +4,9 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public class Cross : Cell
+    public class CrossLeftRightUpDown : Cell
     {
-        public Cross(Map map) : base(map)
+        public CrossLeftRightUpDown(Map map) : base(map)
         {
             Lines[0, 0] = "┘";
             Lines[0, 4] = "└";

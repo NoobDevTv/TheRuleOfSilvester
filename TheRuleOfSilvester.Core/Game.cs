@@ -32,7 +32,7 @@ namespace TheRuleOfSilvester.Core
                 new CornerLeftUp(map),
                 new CornerRightDown(map),
                 new CornerRightUp(map),
-                new Cross(map),
+                new CrossLeftRightUpDown(map),
                 new LeftDownRight(map),
                 new LeftUpRight(map),
                 new StraightLeftRight(map),
