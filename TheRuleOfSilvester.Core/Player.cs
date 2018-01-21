@@ -9,7 +9,6 @@ namespace TheRuleOfSilvester.Core
     public class Player : Cell
     {
         public string Name { get; set; }
-        public Color Color { get; set; }
         public Char Avatar { get; private set; }
 
         private int moveSizeX;
@@ -68,7 +67,7 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveDown()
         {
-            if (Position.X == map.Height || MovementOccupied(moveSizeX, true))
+            if (Position.X >= map.Height * map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeX, true))
                 return;
 
             MoveGeneral(new Point(Position.X + moveSizeX, Position.Y));
@@ -84,7 +83,7 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveRight()
         {
-            if (Position.Y == map.Width || MovementOccupied(moveSizeY, false))
+            if (Position.Y == map.Width * map.Cells.FirstOrDefault().Width || MovementOccupied(moveSizeY, false))
                 return;
 
             MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));

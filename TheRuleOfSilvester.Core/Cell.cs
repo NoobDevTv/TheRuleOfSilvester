@@ -14,12 +14,14 @@ namespace TheRuleOfSilvester.Core
         public int Height => Lines.GetLength(0);
         public bool Invalid { get; set; }
         public bool Movable { get; set; }
+        public Color Color { get; set; }
         internal Map map;
 
         public string[,] Lines { get; internal set; }
 
         public Cell(int height, int width, Map map)
         {
+            Color = Color.White;
             Lines = new string[height, width];
             Invalid = true;
             this.map = map;

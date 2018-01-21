@@ -14,6 +14,10 @@ namespace TheRuleOfSilvester
             {
                 if (cell.Invalid)
                 {
+                    if (Enum.TryParse(cell.Color.Name, out ConsoleColor color))
+                        Console.ForegroundColor = color;
+                    else
+                        Console.ForegroundColor = ConsoleColor.White;
                     for (int k = 0; k < cell.Lines.GetLength(0); k++)
                     {
                         for (int l = 0; l < cell.Lines.GetLength(1); l++)

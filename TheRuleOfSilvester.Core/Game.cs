@@ -41,13 +41,13 @@ namespace TheRuleOfSilvester.Core
                 new UpDownRight(map),
             };
 
-            player = new Player(map) { Color = Color.Green, Name = "Me", Position = new Point(1, 2) };
+            player = new Player(map) { Color = Color.Red, Name = "Me", Position = new Point(1, 2) };
             var character = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(character))
                 character = "20050";
-            player.SetAvatar((char)ushort.Parse(character));
+            player.SetAvatar(character[0]);
             map.Cells.Add(player);
-
+        
             gameThread = new Thread(Loop)
             {
                 Name = "gameThread"

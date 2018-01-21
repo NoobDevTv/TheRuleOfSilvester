@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
@@ -27,7 +28,7 @@ namespace TheRuleOfSilvester.Core
             var map = new Map(x, y);
             map.Cells.Clear();
 
-            var tileSet = BuildTileSet();
+            //var tileSet = BuildTileSet();
 
             var topCells = CellTypes.Where(ct => !ct.Name.ToLower().Contains("up")).ToList();
             var downCells = CellTypes.Where(ct => !ct.Name.ToLower().Contains("down")).ToList();
@@ -71,103 +72,25 @@ namespace TheRuleOfSilvester.Core
             //x + 1 bis x - 1
             //y + 1 bis y - 1
 
-            for (int tempX = 1; tempX < x; tempX++)
-            {
                 for (int tempY = 1; tempY < y; tempY++)
+            for (int tempX = 1; tempX < x; tempX++)
                 {
                     var nTopCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX - 1 && c.Position.Y == tempY);
                     var nDownCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX + 1 && c.Position.Y == tempY);
                     var nLeftCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY - 1);
                     var nRightCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY + 1);
 
-                    var attributeList = new List<Direction>();
+                    var possibleCells = CellTypes.Where(cellType => ((nTopCell != null && nTopCell.GetType().Name.ToLower().Contains("down")) ? (cellType.Name.ToLower().Contains("up") ? true : false) : true)
+                                    && ((nDownCell != null && nDownCell.GetType().Name.ToLower().Contains("up")) ? (cellType.Name.ToLower().Contains("down") ? true : false) : true)
+                                    && ((nLeftCell != null && nLeftCell.GetType().Name.ToLower().Contains("right")) ? (cellType.Name.ToLower().Contains("left") ? true : false) : true)
+                                    && ((nRightCell != null && nLeftCell.GetType().Name.ToLower().Contains("left")) ? (cellType.Name.ToLower().Contains("right") ? true : false) : true)).ToArray();
 
-                    var attribute = GetOppositeDirection(nTopCell);
 
-                    if (attribute != Direction.none)
-                        attributeList.Add(attribute);
-
-                    attribute = GetOppositeDirection(nDownCell);
-
-                    if (attribute != Direction.none)
-                        attributeList.Add(attribute);
-
-                    attribute = GetOppositeDirection(nRightCell);
-
-                    if (attribute != Direction.none)
-                        attributeList.Add(attribute);
-
-                    attribute = GetOppositeDirection(nLeftCell);
-
-                    if (attribute != Direction.none)
-                        attributeList.Add(attribute);
-                    // var possipleCells = CellTypes.Where(asd => (nTopCell != null && asd.Name.ToLower().Contains("down"))
-                    //|| (nDownCell != null && asd.Name.ToLower().Contains("up"))
-                    //|| (nLeftCell != null && asd.Name.ToLower().Contains("right"))
-                    //|| (nRightCell != null && asd.Name.ToLower().Contains("left"))).ToArray();
-
-                    var possipleCells = CellTypes.Where(c =>
-                    {
-                        var result = true;
-                        attributeList.ForEach(a =>
-                            {
-                                if (result)
-                                    result = c.Name.Contains(a.ToString());
-                            });
-                        return result;
-                    }).ToArray();
-                    var cell = (Cell)Activator.CreateInstance(possipleCells[random.Next(0, possipleCells.Length)], map);
+                    var cell = (Cell)Activator.CreateInstance(possibleCells[random.Next(0, possibleCells.Length)], map);
                     cell.Position = new Point(tempX, tempY);
                     map.Cells.Add(cell);
-
                 }
-            }
-
-          
             return map;
         }
-
-        private Direction GetOppositeDirection(Cell nTopCell)
-        {
-            var returnValue = Direction.none;
-            var name = nTopCell.GetType().Name.ToLower();
-
-            if (name.Contains("up")) 
-                returnValue = Direction.Top;
-            
-            if (name.Contains("down"))
-            {
-                if (returnValue == Direction.Top)
-                    returnValue ==
-            }
-            if (name.Contains("left")) ;
-            if (name.Contains("right")) ;
-
-            return returnValue;
-
-        }
-
-        public Cell[] BuildTileSet()
-        {
-            var tmp = new Cell[CellTypes.Count];
-
-            for (int i = 0; i < tmp.Length; i++)
-            {
-                tmp[i] = (Cell)Activator.CreateInstance(CellTypes[i], (Map)null);
-            }
-
-            return tmp;
-        }
-
-    }
-
-    public enum Direction
-    {
-        Left = 1,
-        Down = 4,
-   
-        none = 0,
-        Top = 8,
-        TopDown = Top | Down 
     }
 }
