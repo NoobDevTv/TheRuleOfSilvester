@@ -16,7 +16,7 @@ namespace TheRuleOfSilvester
             //are = new AutoResetEvent(false);
             Console.OutputEncoding = Encoding.Unicode;
             Console.CursorVisible = false;
-
+            
             inputComponent = new InputComponent();
             
             using (game = new Game())

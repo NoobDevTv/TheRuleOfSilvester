@@ -72,8 +72,8 @@ namespace TheRuleOfSilvester.Core
             //x + 1 bis x - 1
             //y + 1 bis y - 1
 
-                for (int tempY = 1; tempY < y; tempY++)
-            for (int tempX = 1; tempX < x; tempX++)
+            for (int tempY = 1; tempY < y; tempY++)
+                for (int tempX = 1; tempX < x; tempX++)
                 {
                     var nTopCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX - 1 && c.Position.Y == tempY);
                     var nDownCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX + 1 && c.Position.Y == tempY);
@@ -90,6 +90,7 @@ namespace TheRuleOfSilvester.Core
                     cell.Position = new Point(tempX, tempY);
                     map.Cells.Add(cell);
                 }
+
             return map;
         }
     }

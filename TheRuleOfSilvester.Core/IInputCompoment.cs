@@ -10,6 +10,7 @@ namespace TheRuleOfSilvester.Core
         bool Down { get; }
         bool Left { get; }
         bool Right { get; }
+        bool StartAction { get; }
 
         int LastKey { get; set; }
 

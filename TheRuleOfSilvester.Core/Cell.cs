@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core
 {
-    public abstract class Cell
+    public abstract class Cell : IDisposable
     {
         //public const int HEIGHT = 3;
         //public const int WIDTH = 5;
@@ -15,16 +15,18 @@ namespace TheRuleOfSilvester.Core
         public bool Invalid { get; set; }
         public bool Movable { get; set; }
         public Color Color { get; set; }
-        internal Map map;
+        public Map Map { get; protected set; }
 
         public string[,] Lines { get; internal set; }
+
+        protected bool disposed;
 
         public Cell(int height, int width, Map map)
         {
             Color = Color.White;
             Lines = new string[height, width];
             Invalid = true;
-            this.map = map;
+            Map = map;
         }
         public Cell(Map map) : this(3, 5, map)
         {
@@ -44,6 +46,23 @@ namespace TheRuleOfSilvester.Core
         public override string ToString()
         {
             return $"{GetType()} | {Position.X} : {Position.Y}";
+        }
+
+        public virtual void Dispose()
+        {
+            if (disposed)
+                return;
+
+            Position = new Point(0);
+            Invalid = false;
+            Movable = false;
+            Color = new Color();
+            Map = null;
+            Lines = null;
+
+            disposed = true;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

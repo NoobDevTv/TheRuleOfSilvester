@@ -10,7 +10,17 @@ namespace TheRuleOfSilvester
     {
         public void Draw(Map map)
         {
-            foreach (var cell in map.Cells)
+            DrawCells(map.Cells);
+
+            //TODO: Quick and Dirty, must be set to player pos later on
+            //TODO: Unschön
+            DrawCells(((Player)map.Cells.FirstOrDefault(x => x.GetType() == typeof(Player))).Inventory);
+            Console.SetCursorPosition(map.Width*5+10, map.Height * 3+ 10);
+
+        }
+        private void DrawCells(List<Cell> cells)
+        {
+            foreach (var cell in cells)
             {
                 if (cell.Invalid)
                 {
@@ -18,6 +28,7 @@ namespace TheRuleOfSilvester
                         Console.ForegroundColor = color;
                     else
                         Console.ForegroundColor = ConsoleColor.White;
+
                     for (int k = 0; k < cell.Lines.GetLength(0); k++)
                     {
                         for (int l = 0; l < cell.Lines.GetLength(1); l++)
@@ -31,13 +42,10 @@ namespace TheRuleOfSilvester
 
                             cell.Invalid = false;
                         }
-
                     }
                 }
             }
-            //TODO: Quick and Dirty, must be set to player pos later on
-            //TODO: Unschön
-            Console.SetCursorPosition(1, 2);
+
         }
     }
 }

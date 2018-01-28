@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester.Core
                 new LeftDownRight   (this) { Position = new Point(0, 1) },
                 new CornerLeftDown  (this) { Position = new Point(0, 2) },
                 new UpDownRight     (this) { Position = new Point(1, 0) },
-                new CrossLeftRightUpDown           (this) { Position = new Point(1, 1) },
+                new CrossLeftRightUpDown (this) { Position = new Point(1, 1) },
                 new UpDownLeft      (this) { Position = new Point(1, 2) },
                 new CornerRightUp   (this) { Position = new Point(2, 0) },
                 new LeftUpRight     (this) { Position = new Point(2, 1) },
@@ -50,6 +50,13 @@ namespace TheRuleOfSilvester.Core
             }
 
             return false;
+        }
+        public Cell GetTileAbsolutePos(Point pos)
+        {
+            return Cells.Where(x => x.GetType() != typeof(Player)).FirstOrDefault(x =>
+                 x.Position.X * x.Height <= pos.X && (x.Position.X * x.Height + x.Height) > pos.X
+                 && x.Position.Y * x.Width <= pos.Y && (x.Position.Y * x.Width + x.Width) > pos.Y);
+            
         }
     }
 }
