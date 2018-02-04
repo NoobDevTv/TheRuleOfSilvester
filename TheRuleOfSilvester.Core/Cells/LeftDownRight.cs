@@ -4,14 +4,14 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    class LeftDownRight : Cell
+    class LeftDownRight : MapCell
     {
         public LeftDownRight(Map map) : base(map)
         {
-            Lines[2, 0] = Movable ? "┐" : "╗";
-            Lines[2, 4] = Movable ? "┌" : "╔";
+            Lines[0, 2] = Movable ? '┐' : '╗';
+            Lines[4, 2] = Movable ? '┌' : '╔';
             for (int i = 0; i < 5; i++)
-                Lines[0, i] = Movable ? "─" : "═";
+                Lines[i, 0] = Movable ? '─' : '═';
         }
     }
 }

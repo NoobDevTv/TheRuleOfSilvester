@@ -26,7 +26,7 @@ namespace TheRuleOfSilvester.Core
             this.ups = ups;
             //map = new Map();
             var generator = new MapGenerator();
-            map = generator.Generate(10, 20);
+            map = generator.Generate(20, 10);
             cells = new List<Cell> {
                 new CornerLeftDown(map),
                 new CornerLeftUp(map),
@@ -41,12 +41,12 @@ namespace TheRuleOfSilvester.Core
                 new UpDownRight(map),
             };
 
-            player = new Player(map) { Color = Color.Red, Name = "Me", Position = new Point(1, 2) };
+            player = new Player(map) { Color = Color.Red, Name = "Me", Position = new Point(2, 1) };
             var character = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(character))
                 character = "20050";
             player.SetAvatar(character[0]);
-            map.Cells.Add(player);
+            map.Players.Add(player);
         
             gameThread = new Thread(Loop)
             {
@@ -65,9 +65,7 @@ namespace TheRuleOfSilvester.Core
         public void Update()
         {
             player.Update(this);
-
-
-
+            
             DrawComponent.Draw(map);
             InputCompoment.LastKey = -1;
         }

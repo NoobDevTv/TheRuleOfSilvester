@@ -8,17 +8,23 @@ namespace TheRuleOfSilvester
 {
     internal class DrawComponent : IDrawComponent
     {
+
         public void Draw(Map map)
         {
             DrawCells(map.Cells);
 
             //TODO: Quick and Dirty, must be set to player pos later on
-            //TODO: Unschön
-            DrawCells(((Player)map.Cells.FirstOrDefault(x => x.GetType() == typeof(Player))).Inventory);
-            Console.SetCursorPosition(map.Width*5+10, map.Height * 3+ 10);
+            DrawCells(map.Players);
 
+            //TODO: Unschön, Spieler muss wissen wer er ist
+            DrawCells(map.Players.FirstOrDefault().Inventory);
+
+            DrawCells(map.TextCells);
+
+            Console.SetCursorPosition(Console.WindowWidth - 2, Console.WindowHeight - 2);
         }
-        private void DrawCells(List<Cell> cells)
+
+        private void DrawCells<T>(List<T> cells) where T : Cell
         {
             foreach (var cell in cells)
             {
@@ -29,16 +35,13 @@ namespace TheRuleOfSilvester
                     else
                         Console.ForegroundColor = ConsoleColor.White;
 
-                    for (int k = 0; k < cell.Lines.GetLength(0); k++)
+                    for (int l = 0; l < cell.Lines.GetLength(0); l++)
                     {
-                        for (int l = 0; l < cell.Lines.GetLength(1); l++)
+                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
                         {
-                            Console.SetCursorPosition(cell.Position.Y * cell.Width + l, cell.Position.X * cell.Height + k);
+                            Console.SetCursorPosition(cell.Position.X * cell.Width + l, cell.Position.Y * cell.Height + h);
 
-                            if (cell.Lines[k, l] == null)
-                                Console.Write(" ");
-                            else
-                                Console.Write(cell.Lines[k, l]);
+                            Console.Write(cell.Lines[l, h]);
 
                             cell.Invalid = false;
                         }

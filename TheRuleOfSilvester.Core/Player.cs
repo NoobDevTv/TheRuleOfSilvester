@@ -24,39 +24,31 @@ namespace TheRuleOfSilvester.Core
         public Player(Map map) : base(1, 1, map)
         {
             Inventory = new List<Cell>();
-            Lines = new string[1, 1];
-            moveSizeX = 3;
-            moveSizeY = 5;
+            Lines = new char[1, 1];
+            moveSizeX = 5;
+            moveSizeY = 3;
 
             ghostMode = false;
-            Inventory.Add(new CornerLeftUp(Map) {
-                Position = new Point(Map.Height + 2, 1)
-            });
+            var random = new Random();
+
+            for (int i = 0; i < 3; i++)
+            {
+                var cellTypes = map.MapGenerator.CellTypes;
+                var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map);
+                cell.Position = new Point(1 + i * 2, Map.Height + 2);
+                Inventory.Add(cell);
+            }
+
+            map.TextCells.Add(new TextCell("Inventory:") { Position = new Point(0, (map.Height + 1) * 3 + 1) });
         }
 
         public void SetAvatar(char avatar)
         {
             Avatar = avatar;
-            Lines[0, 0] = Avatar.ToString();
+            Lines[0, 0] = Avatar;
         }
 
         public void MoveUp()
-        {
-            if (Position.X - moveSizeX <= 0 || MovementOccupied(-moveSizeX, true))
-                return;
-
-            MoveGeneral(new Point(Position.X - moveSizeX, Position.Y));
-        }
-
-        public void MoveDown()
-        {
-            if (Position.X >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeX, true))
-                return;
-
-            MoveGeneral(new Point(Position.X + moveSizeX, Position.Y));
-        }
-
-        public void MoveLeft()
         {
             if (Position.Y - moveSizeY <= 0 || MovementOccupied(-moveSizeY, false))
                 return;
@@ -64,12 +56,28 @@ namespace TheRuleOfSilvester.Core
             MoveGeneral(new Point(Position.X, Position.Y - moveSizeY));
         }
 
-        public void MoveRight()
+        public void MoveDown()
         {
-            if (Position.Y == Map.Width * Map.Cells.FirstOrDefault().Width || MovementOccupied(moveSizeY, false))
+            if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
                 return;
 
-            MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
+            MoveGeneral(new Point(Position.X , Position.Y + moveSizeY));
+        }
+
+        public void MoveLeft()
+        {
+            if (Position.X - moveSizeX <= 0 || MovementOccupied(-moveSizeX, true))
+                return;
+
+            MoveGeneral(new Point(Position.X - moveSizeX, Position.Y ));
+        }
+
+        public void MoveRight()
+        {
+            if (Position.X == Map.Width * Map.Cells.FirstOrDefault().Width || MovementOccupied(moveSizeX, true))
+                return;
+
+            MoveGeneral(new Point(Position.X + moveSizeX, Position.Y));
         }
 
         public void StartAction()
@@ -110,13 +118,13 @@ namespace TheRuleOfSilvester.Core
 
         }
 
-
         private void MoveCell()
         {
             if (!ghostMode)
             {
                 ghostMode = true;
                 ghost = new GhostPlayer(Map, this);
+
             }
             else
             {
@@ -133,9 +141,11 @@ namespace TheRuleOfSilvester.Core
                 inventoryCell.Invalid = true;
                 Map.Cells.Add(inventoryCell);
 
-                changedCell.Position = new Point(Map.Height + 2, 1);
+                changedCell.Position = new Point(1, Map.Height + 2);
                 changedCell.Invalid = true;
                 Inventory.Add(changedCell);
+
+                
 
                 ghost.Dispose();
                 ghost = null;
@@ -164,8 +174,8 @@ namespace TheRuleOfSilvester.Core
         private void MoveGeneral(Point move)
         {
             var cell = Map.Cells.FirstOrDefault(x =>
-            x.Position.X * x.Height < Position.X && (x.Position.X * x.Height + x.Height) > Position.X
-            && x.Position.Y * x.Width < Position.Y && (x.Position.Y * x.Width + x.Width) > Position.Y);
+            x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
+            && x.Position.Y * x.Height < Position.Y && (x.Position.Y * x.Height + x.Height) > Position.Y);
             SetPosition(move);
             if (cell != null)
                 cell.Invalid = true;

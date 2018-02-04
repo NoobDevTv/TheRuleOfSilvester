@@ -4,16 +4,16 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public class CornerLeftUp : Cell
+    public class CornerLeftUp : MapCell
     {
         public CornerLeftUp(Map map) : base(map)
         {
-            Lines[0, 4] = "│";
-            Lines[0, 0] = "┘";
-            Lines[1, 4] = "│";
-            Lines[2, 4] = "┘";
+            Lines[4, 0] = '│';
+            Lines[0, 0] = '┘';
+            Lines[4, 1] = '│';
+            Lines[4, 2] = '┘';
             for (int i = 0; i < 4; i++)
-                Lines[2, i] = "─";
+                Lines[i, 2] = '─';
         }
     }
 }

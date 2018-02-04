@@ -7,29 +7,30 @@ namespace TheRuleOfSilvester.Core
 {
     public abstract class Cell : IDisposable
     {
-        //public const int HEIGHT = 3;
-        //public const int WIDTH = 5;
+       
         public Point Position { get; set; }
-        public int Width => Lines.GetLength(1);
-        public int Height => Lines.GetLength(0);
+        public int Width => Lines.GetLength(0);
+        public int Height => Lines.GetLength(1);
         public bool Invalid { get; set; }
         public bool Movable { get; set; }
         public Color Color { get; set; }
         public Map Map { get; protected set; }
 
-        public string[,] Lines { get; internal set; }
+        public char[,] Lines { get; internal set; }
 
         protected bool disposed;
 
-        public Cell(int height, int width, Map map)
+        public Cell( int width, int height, Map map)
         {
             Color = Color.White;
-            Lines = new string[height, width];
+            Lines = new char[width, height];
             Invalid = true;
             Map = map;
+            Movable = true;
         }
-        public Cell(Map map) : this(3, 5, map)
+        public Cell(Map map) : this(5, 3, map)
         {
+            
         }
 
         public void SetPosition(Point position)

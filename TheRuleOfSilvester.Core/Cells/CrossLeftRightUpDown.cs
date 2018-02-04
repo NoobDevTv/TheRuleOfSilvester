@@ -4,14 +4,14 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public class CrossLeftRightUpDown : Cell
+    public class CrossLeftRightUpDown : MapCell
     {
         public CrossLeftRightUpDown(Map map) : base(map)
         {
-            Lines[0, 0] = "┘";
-            Lines[0, 4] = "└";
-            Lines[2, 0] = "┐";
-            Lines[2, 4] = "┌";
+            Lines[0, 0] = '┘';
+            Lines[4, 0] = '└';
+            Lines[0, 2] = '┐';
+            Lines[4, 2] = '┌';
         }
     }
 }

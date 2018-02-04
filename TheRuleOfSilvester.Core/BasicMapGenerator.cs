@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TheRuleOfSilvester.Core
 {
     public abstract class BasicMapGenerator
     {
         protected Random random;
+        public List<Type> CellTypes { get; protected set; }
 
         public BasicMapGenerator()
         {
