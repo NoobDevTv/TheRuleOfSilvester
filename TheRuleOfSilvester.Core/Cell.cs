@@ -1,36 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core
 {
-    public abstract class Cell : IDisposable
+    public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
-       
+
         public Point Position { get; set; }
         public int Width => Lines.GetLength(0);
         public int Height => Lines.GetLength(1);
-        public bool Invalid { get; set; }
+        public bool Invalid
+        {
+            get => invalid; set
+            {
+                if (invalid != value)
+                {
+                    invalid = value;
+                    OnPropertyChanged("Invalid");
+                }
+            }
+        }
         public bool Movable { get; set; }
         public Color Color { get; set; }
         public Map Map { get; protected set; }
 
         public char[,] Lines { get; internal set; }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         protected bool disposed;
 
-        public Cell( int width, int height, Map map)
+        private bool invalid;
+
+        public Cell(int width, int height, Map map, bool movable = true)
         {
             Color = Color.White;
             Lines = new char[width, height];
             Invalid = true;
             Map = map;
-            Movable = true;
+            Movable = movable;
         }
-        public Cell(Map map) : this(5, 3, map)
+        public Cell(Map map, bool movable = true) : this(5, 3, map, movable)
         {
-            
+
         }
 
         public void SetPosition(Point position)
@@ -64,6 +79,11 @@ namespace TheRuleOfSilvester.Core
             disposed = true;
 
             GC.SuppressFinalize(this);
+        }
+
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

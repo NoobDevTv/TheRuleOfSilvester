@@ -7,6 +7,7 @@ namespace TheRuleOfSilvester
 {
     class Program
     {
+        
         static Game game;
         //static AutoResetEvent are;
         static InputComponent inputComponent;

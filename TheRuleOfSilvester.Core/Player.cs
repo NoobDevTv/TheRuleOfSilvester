@@ -34,12 +34,12 @@ namespace TheRuleOfSilvester.Core
             for (int i = 0; i < 3; i++)
             {
                 var cellTypes = map.MapGenerator.CellTypes;
-                var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map);
+                var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map, true);
                 cell.Position = new Point(1 + i * 2, Map.Height + 2);
                 Inventory.Add(cell);
             }
 
-            map.TextCells.Add(new TextCell("Inventory:") { Position = new Point(0, (map.Height + 1) * 3 + 1) });
+            map.TextCells.Add(new TextCell("Inventory:", map) { Position = new Point(0, (map.Height + 1) * 3 + 1) });
         }
 
         public void SetAvatar(char avatar)
@@ -131,7 +131,13 @@ namespace TheRuleOfSilvester.Core
                 ghostMode = false;
 
                 var changedCell = ghost.SelectedCell;
-
+                if (!changedCell.Movable)
+                {
+                    changedCell.Invalid = true;
+                    ghost.Dispose();
+                    ghost = null;
+                    return;
+                }
                 Map.Cells.Remove(changedCell);
 
                 var inventoryCell = Inventory.FirstOrDefault();
@@ -141,12 +147,11 @@ namespace TheRuleOfSilvester.Core
                 inventoryCell.Invalid = true;
                 Map.Cells.Add(inventoryCell);
 
-                changedCell.Position = new Point(1, Map.Height + 2);
+                changedCell.Position = new Point(5, Map.Height + 2);
                 changedCell.Invalid = true;
+                Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
                 Inventory.Add(changedCell);
-
                 
-
                 ghost.Dispose();
                 ghost = null;
             }

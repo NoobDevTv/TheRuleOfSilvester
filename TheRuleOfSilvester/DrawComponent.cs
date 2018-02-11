@@ -26,7 +26,7 @@ namespace TheRuleOfSilvester
 
         private void DrawCells<T>(List<T> cells) where T : Cell
         {
-            foreach (var cell in cells)
+            foreach (var cell in cells.ToArray())
             {
                 if (cell.Invalid)
                 {

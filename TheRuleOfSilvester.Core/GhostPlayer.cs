@@ -21,7 +21,8 @@ namespace TheRuleOfSilvester.Core
             Lines = new char[1, 1];
             player = original;
             Color = Color.Green;
-            text = new TextCell("Ghostmode ACTIVATED") { Position = new Point(0, (Map.Height + 1) * 3) };
+            text = new TextCell("Ghostmode ACTIVATED", map) { Position = new Point(0, (Map.Height + 1) * 3)};
+          
             text.Color = Color.Red;
             moveSizeX = 5;
             moveSizeY = 3;
@@ -82,7 +83,13 @@ namespace TheRuleOfSilvester.Core
             var cell = Map.GetTileAbsolutePos(Position);
             cell.Invalid = true;
             Map.Cells.Remove(this);
-            Map.TextCells.Remove(text);
+            text.MakeBlank();
+            text.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == "Invalid" && !text.Invalid)
+                    text.Map.TextCells.Remove(text);
+                text = null;
+            };
 
             player = null;
 

@@ -6,12 +6,12 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     public class StraightLeftRight : MapCell
     {
-        public StraightLeftRight(Map map) : base(map)
+        public StraightLeftRight(Map map, bool movable = true) : base(map, movable)
         {
             for (int i = 0; i < 5; i++)
             {
-                Lines[i, 0] = '─';
-                Lines[i, 2] = '─';
+                Lines[i, 0] = Movable ? '─' : '═';
+                Lines[i, 2] = Movable ? '─' : '═';
             }
         }
     }
