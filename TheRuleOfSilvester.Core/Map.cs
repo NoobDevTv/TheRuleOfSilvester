@@ -47,7 +47,7 @@ namespace TheRuleOfSilvester.Core
 
             foreach (var cell in cellList)
             {
-                if (cell.Lines[pos.X % cell.Width, pos.Y % cell.Height] != '\0')
+                if (cell.Lines[pos.X % cell.Width, pos.Y % cell.Height] != null)
                     return true;
             }
 

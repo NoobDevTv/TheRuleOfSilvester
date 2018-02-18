@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -18,7 +19,7 @@ namespace TheRuleOfSilvester.Core
 
         public GhostPlayer(Map map, Player original) : base(map)
         {
-            Lines = new char[1, 1];
+            Lines = new BaseElement[1, 1];
             player = original;
             Color = Color.Green;
             text = new TextCell("Ghostmode ACTIVATED", map) { Position = new Point(0, (Map.Height + 1) * 3)};

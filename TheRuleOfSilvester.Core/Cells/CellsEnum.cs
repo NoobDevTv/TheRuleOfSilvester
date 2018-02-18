@@ -4,11 +4,13 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public enum CellDirections
+
+    public enum ConnectionPoints
     {
-        UpConnected = 1,
-        DownConnected = 2,
-        LeftConnected = 4,
-        RightConnected = 8
+        None = 0,
+        Up = 1,
+        Down = 2,
+        Left = 4,
+        Right = 8,
     }
 }

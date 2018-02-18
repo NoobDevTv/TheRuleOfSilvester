@@ -91,24 +91,9 @@ namespace TheRuleOfSilvester.Core
                     cell.Position = new Point(tempX, tempY);
                     map.Cells.Add(cell);
                 }
-            for (int tempX = 0; tempX <= x; tempX++)
-                for (int tempY = 0; tempY <= y; tempY++)
-                {
-                    var nTopCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY - 1);
-                    var nDownCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY + 1);
-                    var nLeftCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX - 1 && c.Position.Y == tempY);
-                    var nRightCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX + 1 && c.Position.Y == tempY);
 
-                    var ourCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY);
-                    if (nTopCell != null)
-                    {
-                        //ourCell.Lines[0, 0] = ;
-                    }
-                    if (nDownCell != null) { }
-                    if (nLeftCell != null) { }
-                    if (nRightCell != null) { }
-
-                }
+            foreach (MapCell ourCell in map.Cells)
+                ourCell.NormalizeLayering();
 
             return map;
         }

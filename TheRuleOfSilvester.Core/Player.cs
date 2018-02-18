@@ -24,7 +24,7 @@ namespace TheRuleOfSilvester.Core
         public Player(Map map) : base(1, 1, map)
         {
             Inventory = new List<Cell>();
-            Lines = new char[1, 1];
+            Lines = new BaseElement[1, 1];
             moveSizeX = 5;
             moveSizeY = 3;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
+using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -27,7 +28,7 @@ namespace TheRuleOfSilvester.Core
         public Color Color { get; set; }
         public Map Map { get; protected set; }
 
-        public char[,] Lines { get; internal set; }
+        public BaseElement[,] Lines { get; internal set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -38,7 +39,7 @@ namespace TheRuleOfSilvester.Core
         public Cell(int width, int height, Map map, bool movable = true)
         {
             Color = Color.White;
-            Lines = new char[width, height];
+            Lines = new BaseElement[width, height];
             Invalid = true;
             Map = map;
             Movable = movable;
