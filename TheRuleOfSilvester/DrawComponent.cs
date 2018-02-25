@@ -42,7 +42,10 @@ namespace TheRuleOfSilvester
                         {
                             Console.SetCursorPosition(cell.Position.X * cell.Width + l, cell.Position.Y * cell.Height + h);
 
-                            Console.Write(BaseElementToChar(cell.Lines[l, h]));
+                            if (cell.Layer[l, h] != null)
+                                Console.Write(BaseElementToChar(cell.Layer[l, h]));
+                            else
+                                Console.Write(BaseElementToChar(cell.Lines[l, h]));
 
                             cell.Invalid = false;
                         }

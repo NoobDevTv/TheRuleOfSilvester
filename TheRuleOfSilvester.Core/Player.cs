@@ -61,7 +61,7 @@ namespace TheRuleOfSilvester.Core
             if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
                 return;
 
-            MoveGeneral(new Point(Position.X , Position.Y + moveSizeY));
+            MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
         }
 
         public void MoveLeft()
@@ -69,7 +69,7 @@ namespace TheRuleOfSilvester.Core
             if (Position.X - moveSizeX <= 0 || MovementOccupied(-moveSizeX, true))
                 return;
 
-            MoveGeneral(new Point(Position.X - moveSizeX, Position.Y ));
+            MoveGeneral(new Point(Position.X - moveSizeX, Position.Y));
         }
 
         public void MoveRight()
@@ -145,13 +145,26 @@ namespace TheRuleOfSilvester.Core
 
                 inventoryCell.Position = changedCell.Position;
                 inventoryCell.Invalid = true;
+
                 Map.Cells.Add(inventoryCell);
 
                 changedCell.Position = new Point(5, Map.Height + 2);
                 changedCell.Invalid = true;
                 Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
                 Inventory.Add(changedCell);
-                
+
+
+                var cellsToNormalize = Map.Cells.Where(c =>
+                        c.Position.X == inventoryCell.Position.X && c.Position.Y == inventoryCell.Position.Y - 1
+                    || c.Position.X == inventoryCell.Position.X && c.Position.Y == inventoryCell.Position.Y + 1
+                    || c.Position.X == inventoryCell.Position.X - 1 && c.Position.Y == inventoryCell.Position.Y
+                    || c.Position.X == inventoryCell.Position.X + 1 && c.Position.Y == inventoryCell.Position.Y)
+                    .Select(x => (MapCell)x).ToList();
+                cellsToNormalize.ForEach(x => x.NormalizeLayering());
+
+                (inventoryCell as MapCell).NormalizeLayering();
+                (changedCell as MapCell).NormalizeLayering();
+
                 ghost.Dispose();
                 ghost = null;
             }

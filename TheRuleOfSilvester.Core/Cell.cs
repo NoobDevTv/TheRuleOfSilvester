@@ -28,7 +28,9 @@ namespace TheRuleOfSilvester.Core
         public Color Color { get; set; }
         public Map Map { get; protected set; }
 
-        public BaseElement[,] Lines { get; internal set; }
+        public BaseElement[,] Lines { get; protected set; }
+
+        public BaseElement[,] Layer { get; internal set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -40,6 +42,7 @@ namespace TheRuleOfSilvester.Core
         {
             Color = Color.White;
             Lines = new BaseElement[width, height];
+            Layer = new BaseElement[width, height];
             Invalid = true;
             Map = map;
             Movable = movable;
