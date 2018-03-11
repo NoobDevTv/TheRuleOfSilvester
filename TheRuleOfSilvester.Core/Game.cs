@@ -11,6 +11,7 @@ namespace TheRuleOfSilvester.Core
     {
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
+        public bool IsRunning { get; private set; }
 
         private int frame;
         private int ups;
@@ -47,7 +48,9 @@ namespace TheRuleOfSilvester.Core
                 character = "20050";
             player.SetAvatar(character[0]);
             map.Players.Add(player);
-        
+
+            IsRunning = true;
+
             gameThread = new Thread(Loop)
             {
                 Name = "gameThread"
@@ -59,7 +62,7 @@ namespace TheRuleOfSilvester.Core
         public void Stop()
         {
             if (gameThread.IsAlive)
-                gameThread.Abort();
+                IsRunning = false;
         }
 
         public void Update()
@@ -74,12 +77,12 @@ namespace TheRuleOfSilvester.Core
         {
             //Stop();
 
-            //gameThread = null;
+            gameThread = null;
         }
 
         private void Loop()
         {
-            while (true)
+            while (IsRunning)
             {
                 Update();
                 Thread.Sleep(1000 / frame);

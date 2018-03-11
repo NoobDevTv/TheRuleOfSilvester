@@ -23,9 +23,12 @@ namespace TheRuleOfSilvester
 
         internal void Listen()
         {
-            while (true)
+            var running = true;
+
+            while (running)
             {
                 LastKey = (int)Console.ReadKey().Key;
+                running = LastKey != (int)ConsoleKey.Escape;
             }
         }
 
