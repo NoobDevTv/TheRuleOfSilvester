@@ -27,6 +27,8 @@ namespace TheRuleOfSilvester.Network
             Send(buffer, 4);
         }
 
+        public void Disconnect() => Socket.Disconnect(true);
+
         public void Connect(string host, int port)
         {
             var address = Dns.GetHostAddresses(host).FirstOrDefault(

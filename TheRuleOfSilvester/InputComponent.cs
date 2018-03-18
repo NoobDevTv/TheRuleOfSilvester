@@ -17,8 +17,7 @@ namespace TheRuleOfSilvester
 
         public InputComponent()
         {
-            LastKey = -1;
-            
+            LastKey = -1;            
         }
 
         internal void Listen()

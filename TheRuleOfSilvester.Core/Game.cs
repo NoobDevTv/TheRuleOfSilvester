@@ -11,7 +11,10 @@ namespace TheRuleOfSilvester.Core
     {
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
+        public IMultiplayerComponent MultiplayerComponent { get; set; }
+
         public bool IsRunning { get; private set; }
+        public bool IsMutliplayer { get; private set; }
 
         private int frame;
         private int ups;
@@ -21,8 +24,9 @@ namespace TheRuleOfSilvester.Core
         private Player player;
         //int c = 0;
 
-        public void Run(int frame, int ups)
+        public void Run(int frame, int ups, bool multiplayer)
         {
+            IsMutliplayer = multiplayer;
             this.frame = frame;
             this.ups = ups;
             //map = new Map();
@@ -51,6 +55,9 @@ namespace TheRuleOfSilvester.Core
 
             IsRunning = true;
 
+            if (multiplayer)
+                MultiplayerComponent.Connect();
+
             gameThread = new Thread(Loop)
             {
                 Name = "gameThread"
@@ -58,17 +65,24 @@ namespace TheRuleOfSilvester.Core
 
             gameThread.Start();
         }
+        public void Run(int frame, int ups) => Run(frame, ups, false);
 
         public void Stop()
         {
+            if (IsMutliplayer)
+                MultiplayerComponent.Disconnect();
+
             if (gameThread.IsAlive)
                 IsRunning = false;
         }
 
         public void Update()
         {
+            if (IsMutliplayer)
+                MultiplayerComponent.Update(this);
+
             player.Update(this);
-            
+
             DrawComponent.Draw(map);
             InputCompoment.LastKey = -1;
         }
@@ -88,6 +102,6 @@ namespace TheRuleOfSilvester.Core
                 Thread.Sleep(1000 / frame);
             }
         }
-        
+
     }
 }

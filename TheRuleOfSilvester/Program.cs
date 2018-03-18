@@ -8,10 +8,9 @@ namespace TheRuleOfSilvester
 {
     class Program
     {
-
-        static Game game;
-        static InputComponent inputComponent;
-        static GameMenu menu;
+        private static Game game;
+        private static InputComponent inputComponent;
+        private static GameMenu menu;
 
         public static bool IsRunning { get; private set; }
 
@@ -36,7 +35,6 @@ namespace TheRuleOfSilvester
                 var menuItem = menu.Run();
                 IsRunning = menuItem.Action();
             }
-            
         }
 
         private static bool MultiPlayer()
@@ -52,6 +50,7 @@ namespace TheRuleOfSilvester
             {
                 game.DrawComponent = new DrawComponent();
                 game.InputCompoment = inputComponent;
+                game.MultiplayerComponent = new MultiplayerComponent();
                 game.Run(60, 60);
                 inputComponent.Listen();
                 game.Stop();
