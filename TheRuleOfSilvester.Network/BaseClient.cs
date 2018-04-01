@@ -48,6 +48,11 @@ namespace TheRuleOfSilvester.Network
             }
         }
 
+        public void Disconnect()
+        {
+            Socket.Disconnect(true);
+        }
+
         public void Send(byte[] data, int len)
         {
             lock (sendLock)

@@ -12,10 +12,7 @@ namespace TheRuleOfSilvester
         public int Port { get; set; }
         public string Host { get; set; }
 
-        public MultiplayerComponent()
-        {
-            Client = new Client();
-        }
+        public MultiplayerComponent() => Client = new Client();
 
         public void Connect() => Client.Connect(Host, Port);
 
@@ -24,6 +21,13 @@ namespace TheRuleOfSilvester
         public void Update(Game game)
         {
 
+        }
+
+        public Map GetMap()
+        {
+            Client.Send(new byte[] { 0, 1 }, 2);
+
+            throw new NotImplementedException();
         }
     }
 }

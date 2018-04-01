@@ -7,7 +7,7 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Network
 {
-    class Server
+    public class Server : IDisposable
     {
         public event EventHandler<ConnectedClient> OnClientConnected;
 
@@ -18,7 +18,7 @@ namespace TheRuleOfSilvester.Network
         public Server()
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            lockObj = new object();            
+            lockObj = new object();
         }
 
         public void Start(IPAddress address, int port)
@@ -34,6 +34,26 @@ namespace TheRuleOfSilvester.Network
                 a => a.AddressFamily == socket.AddressFamily);
 
             Start(address, port);
+        }
+
+        public void Stop()
+        {
+            foreach (var client in connectedClients.ToArray())
+            {
+                client.Disconnect();
+                connectedClients.Remove(client);
+            }
+
+            socket.Disconnect(true);
+        }
+
+        public void Dispose()
+        {
+            Stop();
+            connectedClients.Clear();
+            connectedClients = null;
+            socket.Dispose();
+            socket = null;
         }
 
         private void OnClientAccepted(IAsyncResult ar)

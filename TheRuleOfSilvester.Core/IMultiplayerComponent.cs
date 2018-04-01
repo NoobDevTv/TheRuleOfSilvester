@@ -16,5 +16,6 @@ namespace TheRuleOfSilvester.Core
         void Disconnect();
 
         void Update(Game game);
+        Map GetMap();
     }
 }

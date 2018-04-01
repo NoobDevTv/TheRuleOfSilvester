@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
-    public abstract class Cell : IDisposable, INotifyPropertyChanged
+    public abstract class Cell : IDisposable, INotifyPropertyChanged, IByteSerializable
     {
 
         public Point Position { get; set; }
@@ -63,10 +64,17 @@ namespace TheRuleOfSilvester.Core
 
         }
 
-        public override string ToString()
+        public void Serialize(BinaryWriter binaryWriter)
         {
-            return $"{GetType()} | {Position.X} : {Position.Y}";
+
         }
+
+        public void Deserialize(BinaryReader binaryReader)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ToString() => $"{GetType()} | {Position.X} : {Position.Y}";
 
         public virtual void Dispose()
         {
@@ -89,5 +97,7 @@ namespace TheRuleOfSilvester.Core
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+
     }
 }

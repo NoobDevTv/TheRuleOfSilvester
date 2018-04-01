@@ -7,9 +7,10 @@ using System.Threading;
 
 namespace TheRuleOfSilvester.Network
 {
-    class ConnectedClient : BaseClient
+    public class ConnectedClient : BaseClient
     {
         private static int received;
+        public event EventHandler<(short Command, byte[] Data)> OnReceivedMessage;
 
         public ConnectedClient(Socket socket) : base(socket)
         {
@@ -21,5 +22,6 @@ namespace TheRuleOfSilvester.Network
             var tmpString = Encoding.UTF8.GetString(receiveArgsBuffer, 0, receiveArgsCount);
             
         }
+
     }
 }
