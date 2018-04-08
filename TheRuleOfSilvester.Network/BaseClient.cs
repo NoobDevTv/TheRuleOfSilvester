@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace TheRuleOfSilvester.Network
 {
     public abstract class BaseClient
     {
+        public event EventHandler<(byte[] Data, int Length)> OnMessageReceived;
+
         protected readonly Socket Socket;
         protected readonly SocketAsyncEventArgs ReceiveArgs;
 
@@ -30,7 +34,7 @@ namespace TheRuleOfSilvester.Network
 
             ReceiveArgs = new SocketAsyncEventArgs();
             ReceiveArgs.Completed += OnReceived;
-            ReceiveArgs.SetBuffer(ArrayPool<byte>.Shared.Rent(2048), 0, 2048);
+            ReceiveArgs.SetBuffer(ArrayPool<byte>.Shared.Rent(20480), 0, 20480);
 
             sendArgs = new SocketAsyncEventArgs();
             sendArgs.Completed += OnSent;
@@ -70,6 +74,24 @@ namespace TheRuleOfSilvester.Network
 
         }
 
+        public byte[] Send(byte[] data)
+        {
+            var resetEvent = new ManualResetEvent(false);
+            (byte[] Data, int Length) localData = (new byte[0], 0);
+
+            void messageReceived(object sender, (byte[] Data, int Length) args)
+            {
+                localData = args;
+                resetEvent.Set();
+            }
+
+            OnMessageReceived += messageReceived;
+            Send(data, data.Length);
+            resetEvent.WaitOne();
+            OnMessageReceived -= messageReceived;
+            return localData.Data.Take(localData.Length).ToArray();
+        }
+
         protected abstract void ProcessInternal(byte[] receiveArgsBuffer, int receiveArgsCount);
 
         private void SendInternal(byte[] data, int len)
@@ -81,7 +103,7 @@ namespace TheRuleOfSilvester.Network
                 if (Socket.SendAsync(sendArgs))
                     return;
 
-                ArrayPool<byte>.Shared.Return(data);
+                //ArrayPool<byte>.Shared.Return(data);
 
                 lock (sendLock)
                 {
@@ -128,6 +150,8 @@ namespace TheRuleOfSilvester.Network
         private void OnReceived(object sender, SocketAsyncEventArgs e)
         {
             ProcessInternal(e.Buffer, e.BytesTransferred);
+
+            OnMessageReceived?.Invoke(this, (e.Buffer, e.BytesTransferred));
 
             while (true)
             {

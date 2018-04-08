@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network;
@@ -23,11 +24,6 @@ namespace TheRuleOfSilvester
 
         }
 
-        public Map GetMap()
-        {
-            Client.Send(new byte[] { 0, 1 }, 2);
-
-            throw new NotImplementedException();
-        }
+        public Map GetMap() => SerializeHelper.Deserialize<Map>(Client.Send(new byte[] { 0, 1 }));
     }
 }

@@ -33,7 +33,7 @@ namespace TheRuleOfSilvester.Core
 
             for (int i = 0; i < 3; i++)
             {
-                var cellTypes = map.MapGenerator.CellTypes;
+                var cellTypes = map.MapGenerator?.CellTypes; //TODO: get inventory from server
                 var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map, true);
                 cell.Position = new Point(1 + i * 2, Map.Height + 2);
                 Inventory.Add(cell);

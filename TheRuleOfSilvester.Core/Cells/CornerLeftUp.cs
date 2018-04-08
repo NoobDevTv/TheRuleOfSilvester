@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
+    [Guid("726D1EE9-90C5-48F1-A206-2EAEB19AC24B")]
     public class CornerLeftUp : MapCell
     {
         public CornerLeftUp(Map map, bool movable = true) : base(map, movable)

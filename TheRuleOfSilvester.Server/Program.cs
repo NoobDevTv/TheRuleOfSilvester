@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester.Server
         }
 
         private static void ServerOnClientConnected(object sender, ConnectedClient e)
-            => e.OnReceivedMessage += (s, args) =>
+            => e.OnCommandReceived += (s, args) =>
             {
                 var answer = manager.Dispatch(command: args.Command, arg: args.Data);
                 e.Send(answer, answer.Length);

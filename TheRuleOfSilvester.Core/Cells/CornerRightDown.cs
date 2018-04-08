@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
+    [Guid("0D85862D-0B7D-4613-A513-F47EE3E6F8D7")]
     public class CornerRightDown : MapCell
     {
+
         public CornerRightDown(Map map, bool movable = true) : base(map, movable)
         {
             Lines[0, 2] = Movable ? '│' : '║';

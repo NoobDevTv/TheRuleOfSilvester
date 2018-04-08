@@ -63,12 +63,12 @@ namespace TheRuleOfSilvester.Network
             tmpSocket.NoDelay = true;
 
             var client = new ConnectedClient(tmpSocket);
-            client.Start();
-
             OnClientConnected?.Invoke(this, client);
 
             lock (lockObj)
                 connectedClients.Add(client);
+
+            client.Start();
         }
     }
 }

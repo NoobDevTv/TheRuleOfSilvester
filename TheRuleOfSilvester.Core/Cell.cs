@@ -8,9 +8,8 @@ using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
-    public abstract class Cell : IDisposable, INotifyPropertyChanged, IByteSerializable
+    public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
-
         public Point Position { get; set; }
         public int Width => Lines.GetLength(0);
         public int Height => Lines.GetLength(1);
@@ -63,17 +62,7 @@ namespace TheRuleOfSilvester.Core
         {
 
         }
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-
-        }
-
-        public void Deserialize(BinaryReader binaryReader)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override string ToString() => $"{GetType()} | {Position.X} : {Position.Y}";
 
         public virtual void Dispose()

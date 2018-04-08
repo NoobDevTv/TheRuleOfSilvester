@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public abstract class MapCell : Cell
+    public abstract class MapCell : Cell, IByteSerializable
     {
+        private Guid guid;
+
         public MapCell(Map map, bool movable = true) : base(5, 3, map, movable)
         {
+            var guidVal = GetType().GetCustomAttribute<GuidAttribute>()?.Value;
+            guid = string.IsNullOrWhiteSpace(guidVal) ? Guid.NewGuid() : new Guid(guidVal);
         }
 
         public void NormalizeLayering()
@@ -53,5 +60,16 @@ namespace TheRuleOfSilvester.Core.Cells
         {
             Layer = new BaseElement[Layer.GetLength(0), Layer.GetLength(1)];
         }
+
+        public void Serialize(BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(guid.ToByteArray());
+            binaryWriter.Write(Position.X);
+            binaryWriter.Write(Position.Y);
+            binaryWriter.Write(Movable);
+            binaryWriter.Write(Color.ToArgb());
+        }
+
+        public void Deserialize(BinaryReader binaryReader) => throw new NotSupportedException("Use SerializeHelper.DeserializeMapCell instead ;)");
     }
 }

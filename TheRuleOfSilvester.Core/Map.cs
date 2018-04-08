@@ -39,6 +39,7 @@ namespace TheRuleOfSilvester.Core
             };
             TextCells = new List<TextCell>();
         }
+        public Map() : this(0, 0, null) { }
 
         public bool IsTileOccupied(Point pos)
         {
@@ -68,7 +69,7 @@ namespace TheRuleOfSilvester.Core
             writer.Write(Width);
             writer.Write(Cells.Count);
 
-            foreach (var cell in Cells)
+            foreach (MapCell cell in Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())))
                 cell.Serialize(writer);
 
         }
@@ -76,15 +77,12 @@ namespace TheRuleOfSilvester.Core
         public void Deserialize(BinaryReader binaryReader)
         {
             Height = binaryReader.ReadInt32();
-            Width= binaryReader.ReadInt32();
+            Width = binaryReader.ReadInt32();
 
+            SerializeHelper.Map = this;
             for (int i = 0; i < binaryReader.ReadInt32(); i++)
-            {
-                var cell = new Cell(this);
-                cell.Deserialize(binaryReader);
-                Cells.Add(cell);
-            }
-                
+                Cells.Add(SerializeHelper.DeserializeMapCell(binaryReader));
+
         }
     }
 }
