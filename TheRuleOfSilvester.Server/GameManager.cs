@@ -14,6 +14,6 @@ namespace TheRuleOfSilvester.Server
            Map = GenerateMap();
         }
 
-        private static Map GenerateMap() => new MapGenerator().Generate(20, 20);
+        private static Map GenerateMap() => new MapGenerator().Generate(20, 10);
     }
 }

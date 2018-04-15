@@ -10,12 +10,13 @@ namespace TheRuleOfSilvester.Core.Cells
 {
     public abstract class MapCell : Cell, IByteSerializable
     {
-        private Guid guid;
+        public Guid Guid { get; private set; }
+        
 
         public MapCell(Map map, bool movable = true) : base(5, 3, map, movable)
         {
             var guidVal = GetType().GetCustomAttribute<GuidAttribute>()?.Value;
-            guid = string.IsNullOrWhiteSpace(guidVal) ? Guid.NewGuid() : new Guid(guidVal);
+            Guid = string.IsNullOrWhiteSpace(guidVal) ? Guid.NewGuid() : new Guid(guidVal);
         }
 
         public void NormalizeLayering()
@@ -63,10 +64,10 @@ namespace TheRuleOfSilvester.Core.Cells
 
         public void Serialize(BinaryWriter binaryWriter)
         {
-            binaryWriter.Write(guid.ToByteArray());
+            binaryWriter.Write(Guid.ToByteArray());
+            binaryWriter.Write(Movable);
             binaryWriter.Write(Position.X);
             binaryWriter.Write(Position.Y);
-            binaryWriter.Write(Movable);
             binaryWriter.Write(Color.ToArgb());
         }
 

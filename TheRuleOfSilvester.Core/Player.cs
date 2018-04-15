@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
-    public class Player : Cell
+    public class Player : Cell, IByteSerializable
     {
         public string Name { get; set; }
         public Char Avatar { get; private set; }
-
+        public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
 
         private int moveSizeX;
@@ -20,11 +21,17 @@ namespace TheRuleOfSilvester.Core
         private bool ghostMode;
         private GhostPlayer ghost;
 
-
+        public Player() : base(1, 1, null)
+        {
+            IsLocal = false;
+            Color = Color.Yellow;
+            Lines = new BaseElement[1, 1];
+        }
         public Player(Map map) : base(1, 1, map)
         {
             Inventory = new List<Cell>();
             Lines = new BaseElement[1, 1];
+            IsLocal = true;
             moveSizeX = 5;
             moveSizeY = 3;
 
@@ -41,6 +48,13 @@ namespace TheRuleOfSilvester.Core
 
             map.TextCells.Add(new TextCell("Inventory:", map) { Position = new Point(0, (map.Height + 1) * 3 + 1) });
         }
+
+        public void SetMap(Map map)
+        {
+            if (Map == null)
+                Map = map;
+        }
+
 
         public void SetAvatar(char avatar)
         {
@@ -189,7 +203,7 @@ namespace TheRuleOfSilvester.Core
             return false;
         }
 
-        private void MoveGeneral(Point move)
+        public void MoveGeneral(Point move)
         {
             var cell = Map.Cells.FirstOrDefault(x =>
             x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
@@ -198,6 +212,21 @@ namespace TheRuleOfSilvester.Core
             if (cell != null)
                 cell.Invalid = true;
         }
+    
+        
+        public void Serialize(BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(Avatar);
+            binaryWriter.Write(Name);
+            binaryWriter.Write(Position.X);
+            binaryWriter.Write(Position.Y);
+        }
 
+        public void Deserialize(BinaryReader binaryReader)
+        {
+            SetAvatar(binaryReader.ReadChar());
+            Name=binaryReader.ReadString();
+            Position= new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+        }
     }
 }

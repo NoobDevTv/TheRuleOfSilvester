@@ -21,6 +21,10 @@ namespace TheRuleOfSilvester.Core
                  .Where(c => c.BaseType == typeof(MapCell)));
         }
 
+        public MapGenerator(Guid[] cellGUIDs) : base(cellGUIDs)
+        {
+        }
+
         public override Map Generate(int x, int y)
         {
             var map = new Map(x, y, this);

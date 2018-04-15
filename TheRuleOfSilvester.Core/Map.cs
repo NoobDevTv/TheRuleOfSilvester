@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
 
@@ -17,26 +19,15 @@ namespace TheRuleOfSilvester.Core
         public List<Player> Players { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
-        public BasicMapGenerator MapGenerator { get; }
-
+        public BasicMapGenerator MapGenerator { get; private set; }
+        
         public Map(int width, int height, BasicMapGenerator mapGenerator)
         {
             Players = new List<Player>();
             MapGenerator = mapGenerator;
             Height = height;
             Width = width;
-            Cells = new List<Cell>
-            {
-                new CornerRightDown (this) { Position = new Point(0, 0) },
-                new LeftDownRight   (this) { Position = new Point(1, 0) },
-                new CornerLeftDown  (this) { Position = new Point(2, 0) },
-                new UpDownRight     (this) { Position = new Point(0, 1) },
-                new CrossLeftRightUpDown (this) { Position = new Point(1, 1) },
-                new UpDownLeft      (this) { Position = new Point(2, 1) },
-                new CornerRightUp   (this) { Position = new Point(0, 2) },
-                new LeftUpRight     (this) { Position = new Point(1, 2) },
-                new CornerLeftUp    (this) { Position = new Point(2, 2) }
-            };
+            Cells = new List<Cell>();
             TextCells = new List<TextCell>();
         }
         public Map() : this(0, 0, null) { }
@@ -72,6 +63,11 @@ namespace TheRuleOfSilvester.Core
             foreach (MapCell cell in Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())))
                 cell.Serialize(writer);
 
+            writer.Write(MapGenerator.CellTypes.Count);
+
+            foreach (var item in MapGenerator.CellTypes)
+                writer.Write(item.GUID.ToByteArray());
+
         }
 
         public void Deserialize(BinaryReader binaryReader)
@@ -80,9 +76,19 @@ namespace TheRuleOfSilvester.Core
             Width = binaryReader.ReadInt32();
 
             SerializeHelper.Map = this;
-            for (int i = 0; i < binaryReader.ReadInt32(); i++)
+            var length1= binaryReader.ReadInt32();
+            for (int i = 0; i < length1; i++)
                 Cells.Add(SerializeHelper.DeserializeMapCell(binaryReader));
+            
+            var stringList = new List<Guid>();
+            var length = binaryReader.ReadInt32();
+            for (int i = 0; i < length; i++)
+                stringList.Add(new Guid(binaryReader.ReadBytes(16)));
 
+            MapGenerator = new MapGenerator(stringList.ToArray());
+
+            foreach (MapCell ourCell in Cells)
+                ourCell.NormalizeLayering();
         }
     }
 }

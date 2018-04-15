@@ -10,6 +10,7 @@ namespace TheRuleOfSilvester.Core
         Client Client { get; }
         int Port { get; }
         string Host { get; }
+        Map Map { get;}
 
         void Connect();
 
@@ -17,5 +18,9 @@ namespace TheRuleOfSilvester.Core
 
         void Update(Game game);
         Map GetMap();
+
+        void RegisterNewPlayer(Player player);
+
+        List<Player> GetPlayers();
     }
 }

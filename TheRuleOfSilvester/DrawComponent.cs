@@ -13,12 +13,12 @@ namespace TheRuleOfSilvester
         public void Draw(Map map)
         {
             DrawCells(map.Cells);
-
+            
             //TODO: Quick and Dirty, must be set to player pos later on
             DrawCells(map.Players);
 
-            //TODO: Unschön, Spieler muss wissen wer er ist
-            DrawCells(map.Players.FirstOrDefault().Inventory);
+            //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
+            DrawCells(map.Players.FirstOrDefault(x=>x.IsLocal).Inventory);
 
             DrawCells(map.TextCells);
 
