@@ -10,6 +10,7 @@ namespace TheRuleOfSilvester.Network
     public class Server : IDisposable
     {
         public event EventHandler<ConnectedClient> OnClientConnected;
+        public int ClientAmount => connectedClients.Count;
 
         private Socket socket;
         private List<ConnectedClient> connectedClients;

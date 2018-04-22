@@ -5,7 +5,7 @@ using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Core
 {
-    public interface IMultiplayerComponent
+    public interface IMultiplayerComponent : IUpdateable
     {
         Client Client { get; }
         int Port { get; }
@@ -16,7 +16,6 @@ namespace TheRuleOfSilvester.Core
 
         void Disconnect();
 
-        void Update(Game game);
         Map GetMap();
 
         void RegisterNewPlayer(Player player);

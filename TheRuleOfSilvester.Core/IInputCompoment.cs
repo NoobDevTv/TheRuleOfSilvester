@@ -11,6 +11,7 @@ namespace TheRuleOfSilvester.Core
         bool Left { get; }
         bool Right { get; }
         bool StartAction { get; }
+        bool RoundButton { get; }
 
         int LastKey { get; set; }
 

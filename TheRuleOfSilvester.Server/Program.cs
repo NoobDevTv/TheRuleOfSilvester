@@ -8,27 +8,32 @@ namespace TheRuleOfSilvester.Server
 {
     class Program
     {
-        private static DefaultCommandManager<short, byte[], byte[]> manager;
+        private static DefaultCommandManager<CommandNames, byte[], byte[]> manager;
+        static Network.Server server;
 
         static void Main(string[] args)
         {
             var mResetEvent = new ManualResetEvent(false);
-            manager = new DefaultCommandManager<short, byte[], byte[]>(typeof(Program).Namespace + ".Commands");
+            manager = new DefaultCommandManager<CommandNames, byte[], byte[]>(typeof(Program).Namespace + ".Commands");
 
-            using (var server = new Network.Server())
+            using (server = new Network.Server())
             {
                 server.Start(IPAddress.Any, 4400);
                 Console.CancelKeyPress += (s, e) => mResetEvent.Reset();
                 server.OnClientConnected += ServerOnClientConnected;
+                Console.WriteLine("Server has started, waiting for clients");
                 mResetEvent.WaitOne();
             }
         }
 
         private static void ServerOnClientConnected(object sender, ConnectedClient e)
-            => e.OnCommandReceived += (s, args) =>
+        {
+            e.OnCommandReceived += (s, args) =>
             {
-                var answer = manager.Dispatch(command: args.Command, arg: args.Data);
+                var answer = manager.Dispatch(command: (CommandNames)args.Command, arg: args.Data);
                 e.Send(answer, answer.Length);
             };
+            Console.WriteLine("New Client has connected. Current Amount: " + server.ClientAmount + 1);
+        }
     }
 }

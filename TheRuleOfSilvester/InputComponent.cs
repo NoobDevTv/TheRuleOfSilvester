@@ -12,8 +12,11 @@ namespace TheRuleOfSilvester
         public bool Left => LastKey == (int)ConsoleKey.A || LastKey == (int)ConsoleKey.LeftArrow;
         public bool Right => LastKey == (int)ConsoleKey.D || LastKey == (int)ConsoleKey.RightArrow;
         public bool StartAction => LastKey == (int)ConsoleKey.Q || LastKey == (int)ConsoleKey.NumPad0;
+        public bool RoundButton => LastKey == (int)ConsoleKey.R;
+        
 
         public int LastKey { get;  set; }
+
 
         public InputComponent()
         {

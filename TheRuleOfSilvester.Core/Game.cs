@@ -12,6 +12,9 @@ namespace TheRuleOfSilvester.Core
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }
+        public IRoundComponent RoundComponent { get; set; }
+
+        public Map Map { get; private set; }
 
         public bool IsRunning { get; private set; }
         public bool IsMutliplayer { get; private set; }
@@ -19,8 +22,11 @@ namespace TheRuleOfSilvester.Core
         private int frame;
         private int ups;
         private Thread gameThread;
-        private Map map;
         private Player player;
+
+        public Game()
+        {
+        }
 
         public void Run(int frame, int ups, bool multiplayer)
         {
@@ -34,21 +40,23 @@ namespace TheRuleOfSilvester.Core
 
             if (multiplayer)
             {
-                map = MultiplayerComponent.GetMap();
-                
+                Map = MultiplayerComponent.GetMap();
             }
             else
             {
                 var generator = new MapGenerator();
-                map = generator.Generate(20, 10);
+                Map = generator.Generate(20, 10);
             }
 
-            player = new Player(map) { Color = Color.Red, Name = Guid.NewGuid().ToString(), Position = new Point(2, 1) };
+            player = new Player(Map) { Color = Color.Red, Name = Guid.NewGuid().ToString(), Position = new Point(2, 1) };
             var character = Console.ReadLine(); //TODO move char to UI
             if (string.IsNullOrWhiteSpace(character))
                 character = "20050";
             player.SetAvatar(character[0]);
-            map.Players.Add(player);
+            Map.Players.Add(player);
+
+            if (RoundComponent == null)
+                RoundComponent = new DefaultRoundComponent(Map);
 
             IsRunning = true;
 
@@ -82,7 +90,9 @@ namespace TheRuleOfSilvester.Core
 
             player.Update(this);
 
-            DrawComponent.Draw(map);
+            RoundComponent.Update(this);
+
+            DrawComponent.Draw(Map);
             InputCompoment.LastKey = -1;
         }
 
