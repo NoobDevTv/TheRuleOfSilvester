@@ -12,7 +12,7 @@ namespace TheRuleOfSilvester.Core
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }
-        public IRoundComponent RoundComponent { get; set; }
+        public IRoundManagerComponent RoundComponent { get; set; }
 
         public Map Map { get; private set; }
 
@@ -56,7 +56,7 @@ namespace TheRuleOfSilvester.Core
             Map.Players.Add(player);
 
             if (RoundComponent == null)
-                RoundComponent = new DefaultRoundComponent(Map);
+                RoundComponent = new DefaultRoundManagerComponent(Map);
 
             IsRunning = true;
 

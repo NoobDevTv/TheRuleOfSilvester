@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheRuleOfSilvester.Core.RoundComponents;
 
 namespace TheRuleOfSilvester.Core
 {
-    public interface IRoundComponent : IUpdateable 
+    public interface IRoundManagerComponent : IUpdateable 
     {
-        uint Round { get;  }
+        IRoundComponent Round { get;  }
         RoundMode RoundMode { get; }
 
     }

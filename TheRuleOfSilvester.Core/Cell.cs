@@ -10,7 +10,9 @@ namespace TheRuleOfSilvester.Core
 {
     public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
-        public Point Position { get; set; }
+        public Point Position { get=> position; set { OnPropertyChange("Position", position, value); position = value; } }
+
+
         public int Width => Lines.GetLength(0);
         public int Height => Lines.GetLength(1);
         public bool Invalid
@@ -33,8 +35,11 @@ namespace TheRuleOfSilvester.Core
         public BaseElement[,] Layer { get; internal set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangeEventHandler PropertyChange;
 
         protected bool disposed;
+
+        private Point position;
 
         private bool invalid;
 
@@ -87,6 +92,9 @@ namespace TheRuleOfSilvester.Core
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-
+        private void OnPropertyChange(string name, Point oldPosition, Point newPosition)
+        {
+            PropertyChange?.Invoke(this, new PropertyChangeEventArgs(name, oldPosition, newPosition));
+        }
     }
 }
