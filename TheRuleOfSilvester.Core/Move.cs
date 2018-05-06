@@ -1,27 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core
 {
-    public enum MoveTypes
+    public enum ActionType
     {
+        None,
         Moved,
         ChangedMapCell,
 
     }
-    public struct Move
+    public struct PlayerAction : IByteSerializable
     {
-        public MoveTypes MoveType;
+        public ActionType ActionType;
         public Point Point;
 
-        public Move(MoveTypes moveType, Point point)
+        public PlayerAction(ActionType moveType, Point point) : this()
         {
-            MoveType = moveType;
+            ActionType = moveType;
             Point = point;
         }
 
-        public override string ToString() => MoveType.ToString() + " | " + Point.ToString();
+        public void Deserialize(BinaryReader binaryReader)
+        {
+            Point = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+            ActionType = (ActionType)binaryReader.ReadInt32();
+        }
+
+        public void Serialize(BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(Point.X);
+            binaryWriter.Write(Point.Y);
+            binaryWriter.Write((int)ActionType);
+        }
+
+        public override string ToString() => ActionType.ToString() + " | " + Point.ToString();
     }
 }

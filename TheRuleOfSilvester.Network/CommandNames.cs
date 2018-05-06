@@ -11,5 +11,6 @@ namespace TheRuleOfSilvester.Network
         RegisterNewPlayer,
         GetPlayers,
         UpdatePlayer,
+        TransmitMoves
     }
 }

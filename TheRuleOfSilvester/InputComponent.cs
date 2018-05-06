@@ -30,7 +30,7 @@ namespace TheRuleOfSilvester
 
             while (running)
             {
-                LastKey = (int)Console.ReadKey().Key;
+                LastKey = (int)Console.ReadKey(true).Key;
                 running = LastKey != (int)ConsoleKey.Escape;
             }
         }

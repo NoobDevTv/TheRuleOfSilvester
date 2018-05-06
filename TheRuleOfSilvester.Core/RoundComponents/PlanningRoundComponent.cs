@@ -15,7 +15,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         private Player player;
 
-        private Stack<Move> moves;
+        private Stack<PlayerAction> moves;
 
         private bool propertyChangedRelevant = true;
 
@@ -42,14 +42,14 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             Point oldPos = (Point)e.OldValue;
 
             if (propertyChangedRelevant)
-                moves.Push(new Move(MoveTypes.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y)));
+                moves.Push(new PlayerAction(ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y)));
 
         }
 
         public void Start(Game game)
         {
             player = game.Map.Players.FirstOrDefault(x => x.IsLocal);
-            moves = new Stack<Move>(maxMoves);
+            moves = new Stack<PlayerAction>(maxMoves);
             Subscribe();
         }
 
@@ -67,6 +67,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         {
             Desubscive();
             //TODO Transmit moves
+
         }
 
         private void Subscribe()
@@ -86,12 +87,12 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 return;
 
             var move = moves.Pop();
-            switch (move.MoveType)
+            switch (move.ActionType)
             {
-                case MoveTypes.Moved:
+                case ActionType.Moved:
                     player.MoveGeneral(new Point(player.Position.X - move.Point.X, player.Position.Y - move.Point.Y));
                     break;
-                case MoveTypes.ChangedMapCell:
+                case ActionType.ChangedMapCell:
                     //TODO Implement undo Map Changes
                     break;
             }

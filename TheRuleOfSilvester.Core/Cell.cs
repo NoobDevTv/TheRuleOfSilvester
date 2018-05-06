@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
 
@@ -10,7 +11,7 @@ namespace TheRuleOfSilvester.Core
 {
     public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
-        public Point Position { get=> position; set { OnPropertyChange("Position", position, value); position = value; } }
+        public Point Position { get=> position; set { OnPropertyChange(position, value); position = value; } }
 
 
         public int Width => Lines.GetLength(0);
@@ -92,7 +93,7 @@ namespace TheRuleOfSilvester.Core
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        private void OnPropertyChange(string name, Point oldPosition, Point newPosition)
+        private void OnPropertyChange(Point oldPosition, Point newPosition, [CallerMemberName] string name = null)
         {
             PropertyChange?.Invoke(this, new PropertyChangeEventArgs(name, oldPosition, newPosition));
         }
