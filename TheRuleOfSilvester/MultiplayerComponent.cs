@@ -42,7 +42,7 @@ namespace TheRuleOfSilvester
                 {
                     tmpPlayer.MoveGeneral(player.Position);
                     //tmpPlayer.Position = ;
-                    
+
                     tmpPlayer.Invalid = true;
                 }
 
@@ -54,10 +54,36 @@ namespace TheRuleOfSilvester
             Map = SerializeHelper.Deserialize<Map>(Client.Send(new byte[] { 0, 1 }));
             return Map;
         }
-        public void RegisterNewPlayer(Player player) => Client.Send(new byte[] { 0, 2 }.Concat(SerializeHelper.ToByteArray(player)).ToArray());
 
-        public List<Player> GetPlayers() => SerializeHelper.Deserialize<Player, List<Player>>(Client.Send(new byte[] { 0, 3 }));
+        public void RegisterNewPlayer(Player player)
+            => player.Id = BitConverter.ToInt32(Client.Send(BitConverter
+                                                                .GetBytes((short)CommandNames.RegisterNewPlayer)
+                                                                .Concat(SerializeHelper.ToByteArray(player))
+                                                                .ToArray()), 0);
 
-        public void UpdatePlayer(Player player) => Client.Send(new byte[] { 0, 4 }.Concat(SerializeHelper.ToByteArray(player)).ToArray());
+        public List<Player> GetPlayers()
+            => SerializeHelper.Deserialize<Player, List<Player>>(
+                Client.Send(BitConverter.GetBytes((short)CommandNames.GetPlayers)));
+
+        public void UpdatePlayer(Player player)
+            => Client.Send(BitConverter
+                            .GetBytes((short)CommandNames.UpdatePlayer)
+                            .Concat(SerializeHelper.ToByteArray(player))
+                            .ToArray());
+
+        public void TransmitActions(Stack<PlayerAction> actions, Player player) 
+            => Client.Send(BitConverter
+                            .GetBytes((short)CommandNames.TransmitActions)
+                            .Concat(BitConverter.GetBytes(player.Id))
+                            .Concat(SerializeHelper.ToByteArray<PlayerAction, List<PlayerAction>>(actions.ToList()))
+                            .ToArray());
+
+        public void EndRound(Player player)
+        {
+            Client.Send(BitConverter
+                            .GetBytes((short)CommandNames.EndRound)
+                            .Concat(BitConverter.GetBytes(player.Id))
+                            .ToArray());
+        }
     }
 }

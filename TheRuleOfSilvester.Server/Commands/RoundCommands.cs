@@ -10,21 +10,35 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public partial class RoundCommands
     {
-        [Command(CommandNames.TransmitMoves)]
-        public static byte[] TransmitMoves(byte[] data)
+        [Command(CommandNames.TransmitActions)]
+        public static byte[] TransmitActions(byte[] data)
         {
-            //TODO Player + Action auf Server, um die Daten zu interpretieren
+            var playerActions = new List<PlayerAction>();
+            int playerID;
 
             using (var memoryStream = new MemoryStream(data))
             using (var binaryReader = new BinaryReader(memoryStream))
             {
-                binaryReader.ReadInt32(); //TODO Haben wir eine PlayerID?
+                playerID = binaryReader.ReadInt32(); //TODO Haben wir eine PlayerID? Ja jetzt schon
                 while (memoryStream.Position != memoryStream.Length)
                 {
-                    var move = new PlayerAction();
-                    move.Deserialize(binaryReader);
+                    var action = new PlayerAction();
+                    action.Deserialize(binaryReader);
+                    playerActions.Add(action);
                 }
             }
+
+            GameManager.AddRoundActions(playerID, playerActions);
+
+            return BitConverter.GetBytes((short)CommandNames.TransmitActions);
+        }
+
+        [Command(CommandNames.EndRound)]
+        public static byte[] EndRound(byte[] data)
+        {
+            var playerId = BitConverter.ToInt32(data, 0);
+            GameManager.EndRound(playerId);
+            return BitConverter.GetBytes((short)CommandNames.EndRound);
         }
     }
 }

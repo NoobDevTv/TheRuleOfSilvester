@@ -14,9 +14,10 @@ namespace TheRuleOfSilvester.Core
         public Char Avatar { get; private set; }
         public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
+        public int Id { get; set; }
 
-        private int moveSizeX;
-        private int moveSizeY;
+        private readonly int moveSizeX;
+        private readonly int moveSizeY;
 
         private bool ghostMode;
         private GhostPlayer ghost;
@@ -212,11 +213,12 @@ namespace TheRuleOfSilvester.Core
             if (cell != null)
                 cell.Invalid = true;
         }
-    
-        
+
+
         public void Serialize(BinaryWriter binaryWriter)
         {
             binaryWriter.Write(Avatar);
+            binaryWriter.Write(Id);
             binaryWriter.Write(Name);
             binaryWriter.Write(Position.X);
             binaryWriter.Write(Position.Y);
@@ -225,8 +227,17 @@ namespace TheRuleOfSilvester.Core
         public void Deserialize(BinaryReader binaryReader)
         {
             SetAvatar(binaryReader.ReadChar());
-            Name=binaryReader.ReadString();
-            Position= new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+            Id = binaryReader.ReadInt32();
+            Name = binaryReader.ReadString();
+            Position = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Player player)
+                return player.Id == Id;
+
+            return false;
         }
     }
 }

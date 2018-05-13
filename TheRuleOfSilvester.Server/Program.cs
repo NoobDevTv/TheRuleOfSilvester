@@ -33,6 +33,7 @@ namespace TheRuleOfSilvester.Server
                 var answer = manager.Dispatch(command: (CommandNames)args.Command, arg: args.Data);
                 e.Send(answer, answer.Length);
             };
+
             Console.WriteLine("New Client has connected. Current Amount: " + server.ClientAmount + 1);
         }
     }

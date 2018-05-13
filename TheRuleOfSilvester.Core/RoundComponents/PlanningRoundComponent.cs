@@ -11,11 +11,11 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     {
         public RoundMode Round => RoundMode.Planning;
 
-        private int maxMoves = 70;
+        private readonly int maxMoves = 70;
 
         private Player player;
 
-        private Stack<PlayerAction> moves;
+        private Stack<PlayerAction> actions;
 
         private bool propertyChangedRelevant = true;
 
@@ -33,7 +33,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             }
         }
 
-        private void Player_PropertyChange(object sender, PropertyChangeEventArgs e)
+        private void PlayerPropertyChange(object sender, PropertyChangeEventArgs e)
         {
             if (e.PropertyName != "Position")
                 return;
@@ -42,22 +42,22 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             Point oldPos = (Point)e.OldValue;
 
             if (propertyChangedRelevant)
-                moves.Push(new PlayerAction(ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y)));
+                actions.Push(new PlayerAction(ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y)));
 
         }
 
         public void Start(Game game)
         {
             player = game.Map.Players.FirstOrDefault(x => x.IsLocal);
-            moves = new Stack<PlayerAction>(maxMoves);
+            actions = new Stack<PlayerAction>(maxMoves);
             Subscribe();
         }
 
-        private void Player_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void PlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             propertyChangedRelevant = false;
             //Temp maybe make it different
-            while (moves.Count > maxMoves)
+            while (actions.Count > maxMoves)
                 UndoLastMovement();
 
             propertyChangedRelevant = true;
@@ -65,28 +65,29 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Stop(Game game)
         {
-            Desubscive();
-            //TODO Transmit moves
+            Desubscribe();
+
+            game.MultiplayerComponent.TransmitActions(actions, player);
 
         }
 
         private void Subscribe()
         {
-            player.PropertyChange += Player_PropertyChange;
-            player.PropertyChanged += Player_PropertyChanged;
+            player.PropertyChange += PlayerPropertyChange;
+            player.PropertyChanged += PlayerPropertyChanged;
         }
-        private void Desubscive()
+        private void Desubscribe()
         {
-            player.PropertyChange -= Player_PropertyChange;
-            player.PropertyChanged -= Player_PropertyChanged;
+            player.PropertyChange -= PlayerPropertyChange;
+            player.PropertyChanged -= PlayerPropertyChanged;
         }
 
         public void UndoLastMovement(Game game = null)
         {
-            if (moves.Count == 0)
+            if (actions.Count == 0)
                 return;
 
-            var move = moves.Pop();
+            var move = actions.Pop();
             switch (move.ActionType)
             {
                 case ActionType.Moved:

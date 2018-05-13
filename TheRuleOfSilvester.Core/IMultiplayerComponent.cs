@@ -21,5 +21,9 @@ namespace TheRuleOfSilvester.Core
         void RegisterNewPlayer(Player player);
 
         List<Player> GetPlayers();
+
+        void TransmitActions(Stack<PlayerAction> actions, Player player);
+
+        void EndRound(Player player);
     }
 }

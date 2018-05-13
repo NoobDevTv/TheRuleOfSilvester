@@ -6,13 +6,6 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core
 {
-    public enum ActionType
-    {
-        None,
-        Moved,
-        ChangedMapCell,
-
-    }
     public struct PlayerAction : IByteSerializable
     {
         public ActionType ActionType;
