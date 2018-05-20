@@ -12,7 +12,6 @@ namespace TheRuleOfSilvester
         public Client Client { get; private set; }
         public int Port { get; set; }
         public string Host { get; set; }
-        public Map Map { get; private set; }
 
         public MultiplayerComponent() => Client = new Client();
 
@@ -25,12 +24,12 @@ namespace TheRuleOfSilvester
             var tmpList = GetPlayers();
             foreach (var player in tmpList)
             {
-                var tmpPlayer = Map.Players.FirstOrDefault(p => p.Name == player.Name);
+                var tmpPlayer = game.Map.Players.FirstOrDefault(p => p.Name == player.Name);
 
                 if (tmpPlayer == null)
                 {
-                    player.SetMap(Map);
-                    Map.Players.Add(player);
+                    player.SetMap(game.Map);
+                    game.Map.Players.Add(player);
                     player.Invalid = true;
                 }
                 else if (tmpPlayer.IsLocal)
@@ -41,8 +40,6 @@ namespace TheRuleOfSilvester
                 else
                 {
                     tmpPlayer.MoveGeneral(player.Position);
-                    //tmpPlayer.Position = ;
-
                     tmpPlayer.Invalid = true;
                 }
 
@@ -50,10 +47,7 @@ namespace TheRuleOfSilvester
         }
 
         public Map GetMap()
-        {
-            Map = SerializeHelper.Deserialize<Map>(Client.Send(new byte[] { 0, 1 }));
-            return Map;
-        }
+            => SerializeHelper.Deserialize<Map>(Client.Send(BitConverter.GetBytes((short)CommandNames.GetMap)));
 
         public void RegisterNewPlayer(Player player)
             => player.Id = BitConverter.ToInt32(Client.Send(BitConverter
@@ -71,7 +65,7 @@ namespace TheRuleOfSilvester
                             .Concat(SerializeHelper.ToByteArray(player))
                             .ToArray());
 
-        public void TransmitActions(Stack<PlayerAction> actions, Player player) 
+        public void TransmitActions(Stack<PlayerAction> actions, Player player)
             => Client.Send(BitConverter
                             .GetBytes((short)CommandNames.TransmitActions)
                             .Concat(BitConverter.GetBytes(player.Id))
@@ -79,11 +73,10 @@ namespace TheRuleOfSilvester
                             .ToArray());
 
         public void EndRound(Player player)
-        {
-            Client.Send(BitConverter
+            => Client.Send(BitConverter
                             .GetBytes((short)CommandNames.EndRound)
                             .Concat(BitConverter.GetBytes(player.Id))
                             .ToArray());
-        }
+
     }
 }

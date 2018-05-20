@@ -67,8 +67,8 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         {
             Desubscribe();
 
-            game.MultiplayerComponent.TransmitActions(actions, player);
-
+            game.MultiplayerComponent?.TransmitActions(actions, player);
+            game.MultiplayerComponent?.EndRound(game.Map.Players.First(p => p.IsLocal));
         }
 
         private void Subscribe()

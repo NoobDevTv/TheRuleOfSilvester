@@ -31,6 +31,10 @@ namespace TheRuleOfSilvester.Server
             e.OnCommandReceived += (s, args) =>
             {
                 var answer = manager.Dispatch(command: (CommandNames)args.Command, arg: args.Data);
+
+                if (((CommandNames)args.Command) == CommandNames.RegisterNewPlayer)
+                    GameManager.AddClientToPlayer(BitConverter.ToInt32(answer,0), (ConnectedClient)s);
+
                 e.Send(answer, answer.Length);
             };
 

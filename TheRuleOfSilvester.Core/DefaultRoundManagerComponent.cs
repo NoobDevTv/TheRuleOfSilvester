@@ -13,7 +13,7 @@ namespace TheRuleOfSilvester.Core
         public IRoundComponent Round { get; private set; }
         public RoundMode RoundMode { get; set; }
 
-        private int maxRoundMode;
+        private readonly int maxRoundMode;
         private TextCell roundModeCell;
         private List<IRoundComponent> rounds;
 

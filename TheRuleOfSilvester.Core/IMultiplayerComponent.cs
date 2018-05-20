@@ -10,7 +10,6 @@ namespace TheRuleOfSilvester.Core
         Client Client { get; }
         int Port { get; }
         string Host { get; }
-        Map Map { get;}
 
         void Connect();
 

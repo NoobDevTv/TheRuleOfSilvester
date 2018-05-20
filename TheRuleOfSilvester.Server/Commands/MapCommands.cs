@@ -10,19 +10,19 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public partial class MapCommands
     {
-        [Command(CommandNames.GetMap)]
+        [Command((short)CommandNames.GetMap)]
         public static byte[] GetMap(byte[] data) => SerializeHelper.ToByteArray(GameManager.Map);
 
-        [Command(CommandNames.RegisterNewPlayer)]
+        [Command((short)CommandNames.RegisterNewPlayer)]
         public static byte[] RegisterNewPlayer(byte[] data)
             => BitConverter.GetBytes(GameManager.AddNewPlayer(SerializeHelper.Deserialize<Player>(data)));
 
 
-        [Command(CommandNames.GetPlayers)]
-        public static byte[] GetPlayers(byte[] data) 
+        [Command((short)CommandNames.GetPlayers)]
+        public static byte[] GetPlayers(byte[] data)
             => SerializeHelper.ToByteArray<Player, List<Player>>(GameManager.Map.Players);
 
-        [Command(CommandNames.UpdatePlayer)]
+        [Command((short)CommandNames.UpdatePlayer)]
         public static byte[] UpdatePlayer(byte[] data)
         {
             var newPlayer = SerializeHelper.Deserialize<Player>(data);

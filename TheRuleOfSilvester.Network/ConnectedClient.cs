@@ -11,6 +11,9 @@ namespace TheRuleOfSilvester.Network
     public class ConnectedClient : BaseClient
     {
         private static int received;
+
+        public int PlayerId { get; set; }
+
         public event EventHandler<(short Command, byte[] Data)> OnCommandReceived;
 
         public ConnectedClient(Socket socket) : base(socket)
@@ -21,7 +24,7 @@ namespace TheRuleOfSilvester.Network
         protected override void ProcessInternal(byte[] receiveArgsBuffer, int receiveArgsCount)
         {
             (short Command, byte[] Data) = (0, new byte[receiveArgsCount - 2]);
-            Command = (short)(receiveArgsBuffer[0] << 8 | receiveArgsBuffer[1]);
+            Command = BitConverter.ToInt16(receiveArgsBuffer, 0);
             Array.Copy(receiveArgsBuffer, 2, Data, 0, receiveArgsCount - 2);
             OnCommandReceived?.Invoke(this, (Command, Data));
         }

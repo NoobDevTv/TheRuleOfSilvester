@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Server
 {
@@ -43,10 +46,35 @@ namespace TheRuleOfSilvester.Server
 
         internal static void EndRound(int playerId)
         {
-            if (!players.ContainsKey(playerId))
-                return;
+            if (players.TryGetValue(playerId, out NetworkPlayer player))
+                player.RoundMode++;
 
-            var player = players[playerId];
+            CheckAllPlayersAsync();
+        }
+
+        private static void CheckAllPlayersAsync()
+        {
+            Task.Run(() =>
+            {
+                var tmpPlayers = players.Values.ToList();
+                foreach (var player in tmpPlayers)
+                {
+                    if (player.RoundMode != RoundMode.Waiting)
+                        return;
+                }
+
+                ExecuteCache();
+            });
+        }
+
+        private static void ExecuteCache()
+        {
+        }
+
+        internal static void AddClientToPlayer(int id, ConnectedClient client)
+        {
+            players[id].Client = client;
+            client.PlayerId = id;
         }
     }
 }

@@ -27,6 +27,7 @@ namespace TheRuleOfSilvester.Core
             IsLocal = false;
             Color = Color.Yellow;
             Lines = new BaseElement[1, 1];
+            Name = "Tim";
         }
         public Player(Map map) : base(1, 1, map)
         {
