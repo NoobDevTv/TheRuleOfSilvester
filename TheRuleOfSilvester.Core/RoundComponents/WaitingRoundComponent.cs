@@ -9,17 +9,26 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     {
         public RoundMode Round => RoundMode.Waiting;
 
+        public bool RoundEnd { get; private set; }
+
         public void Start(Game game)
         {
+            game.InputCompoment.Active = false;            
         }
 
         public void Stop(Game game)
         {
-            game.MultiplayerComponent?.EndRound(game.Map.Players.First(p => p.IsLocal));
+            //game.MultiplayerComponent?.EndRound(game.Map.Players.First(p => p.IsLocal));
         }
 
         public void Update(Game game)
         {
+            game.MultiplayerComponent?.WaitingForServer();
+
+            //Temporary logic
+            game.InputCompoment.Active = true;
+            RoundEnd = true;
+            //temp
         }
     }
 }

@@ -11,44 +11,43 @@ namespace TheRuleOfSilvester.Server
     static class GameManager
     {
         public static Map Map { get; private set; }
-        private static Dictionary<int, NetworkPlayer> players;
+        public static Dictionary<int, NetworkPlayer> Players { get; private set; }
         private static Dictionary<Player, List<PlayerAction>> actionCache;
 
         static GameManager()
         {
             Map = GenerateMap();
-            players = new Dictionary<int, NetworkPlayer>();
+            Players = new Dictionary<int, NetworkPlayer>();
             actionCache = new Dictionary<Player, List<PlayerAction>>();
         }
 
         private static Map GenerateMap() => new MapGenerator().Generate(20, 10);
 
-        internal static void AddRoundActions(int playerID, List<PlayerAction> playerActions)
-        {
-            if (!players.ContainsKey(playerID))
-                return;
-
-            actionCache[players[playerID].Player] = playerActions;
-        }
+        internal static void AddRoundActions(Player player, List<PlayerAction> playerActions) 
+            => actionCache[player] = playerActions;
 
         internal static int AddNewPlayer(Player player)
         {
-            int tmpId = players.Count + 1;
+            int tmpId = Players.Count + 1;
 
-            while (players.ContainsKey(tmpId))
+            while (Players.ContainsKey(tmpId))
                 tmpId++;
 
-            players.Add(tmpId, new NetworkPlayer(player));
+            Players.Add(tmpId, new NetworkPlayer(player));
             Map.Players.Add(player);
             player.Id = tmpId;
             return tmpId;
         }
-
-        internal static void EndRound(int playerId)
+        
+        internal static void AddClientToPlayer(int id, ConnectedClient client)
         {
-            if (players.TryGetValue(playerId, out NetworkPlayer player))
-                player.RoundMode++;
+            Players[id].Client = client;
+            client.PlayerId = id;
+        }
 
+        internal static void EndRound(NetworkPlayer player)
+        {
+            player.RoundMode++;
             CheckAllPlayersAsync();
         }
 
@@ -56,7 +55,7 @@ namespace TheRuleOfSilvester.Server
         {
             Task.Run(() =>
             {
-                var tmpPlayers = players.Values.ToList();
+                var tmpPlayers = Players.Values.ToList();
                 foreach (var player in tmpPlayers)
                 {
                     if (player.RoundMode != RoundMode.Waiting)
@@ -70,11 +69,6 @@ namespace TheRuleOfSilvester.Server
         private static void ExecuteCache()
         {
         }
-
-        internal static void AddClientToPlayer(int id, ConnectedClient client)
-        {
-            players[id].Client = client;
-            client.PlayerId = id;
-        }
+        
     }
 }

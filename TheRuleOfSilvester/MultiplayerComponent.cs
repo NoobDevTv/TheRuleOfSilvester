@@ -67,16 +67,16 @@ namespace TheRuleOfSilvester
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
             => Client.Send(BitConverter
-                            .GetBytes((short)CommandNames.TransmitActions)
-                            .Concat(BitConverter.GetBytes(player.Id))
-                            .Concat(SerializeHelper.ToByteArray<PlayerAction, List<PlayerAction>>(actions.ToList()))
+                            .GetBytes((short)CommandNames.TransmitActions))
+                            .Concat(SerializeHelper.ToByteArray<PlayerAction, List<PlayerAction>>(actions.ToList())
                             .ToArray());
 
         public void EndRound(Player player)
-            => Client.Send(BitConverter
-                            .GetBytes((short)CommandNames.EndRound)
-                            .Concat(BitConverter.GetBytes(player.Id))
-                            .ToArray());
+            => Client.Send(BitConverter.GetBytes((short)CommandNames.EndRound));
 
+        public void WaitingForServer()
+        {
+            var answer = Client.Send(BitConverter.GetBytes((short)CommandNames.Wait));
+        }
     }
 }

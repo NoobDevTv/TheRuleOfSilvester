@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network;
 
@@ -12,21 +13,39 @@ namespace TheRuleOfSilvester.Server.Commands
     public partial class RoundCommands
     {
         [Command((short)CommandNames.TransmitActions)]
-        public static byte[] TransmitActions(byte[] data)
+        public static byte[] TransmitActions(CommandArgs args)
         {
-            int playerID = BitConverter.ToInt32(data, 0);
-            var playerActions = SerializeHelper.Deserialize<PlayerAction, List<PlayerAction>>(data.Skip(4).ToArray());
-            GameManager.AddRoundActions(playerID, playerActions);
+            var playerActions = SerializeHelper.Deserialize<PlayerAction, List<PlayerAction>>(args.Data.ToArray());
+            GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions);
 
             return BitConverter.GetBytes((short)CommandNames.TransmitActions);
         }
 
         [Command((short)CommandNames.EndRound)]
-        public static byte[] EndRound(byte[] data)
+        public static byte[] EndRound(CommandArgs args)
         {
-            var playerId = BitConverter.ToInt32(data, 0);
-            GameManager.EndRound(playerId);
+            GameManager.EndRound(args.NetworkPlayer);
             return BitConverter.GetBytes((short)CommandNames.EndRound);
+        }
+
+        [Command((short)CommandNames.Wait)]
+        public static byte[] Wait(CommandArgs args)
+        {
+            var resetEvent = new ManualResetEvent(true);
+            void setResetEvent(object sender, RoundMode roundMode)
+            {
+                resetEvent.Set();
+            }
+
+            args.NetworkPlayer.OnRoundModeChange += setResetEvent;
+
+            if (args.NetworkPlayer.RoundMode != RoundMode.Planning)
+                resetEvent.Reset();
+
+            resetEvent.WaitOne();
+            args.NetworkPlayer.OnRoundModeChange -= setResetEvent;
+
+            return BitConverter.GetBytes((short)CommandNames.Wait);
         }
     }
 }

@@ -14,11 +14,13 @@ namespace TheRuleOfSilvester.Network
 
         public int PlayerId { get; set; }
 
+        public bool Registered => PlayerId > 0;
+
         public event EventHandler<(short Command, byte[] Data)> OnCommandReceived;
 
         public ConnectedClient(Socket socket) : base(socket)
         {
-
+            PlayerId = -1;
         }
 
         protected override void ProcessInternal(byte[] receiveArgsBuffer, int receiveArgsCount)

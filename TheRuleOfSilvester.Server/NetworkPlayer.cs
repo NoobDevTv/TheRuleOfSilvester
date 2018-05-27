@@ -14,8 +14,14 @@ namespace TheRuleOfSilvester.Server
         public RoundMode RoundMode
         {
             get => roundMode;
-            internal set => roundMode = (RoundMode)((int)value % maxRoundMode);
+            internal set
+            {
+                roundMode = (RoundMode)((int)value % maxRoundMode);
+                OnRoundModeChange?.Invoke(this, roundMode);
+            }
         }
+
+        public event EventHandler<RoundMode> OnRoundModeChange;
 
         private RoundMode roundMode;
 

@@ -9,6 +9,8 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     {
         public RoundMode Round => RoundMode.Executing;
 
+        public bool RoundEnd { get; private set; }
+
         public void Start(Game game)
         {
         }

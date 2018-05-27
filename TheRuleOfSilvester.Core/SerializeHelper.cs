@@ -42,21 +42,25 @@ namespace TheRuleOfSilvester.Core
         public static TList Deserialize<T, TList>(byte[] value) where T : IByteSerializable where TList : ICollection<T>, new()
         {
             var tmpList = Activator.CreateInstance<TList>();
-            
-            using (var memoryStream = new MemoryStream(value))
-            {
-                using (var binaryReader = new BinaryReader(memoryStream))
-                {
-                    var count = binaryReader.ReadInt32();
-                    for (int i = 0; i < count; i++)
-                    {
-                        var tmpObj = Activator.CreateInstance<T>();
-                        tmpObj.Deserialize(binaryReader);
-                        tmpList.Add(tmpObj);
-                    }
-                }
 
+            if (value.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream(value))
+                {
+                    using (var binaryReader = new BinaryReader(memoryStream))
+                    {
+                        var count = binaryReader.ReadInt32();
+                        for (int i = 0; i < count; i++)
+                        {
+                            var tmpObj = Activator.CreateInstance<T>();
+                            tmpObj.Deserialize(binaryReader);
+                            tmpList.Add(tmpObj);
+                        }
+                    }
+
+                }
             }
+
             return tmpList;
         }
 

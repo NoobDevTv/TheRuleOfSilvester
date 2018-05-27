@@ -15,11 +15,14 @@ namespace TheRuleOfSilvester
         public bool RoundButton => LastKey == (int)ConsoleKey.R;
         public bool RoundActionButton => LastKey == (int)ConsoleKey.D1;
 
+        public bool Active { get; set; }
+
         public int LastKey { get; set; }
 
         public InputComponent()
         {
             LastKey = -1;
+            Active = true;
         }
 
         internal void Listen()
@@ -28,7 +31,7 @@ namespace TheRuleOfSilvester
 
             while (running)
             {
-                LastKey = (int)Console.ReadKey(true).Key;
+                LastKey = Active ? (int)Console.ReadKey(true).Key : -1;
                 running = LastKey != (int)ConsoleKey.Escape;
             }
         }

@@ -11,6 +11,8 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     {
         public RoundMode Round => RoundMode.Planning;
 
+        public bool RoundEnd { get; private set; }
+
         private readonly int maxMoves = 70;
 
         private Player player;

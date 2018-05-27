@@ -11,23 +11,25 @@ namespace TheRuleOfSilvester.Server.Commands
     public partial class MapCommands
     {
         [Command((short)CommandNames.GetMap)]
-        public static byte[] GetMap(byte[] data) => SerializeHelper.ToByteArray(GameManager.Map);
-
+        public static byte[] GetMap(CommandArgs args) => SerializeHelper.ToByteArray(GameManager.Map);
+        
         [Command((short)CommandNames.RegisterNewPlayer)]
-        public static byte[] RegisterNewPlayer(byte[] data)
-            => BitConverter.GetBytes(GameManager.AddNewPlayer(SerializeHelper.Deserialize<Player>(data)));
+        public static byte[] RegisterNewPlayer(CommandArgs args)
+            => BitConverter.GetBytes(GameManager.AddNewPlayer(SerializeHelper.Deserialize<Player>(args.Data)));
 
 
         [Command((short)CommandNames.GetPlayers)]
-        public static byte[] GetPlayers(byte[] data)
+        public static byte[] GetPlayers(CommandArgs args)
             => SerializeHelper.ToByteArray<Player, List<Player>>(GameManager.Map.Players);
 
         [Command((short)CommandNames.UpdatePlayer)]
-        public static byte[] UpdatePlayer(byte[] data)
+        public static byte[] UpdatePlayer(CommandArgs args)
         {
-            var newPlayer = SerializeHelper.Deserialize<Player>(data);
-            var player = GameManager.Map.Players.FirstOrDefault(p => newPlayer.Id == p.Id);
-            player.Position = newPlayer.Position;
+            //if(!args.HavePlayer)
+            //    return BitConverter.GetBytes((short)CommandNames.UpdatePlayer);
+
+            var newPlayer = SerializeHelper.Deserialize<Player>(args.Data);
+            args.NetworkPlayer.Player.Position = newPlayer.Position;
             return BitConverter.GetBytes((short)CommandNames.UpdatePlayer);
         }
 

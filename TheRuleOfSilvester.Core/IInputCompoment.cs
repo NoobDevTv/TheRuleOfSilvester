@@ -12,9 +12,9 @@ namespace TheRuleOfSilvester.Core
         bool Right { get; }
         bool StartAction { get; }
         bool RoundButton { get; }
+        
         bool RoundActionButton { get; }
         int LastKey { get; set; }
-
-
+        bool Active { get; set; }
     }
 }

@@ -17,32 +17,47 @@ namespace TheRuleOfSilvester.Core
         private TextCell roundModeCell;
         private List<IRoundComponent> rounds;
 
+        private bool firstRun;
+
         public DefaultRoundManagerComponent(Map map)
         {
-            rounds = Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IRoundComponent))).Select(x => (IRoundComponent)Activator.CreateInstance(x)).ToList();
+            rounds = Assembly.GetExecutingAssembly()
+                .GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(IRoundComponent)))
+                .Select(x => (IRoundComponent)Activator.CreateInstance(x))
+                .ToList();
+
             maxRoundMode = Enum.GetValues(typeof(RoundMode)).Cast<int>().Max() + 1;
-            roundModeCell = new TextCell(("RoundMode: " + RoundMode).PadRight(20, ' '), 20, map) { Position = new Point(4, (map.Height * 3) + 3) };
+            Round = rounds.FirstOrDefault(x => x.Round == RoundMode);
+            firstRun = true;
+
+            roundModeCell = new TextCell(("RoundMode: " + RoundMode).PadRight(20, ' '), 20, map)
+            { Position = new Point(4, (map.Height * 3) + 3) };
+
             map.TextCells.Add(roundModeCell);
         }
 
         public void Update(Game game)
         {
-            if (Round != null)
-                Round.Update(game);
+            if (firstRun)
+            {
+                Round.Start(game);
+                firstRun = false;
+            }
 
-            if (!game.InputCompoment.RoundButton)
+            Round?.Update(game);
+
+            if (!game.InputCompoment.RoundButton && Round != null && !Round.RoundEnd)
                 return;
 
-            if (Round != null)
-                Round.Stop(game);
+            Round?.Stop(game);
 
             RoundMode += 1;
             RoundMode = (RoundMode)((int)RoundMode % maxRoundMode);
 
             Round = rounds.FirstOrDefault(x => x.Round == RoundMode);
 
-            if (Round != null)
-                Round.Start(game);
+            Round?.Start(game);
 
             roundModeCell.Text = ("RoundMode: " + RoundMode).PadRight(20, ' ');
         }

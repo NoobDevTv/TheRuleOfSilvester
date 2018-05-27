@@ -6,8 +6,8 @@ namespace TheRuleOfSilvester.Core
 {
     public enum RoundMode
     {
-        Waiting,
         Planning,
+        Waiting,
         Executing
     }
 }

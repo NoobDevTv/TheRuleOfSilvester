@@ -24,5 +24,7 @@ namespace TheRuleOfSilvester.Core
         void TransmitActions(Stack<PlayerAction> actions, Player player);
 
         void EndRound(Player player);
+
+        void WaitingForServer();
     }
 }
