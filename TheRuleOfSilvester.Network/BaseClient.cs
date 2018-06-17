@@ -76,6 +76,7 @@ namespace TheRuleOfSilvester.Network
 
         public byte[] Send(byte[] data)
         {
+
             var resetEvent = new ManualResetEvent(false);
             (byte[] Data, int Length) localData = (new byte[0], 0);
 

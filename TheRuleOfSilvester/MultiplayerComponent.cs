@@ -66,10 +66,12 @@ namespace TheRuleOfSilvester
                             .ToArray());
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
-            => Client.Send(BitConverter
-                            .GetBytes((short)CommandNames.TransmitActions))
-                            .Concat(SerializeHelper.ToByteArray<PlayerAction, List<PlayerAction>>(actions.ToList())
-                            .ToArray());
+            => Client.Send(
+                BitConverter
+                .GetBytes((short)CommandNames.TransmitActions)
+                .Concat(SerializeHelper.ToByteArray<PlayerAction, List<PlayerAction>>(actions.ToList()))
+                .ToArray()
+                );
 
         public void EndRound(Player player)
             => Client.Send(BitConverter.GetBytes((short)CommandNames.EndRound));

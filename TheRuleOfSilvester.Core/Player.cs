@@ -16,6 +16,8 @@ namespace TheRuleOfSilvester.Core
         public List<Cell> Inventory { get; set; }
         public int Id { get; set; }
 
+        public event EventHandler<Cell> PlayerChangedCell;
+
         private readonly int moveSizeX;
         private readonly int moveSizeY;
 
@@ -183,6 +185,8 @@ namespace TheRuleOfSilvester.Core
 
                 ghost.Dispose();
                 ghost = null;
+
+                PlayerChangedCell?.Invoke(this, inventoryCell);
             }
         }
 
