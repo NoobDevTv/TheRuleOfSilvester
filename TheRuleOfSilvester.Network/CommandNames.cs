@@ -8,7 +8,7 @@ namespace TheRuleOfSilvester.Network
     {
         GetMap,
         GetMovableTiles,
-        RegisterNewPlayer,
+        NewPlayer,
         GetPlayers,
         UpdatePlayer,
         TransmitActions,

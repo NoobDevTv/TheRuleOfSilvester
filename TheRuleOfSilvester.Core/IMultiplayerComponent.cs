@@ -17,7 +17,7 @@ namespace TheRuleOfSilvester.Core
 
         Map GetMap();
 
-        void RegisterNewPlayer(Player player);
+        Player Connect(string character);
 
         List<Player> GetPlayers();
 

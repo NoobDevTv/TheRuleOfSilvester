@@ -11,7 +11,7 @@ namespace TheRuleOfSilvester.Core
 {
     public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
-        public Point Position { get=> position; set { OnPropertyChange(position, value); position = value; } }
+        public Point Position { get => position; set { OnPropertyChange(position, value); position = value; } }
 
 
         public int Width => Lines.GetLength(0);
@@ -29,7 +29,7 @@ namespace TheRuleOfSilvester.Core
         }
         public bool Movable { get; set; }
         public Color Color { get; set; }
-        public Map Map { get; protected set; }
+        public Map Map { get; set; }
 
         public BaseElement[,] Lines { get; protected set; }
 
@@ -68,7 +68,7 @@ namespace TheRuleOfSilvester.Core
         {
 
         }
-        
+
         public override string ToString() => $"{GetType()} | {Position.X} : {Position.Y}";
 
         public virtual void Dispose()

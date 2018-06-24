@@ -13,11 +13,6 @@ namespace TheRuleOfSilvester.Server.Commands
         [Command((short)CommandNames.GetMap)]
         public static byte[] GetMap(CommandArgs args) => SerializeHelper.ToByteArray(GameManager.Map);
         
-        [Command((short)CommandNames.RegisterNewPlayer)]
-        public static byte[] RegisterNewPlayer(CommandArgs args)
-            => BitConverter.GetBytes(GameManager.AddNewPlayer(SerializeHelper.Deserialize<Player>(args.Data)));
-
-
         [Command((short)CommandNames.GetPlayers)]
         public static byte[] GetPlayers(CommandArgs args)
             => SerializeHelper.ToByteArray<Player, List<Player>>(GameManager.Map.Players);

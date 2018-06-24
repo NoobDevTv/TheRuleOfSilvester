@@ -30,28 +30,28 @@ namespace TheRuleOfSilvester.Core
             Color = Color.Yellow;
             Lines = new BaseElement[1, 1];
             Name = "Tim";
+            Inventory = new List<Cell>();
         }
-        public Player(Map map) : base(1, 1, map)
+        public Player(Map map, string character = "20050") : base(1, 1, map)
         {
             Inventory = new List<Cell>();
             Lines = new BaseElement[1, 1];
             IsLocal = true;
             moveSizeX = 5;
             moveSizeY = 3;
-
+            Name = "Tim";
             ghostMode = false;
+
             var random = new Random();
 
-            for (int i = 0; i < 3; i++)
-            {
-                var cellTypes = map.MapGenerator?.CellTypes; //TODO: get inventory from server
-                var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map, true);
-                cell.Position = new Point(1 + i * 2, Map.Height + 2);
-                Inventory.Add(cell);
-            }
+            GenerateInventory(map, random);
 
             map.TextCells.Add(new TextCell("Inventory:", map) { Position = new Point(0, (map.Height + 1) * 3 + 1) });
+
+            SetAvatar(character[0]);
         }
+
+
 
         public void SetMap(Map map)
         {
@@ -134,6 +134,18 @@ namespace TheRuleOfSilvester.Core
             if (inputComponent.StartAction)
                 StartAction();
 
+        }
+
+        private void GenerateInventory(Map map, Random random)
+        {
+            var cellTypes = map.MapGenerator?.CellTypes;
+
+            for (int i = 0; i < 3; i++)
+            {
+                var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map, true);
+                cell.Position = new Point(1 + i * 2, Map.Height + 2);
+                Inventory.Add(cell);
+            }
         }
 
         private void MoveCell()
@@ -227,6 +239,11 @@ namespace TheRuleOfSilvester.Core
             binaryWriter.Write(Name);
             binaryWriter.Write(Position.X);
             binaryWriter.Write(Position.Y);
+
+            binaryWriter.Write(Inventory.Count);
+
+            foreach (MapCell cell in Inventory)
+                cell.Serialize(binaryWriter);
         }
 
         public void Deserialize(BinaryReader binaryReader)
@@ -235,6 +252,11 @@ namespace TheRuleOfSilvester.Core
             Id = binaryReader.ReadInt32();
             Name = binaryReader.ReadString();
             Position = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+
+            var count = binaryReader.ReadInt32();
+
+            for (int i = 0; i < count; i++)
+                Inventory.Add(SerializeHelper.DeserializeMapCell(binaryReader));
         }
 
         public override bool Equals(object obj)

@@ -36,11 +36,8 @@ namespace TheRuleOfSilvester.Server
                 if (connectedClient.Registered)
                     GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
 
-                var answer = manager.Dispatch(command: (CommandNames)args.Command, new CommandArgs(player, args.Data));
-
-                if (((CommandNames)args.Command) == CommandNames.RegisterNewPlayer)
-                    GameManager.AddClientToPlayer(BitConverter.ToInt32(answer, 0), connectedClient);
-
+                var answer = manager.Dispatch(command: (CommandNames)args.Command, new CommandArgs(player, connectedClient, args.Data));
+                
                 e.Send(answer, answer.Length);
             };
 

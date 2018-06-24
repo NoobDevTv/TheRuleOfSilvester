@@ -28,7 +28,7 @@ namespace TheRuleOfSilvester.Core
         {
         }
 
-        public void Run(int frame, int ups, bool multiplayer)
+        public void Run(int frame, int ups, bool multiplayer, string character = "20050")
         {
             IsMutliplayer = multiplayer;
 
@@ -38,32 +38,36 @@ namespace TheRuleOfSilvester.Core
             this.frame = frame;
             this.ups = ups;
 
+            if (string.IsNullOrWhiteSpace(character))
+                character = "20050";
+
             if (multiplayer)
             {
                 Map = MultiplayerComponent.GetMap();
+                player = MultiplayerComponent.Connect(character);
+                player.Map = Map;
+                player.IsLocal = true;
+                player.Color = Color.Red;
             }
             else
             {
                 var generator = new MapGenerator();
                 Map = generator.Generate(20, 10);
+
+                player = new Player(Map, character)
+                {
+                    Color = Color.Red,
+                    Position = new Point(2, 1)
+                };
             }
 
-            player = new Player(Map) { Color = Color.Red, Name = Guid.NewGuid().ToString(), Position = new Point(2, 1) };
-            var character = Console.ReadLine(); //TODO move char to UI
-            if (string.IsNullOrWhiteSpace(character))
-                character = "20050";
-            player.SetAvatar(character[0]);
+
             Map.Players.Add(player);
 
             if (RoundComponent == null)
                 RoundComponent = new DefaultRoundManagerComponent(Map);
 
             IsRunning = true;
-
-            if (multiplayer)
-            {
-                MultiplayerComponent.RegisterNewPlayer(player);
-            }
 
             gameThread = new Thread(Loop)
             {

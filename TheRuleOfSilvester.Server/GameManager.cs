@@ -28,23 +28,26 @@ namespace TheRuleOfSilvester.Server
         internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
             => actionCache[player] = playerActions;
 
-        internal static int AddNewPlayer(Player player)
+        internal static Player GetNewPlayer(string character, ConnectedClient client)
         {
             int tmpId = Players.Count + 1;
 
             while (Players.ContainsKey(tmpId))
                 tmpId++;
 
-            Players.Add(tmpId, new NetworkPlayer(player));
+            var player = new Player(Map, character)
+            {
+                Name = Guid.NewGuid().ToString(),
+                Position = new Point(2, 1)
+            };
+            Players.Add(tmpId, new NetworkPlayer(player)
+            {
+                Client = client
+            });
             Map.Players.Add(player);
             player.Id = tmpId;
-            return tmpId;
-        }
-
-        internal static void AddClientToPlayer(int id, ConnectedClient client)
-        {
-            Players[id].Client = client;
-            client.PlayerId = id;
+            client.PlayerId = tmpId;
+            return player;
         }
 
         internal static void EndRound(NetworkPlayer player)
@@ -93,7 +96,11 @@ namespace TheRuleOfSilvester.Server
 
                             cell.Position = new Point(5, Map.Height + 2);
                             cell.Invalid = true;
-                            player.Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
+                            player.Inventory.ForEach(x =>
+                            {
+                                x.Position = new Point(x.Position.X - 2, x.Position.Y);
+                                x.Invalid = true;
+                            });
 
                             break;
                         case ActionType.None:

@@ -95,7 +95,8 @@ namespace TheRuleOfSilvester
                 game.InputCompoment = inputComponent;
                 game.MultiplayerComponent = multiplayerComponent;
                 Console.Write("Choose a character: ");
-                game.Run(60, 60, isMultiplayer);
+                var character = Console.ReadLine();
+                game.Run(60, 60, isMultiplayer, character);
                 inputComponent.Listen();
                 game.Stop();
             }

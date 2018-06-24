@@ -71,6 +71,7 @@ namespace TheRuleOfSilvester.Core.Cells
             binaryWriter.Write(Color.ToArgb());
         }
 
-        public void Deserialize(BinaryReader binaryReader) => throw new NotSupportedException("Use SerializeHelper.DeserializeMapCell instead ;)");
+        public void Deserialize(BinaryReader binaryReader) 
+            => throw new NotSupportedException("Use SerializeHelper.DeserializeMapCell instead ;)");
     }
 }
