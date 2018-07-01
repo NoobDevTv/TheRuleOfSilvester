@@ -11,11 +11,11 @@ namespace TheRuleOfSilvester.Server.Commands
     public partial class MapCommands
     {
         [Command((short)CommandNames.GetMap)]
-        public static byte[] GetMap(CommandArgs args) => SerializeHelper.ToByteArray(GameManager.Map);
+        public static byte[] GetMap(CommandArgs args) => SerializeHelper.Serialize(GameManager.Map);
         
         [Command((short)CommandNames.GetPlayers)]
         public static byte[] GetPlayers(CommandArgs args)
-            => SerializeHelper.ToByteArray<Player, List<Player>>(GameManager.Map.Players);
+            => SerializeHelper.Serialize(GameManager.Map.Players);
 
         [Command((short)CommandNames.UpdatePlayer)]
         public static byte[] UpdatePlayer(CommandArgs args)

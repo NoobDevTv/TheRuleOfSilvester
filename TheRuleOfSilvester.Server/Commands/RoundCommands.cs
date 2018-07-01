@@ -15,7 +15,7 @@ namespace TheRuleOfSilvester.Server.Commands
         [Command((short)CommandNames.TransmitActions)]
         public static byte[] TransmitActions(CommandArgs args)
         {
-            var playerActions = SerializeHelper.Deserialize<PlayerAction, List<PlayerAction>>(args.Data.ToArray());
+            var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
             GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions);
 
             return BitConverter.GetBytes((short)CommandNames.TransmitActions);
@@ -45,7 +45,10 @@ namespace TheRuleOfSilvester.Server.Commands
             resetEvent.WaitOne();
             args.NetworkPlayer.OnRoundModeChange -= setResetEvent;
 
-            return BitConverter.GetBytes((short)CommandNames.Wait);
+            return BitConverter
+                .GetBytes((short)CommandNames.Wait)
+                .Concat(SerializeHelper.Serialize(args.NetworkPlayer.UpdateSets))
+                .ToArray();
         }
     }
 }

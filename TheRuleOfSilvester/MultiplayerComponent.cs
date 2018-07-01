@@ -53,21 +53,23 @@ namespace TheRuleOfSilvester
             => SerializeHelper.Deserialize<Player>(Send(CommandNames.NewPlayer, Encoding.UTF8.GetBytes(character)));
 
         public List<Player> GetPlayers()
-            => SerializeHelper.Deserialize<Player, List<Player>>(Send(CommandNames.GetPlayers));
+            => SerializeHelper.DeserializeToList<Player>(Send(CommandNames.GetPlayers)).ToList();
 
         public void UpdatePlayer(Player player)
-            => Send(CommandNames.UpdatePlayer, SerializeHelper.ToByteArray(player));
+            => Send(CommandNames.UpdatePlayer, SerializeHelper.Serialize(player));
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
             => Send(CommandNames.TransmitActions,
-                SerializeHelper.ToByteArray<PlayerAction, List<PlayerAction>>(actions.ToList()));
+                SerializeHelper.Serialize<PlayerAction>(actions.ToList()));
 
         public void EndRound(Player player)
             => Send(CommandNames.EndRound);
 
-        public void WaitingForServer()
+        public ICollection<UpdateSet> WaitingForServer()
         {
             var answer = Send(CommandNames.Wait);
+
+            return SerializeHelper.DeserializeToList<UpdateSet>(answer.Skip(4).ToArray());
         }
 
         private byte[] Send(CommandNames command, params byte[] data)

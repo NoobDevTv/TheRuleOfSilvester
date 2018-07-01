@@ -21,6 +21,8 @@ namespace TheRuleOfSilvester.Server
             }
         }
 
+        public List<UpdateSet> UpdateSets { get; internal set; }
+
         public event EventHandler<RoundMode> OnRoundModeChange;
 
         private RoundMode roundMode;

@@ -25,6 +25,6 @@ namespace TheRuleOfSilvester.Core
 
         void EndRound(Player player);
 
-        void WaitingForServer();
+        ICollection<UpdateSet> WaitingForServer();
     }
 }

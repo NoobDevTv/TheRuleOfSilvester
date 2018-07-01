@@ -39,9 +39,9 @@ namespace TheRuleOfSilvester.Core
             }
         }
 
-        public static TList Deserialize<T, TList>(byte[] value) where T : IByteSerializable where TList : ICollection<T>, new()
+        public static ICollection<T> DeserializeToList<T>(byte[] value) where T : IByteSerializable, new()
         {
-            var tmpList = Activator.CreateInstance<TList>();
+            var tmpList = Activator.CreateInstance<ICollection<T>>();
 
             if (value.Length > 0)
             {
@@ -75,7 +75,7 @@ namespace TheRuleOfSilvester.Core
             return cell;
         }
 
-        public static byte[] ToByteArray<T>(T obj) where T : IByteSerializable
+        public static byte[] Serialize<T>(T obj) where T : IByteSerializable
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -87,17 +87,16 @@ namespace TheRuleOfSilvester.Core
             }
         }
 
-        public static byte[] ToByteArray<T, TList>(TList list) where T : IByteSerializable where TList : ICollection<T>
+        public static byte[] Serialize<T>(ICollection<T> list) where T : IByteSerializable
         {
             using (var memoryStream = new MemoryStream())
             {
                 using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
                     binaryWriter.Write(list.Count);
+
                     foreach (var obj in list)
-                    {
                         obj.Serialize(binaryWriter);
-                    }
                 }
                 return memoryStream.ToArray();
             }

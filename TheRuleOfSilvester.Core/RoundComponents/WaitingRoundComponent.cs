@@ -13,7 +13,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Start(Game game)
         {
-            game.InputCompoment.Active = false;            
+            game.InputCompoment.Active = false;
         }
 
         public void Stop(Game game)
@@ -23,12 +23,8 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Update(Game game)
         {
-            game.MultiplayerComponent?.WaitingForServer();
-
-            //Temporary logic
-            game.InputCompoment.Active = true;
+            var updateSet = game.MultiplayerComponent?.WaitingForServer();
             RoundEnd = true;
-            //temp
         }
     }
 }

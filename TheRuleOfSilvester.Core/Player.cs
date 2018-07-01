@@ -31,6 +31,8 @@ namespace TheRuleOfSilvester.Core
             Lines = new BaseElement[1, 1];
             Name = "Tim";
             Inventory = new List<Cell>();
+            moveSizeX = 5;
+            moveSizeY = 3;
         }
         public Player(Map map, string character = "20050") : base(1, 1, map)
         {

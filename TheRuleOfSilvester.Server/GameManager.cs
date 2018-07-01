@@ -73,6 +73,8 @@ namespace TheRuleOfSilvester.Server
 
         private static void ExecuteCache()
         {
+            var updateSet = new List<UpdateSet>();
+
             foreach (var cachEntry in actionCache)
             {
                 var player = cachEntry.Key;
@@ -82,7 +84,7 @@ namespace TheRuleOfSilvester.Server
                     switch (action.ActionType)
                     {
                         case ActionType.Moved:
-                            Map.Players.First(p => p == player).Position = action.Point;
+                            Map.Players.First(p => p == player).Position += new Size(action.Point);
                             break;
                         case ActionType.ChangedMapCell:
                             var cell = Map.Cells.First(c => c.Position == action.Point);
@@ -101,7 +103,6 @@ namespace TheRuleOfSilvester.Server
                                 x.Position = new Point(x.Position.X - 2, x.Position.Y);
                                 x.Invalid = true;
                             });
-
                             break;
                         case ActionType.None:
                         default:
@@ -109,9 +110,15 @@ namespace TheRuleOfSilvester.Server
                     }
                 }
 
-                var networkPlayer = Players[player.Id];
-                networkPlayer.RoundMode++;
+                updateSet.Add(new UpdateSet(player, cachEntry.Value));
+            }
 
+            foreach (var player in actionCache.Keys)
+            {
+                var networkPlayer = Players[player.Id];
+                
+                networkPlayer.UpdateSets = updateSet;
+                networkPlayer.RoundMode++;
             }
         }
 
