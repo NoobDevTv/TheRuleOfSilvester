@@ -68,8 +68,8 @@ namespace TheRuleOfSilvester
         public ICollection<UpdateSet> WaitingForServer()
         {
             var answer = Send(CommandNames.Wait);
-
-            return SerializeHelper.DeserializeToList<UpdateSet>(answer.Skip(4).ToArray());
+            
+            return SerializeHelper.DeserializeToList<UpdateSet>(answer);
         }
 
         private byte[] Send(CommandNames command, params byte[] data)

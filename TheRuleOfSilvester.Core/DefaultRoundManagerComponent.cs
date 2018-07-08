@@ -51,6 +51,7 @@ namespace TheRuleOfSilvester.Core
                 return;
 
             Round?.Stop(game);
+            Round.RoundEnd = false;
 
             RoundMode += 1;
             RoundMode = (RoundMode)((int)RoundMode % maxRoundMode);

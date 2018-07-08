@@ -7,7 +7,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     public interface IRoundComponent
     {
         RoundMode Round { get; }
-        bool RoundEnd { get; }
+        bool RoundEnd { get; set; }
         
         void Update(Game game);
         void Start(Game game);

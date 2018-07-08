@@ -9,7 +9,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     {
         public RoundMode Round => RoundMode.Waiting;
 
-        public bool RoundEnd { get; private set; }
+        public bool RoundEnd { get; set; }
 
         public void Start(Game game)
         {
@@ -23,7 +23,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Update(Game game)
         {
-            var updateSet = game.MultiplayerComponent?.WaitingForServer();
+            game.CurrentUpdateSets = game.MultiplayerComponent?.WaitingForServer();
             RoundEnd = true;
         }
     }

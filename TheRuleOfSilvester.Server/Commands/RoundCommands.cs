@@ -39,16 +39,13 @@ namespace TheRuleOfSilvester.Server.Commands
 
             args.NetworkPlayer.OnRoundModeChange += setResetEvent;
 
-            if (args.NetworkPlayer.RoundMode != RoundMode.Planning)
-                resetEvent.Reset();
+            if (args.NetworkPlayer.RoundMode == RoundMode.Executing)
+                resetEvent.Set();
 
             resetEvent.WaitOne();
             args.NetworkPlayer.OnRoundModeChange -= setResetEvent;
-
-            return BitConverter
-                .GetBytes((short)CommandNames.Wait)
-                .Concat(SerializeHelper.Serialize(args.NetworkPlayer.UpdateSets))
-                .ToArray();
+            
+            return SerializeHelper.Serialize(args.NetworkPlayer.UpdateSets);
         }
     }
 }

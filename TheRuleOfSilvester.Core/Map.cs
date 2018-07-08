@@ -20,7 +20,7 @@ namespace TheRuleOfSilvester.Core
         public int Height { get; set; }
         public int Width { get; set; }
         public BasicMapGenerator MapGenerator { get; private set; }
-        
+
         public Map(int width, int height, BasicMapGenerator mapGenerator)
         {
             Players = new List<Player>();
@@ -54,6 +54,32 @@ namespace TheRuleOfSilvester.Core
 
         }
 
+        public Cell ChangeCellOnPosition(Cell cell, Point position)
+        {
+            var mapCell = Cells.First(x => x.Position == position);
+
+            cell.Position = position;
+            Cells.Remove(mapCell);
+            Cells.Add(cell);
+
+            mapCell.Position = new Point(1, Height + 2);
+            cell.Invalid = true;
+            mapCell.Invalid = true;
+
+            var cellsToNormalize = Cells.Where(c =>
+                                  c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y - 1
+                              || c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y + 1
+                              || c.Position.X == cell.Position.X - 1 && c.Position.Y == cell.Position.Y
+                              || c.Position.X == cell.Position.X + 1 && c.Position.Y == cell.Position.Y)
+                              .Select(x => (MapCell)x).ToList();
+            cellsToNormalize.ForEach(x => x.NormalizeLayering());
+
+            (cell as MapCell).NormalizeLayering();
+            (mapCell as MapCell).NormalizeLayering();
+
+            return mapCell;
+        }
+
         public void Serialize(BinaryWriter writer)
         {
             writer.Write(Height);
@@ -76,10 +102,10 @@ namespace TheRuleOfSilvester.Core
             Width = binaryReader.ReadInt32();
 
             SerializeHelper.Map = this;
-            var length1= binaryReader.ReadInt32();
+            var length1 = binaryReader.ReadInt32();
             for (int i = 0; i < length1; i++)
                 Cells.Add(SerializeHelper.DeserializeMapCell(binaryReader));
-            
+
             var stringList = new List<Guid>();
             var length = binaryReader.ReadInt32();
             for (int i = 0; i < length; i++)
@@ -90,5 +116,6 @@ namespace TheRuleOfSilvester.Core
             foreach (MapCell ourCell in Cells)
                 ourCell.NormalizeLayering();
         }
+
     }
 }

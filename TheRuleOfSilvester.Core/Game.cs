@@ -9,17 +9,18 @@ namespace TheRuleOfSilvester.Core
 {
     public class Game : IDisposable
     {
+        public ICollection<UpdateSet> CurrentUpdateSets { get; internal set; }
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }
         public IRoundManagerComponent RoundComponent { get; set; }
+        public int Frames { get; private set; }
 
         public Map Map { get; private set; }
 
         public bool IsRunning { get; private set; }
         public bool IsMutliplayer { get; private set; }
 
-        private int frame;
         private int ups;
         private Thread gameThread;
         private Player player;
@@ -35,7 +36,7 @@ namespace TheRuleOfSilvester.Core
             if (multiplayer)
                 MultiplayerComponent.Connect();
 
-            this.frame = frame;
+            Frames = frame;
             this.ups = ups;
 
             if (string.IsNullOrWhiteSpace(character))
@@ -112,7 +113,7 @@ namespace TheRuleOfSilvester.Core
             while (IsRunning)
             {
                 Update();
-                Thread.Sleep(1000 / frame);
+                Thread.Sleep(1000 / Frames);
             }
         }
 

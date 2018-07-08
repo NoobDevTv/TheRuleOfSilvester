@@ -232,7 +232,7 @@ namespace TheRuleOfSilvester.Core
             if (cell != null)
                 cell.Invalid = true;
         }
-
+        public void MoveGeneralRelative(Point move) => MoveGeneral(Position + new Size(move));
 
         public void Serialize(BinaryWriter binaryWriter)
         {
@@ -268,5 +268,11 @@ namespace TheRuleOfSilvester.Core
 
             return false;
         }
+
+        public static bool operator ==(Player player1, Player player2)
+            => player1.Equals(player2);
+
+        public static bool operator !=(Player player1, Player player2)
+            => !player1.Equals(player2);
     }
 }

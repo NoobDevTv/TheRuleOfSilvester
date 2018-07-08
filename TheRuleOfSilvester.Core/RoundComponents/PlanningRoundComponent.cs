@@ -12,7 +12,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
     {
         public RoundMode Round => RoundMode.Planning;
 
-        public bool RoundEnd { get; private set; }
+        public bool RoundEnd { get; set; }
 
         private readonly int maxMoves = 70;
 
@@ -40,6 +40,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Start(Game game)
         {
+            game.InputCompoment.Active = true;
             player = game.Map.Players.FirstOrDefault(x => x.IsLocal);
             actions = new Stack<PlayerAction>(maxMoves);
             Subscribe();
@@ -74,34 +75,13 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 case ActionType.ChangedMapCell:
 
                     var inventoryCell = player.Inventory.Last();
-                    var mapCell = game.Map.Cells.First(x => x.Position == move.Point);
-
                     player.Inventory.Remove(inventoryCell);
-                    game.Map.Cells.Remove(mapCell);
 
-                    inventoryCell.Position = move.Point;
-                    game.Map.Cells.Add(inventoryCell);
-
-
-                    mapCell.Position = new Point(1, game.Map.Height + 2);
-                    inventoryCell.Invalid = true;
-                    mapCell.Invalid = true;
+                    var mapCell = game.Map.ChangeCellOnPosition(inventoryCell, move.Point);
 
                     //TODO Reduce duplicated code
                     player.Inventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
                     player.Inventory.Insert(0, mapCell);
-
-                    var cellsToNormalize = game.Map.Cells.Where(c =>
-                                          c.Position.X == inventoryCell.Position.X && c.Position.Y == inventoryCell.Position.Y - 1
-                                      || c.Position.X == inventoryCell.Position.X && c.Position.Y == inventoryCell.Position.Y + 1
-                                      || c.Position.X == inventoryCell.Position.X - 1 && c.Position.Y == inventoryCell.Position.Y
-                                      || c.Position.X == inventoryCell.Position.X + 1 && c.Position.Y == inventoryCell.Position.Y)
-                                      .Select(x => (MapCell)x).ToList();
-                    cellsToNormalize.ForEach(x => x.NormalizeLayering());
-
-                    (inventoryCell as MapCell).NormalizeLayering();
-                    (mapCell as MapCell).NormalizeLayering();
-
                     break;
             }
         }

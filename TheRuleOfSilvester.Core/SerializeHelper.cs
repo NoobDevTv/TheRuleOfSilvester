@@ -41,7 +41,7 @@ namespace TheRuleOfSilvester.Core
 
         public static ICollection<T> DeserializeToList<T>(byte[] value) where T : IByteSerializable, new()
         {
-            var tmpList = Activator.CreateInstance<ICollection<T>>();
+            var tmpList = Activator.CreateInstance<List<T>>();
 
             if (value.Length > 0)
             {
