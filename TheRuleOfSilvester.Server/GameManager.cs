@@ -53,6 +53,10 @@ namespace TheRuleOfSilvester.Server
         internal static void EndRound(NetworkPlayer player)
         {
             player.RoundMode++;
+
+            if (player.UpdateSets.Count > 0)
+                player.UpdateSets.Clear();
+
             CheckAllPlayersAsync();
         }
 
@@ -73,7 +77,7 @@ namespace TheRuleOfSilvester.Server
 
         private static void ExecuteCache()
         {
-            var updateSet = new List<UpdateSet>();
+            var updateSets = new List<UpdateSet>();
 
             foreach (var cachEntry in actionCache)
             {
@@ -110,14 +114,14 @@ namespace TheRuleOfSilvester.Server
                     }
                 }
 
-                updateSet.Add(new UpdateSet(player, cachEntry.Value));
+                updateSets.Add(new UpdateSet(player, cachEntry.Value));
             }
 
             foreach (var player in actionCache.Keys)
             {
-                var networkPlayer = Players[player.Id];
+                var networkPlayer = Players[player.Id]; 
                 
-                networkPlayer.UpdateSets = updateSet;
+                networkPlayer.UpdateSets = updateSets;
                 networkPlayer.RoundMode++;
             }
         }

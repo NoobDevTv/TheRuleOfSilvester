@@ -89,15 +89,19 @@ namespace TheRuleOfSilvester.Core
 
         public static byte[] Serialize<T>(ICollection<T> list) where T : IByteSerializable
         {
+            if (list == null)
+                return new byte[0];
+
             using (var memoryStream = new MemoryStream())
             {
                 using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
                     binaryWriter.Write(list.Count);
 
-                    foreach (var obj in list)
+                    foreach (var obj in list.ToList())
                         obj.Serialize(binaryWriter);
                 }
+
                 return memoryStream.ToArray();
             }
         }

@@ -31,21 +31,10 @@ namespace TheRuleOfSilvester.Server.Commands
         [Command((short)CommandNames.Wait)]
         public static byte[] Wait(CommandArgs args)
         {
-            var resetEvent = new ManualResetEvent(true);
-            void setResetEvent(object sender, RoundMode roundMode)
-            {
-                resetEvent.Set();
-            }
-
-            args.NetworkPlayer.OnRoundModeChange += setResetEvent;
-
-            if (args.NetworkPlayer.RoundMode == RoundMode.Executing)
-                resetEvent.Set();
-
-            resetEvent.WaitOne();
-            args.NetworkPlayer.OnRoundModeChange -= setResetEvent;
-            
-            return SerializeHelper.Serialize(args.NetworkPlayer.UpdateSets);
+            return BitConverter
+                 .GetBytes(args.NetworkPlayer.RoundMode == RoundMode.Executing)
+                 .Concat(SerializeHelper.Serialize(args.NetworkPlayer.UpdateSets ?? new List<UpdateSet>()))
+                 .ToArray();
         }
     }
 }

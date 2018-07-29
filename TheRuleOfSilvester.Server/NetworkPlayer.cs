@@ -33,6 +33,7 @@ namespace TheRuleOfSilvester.Server
         {
             Player = player;
             maxRoundMode = Enum.GetValues(typeof(RoundMode)).Cast<int>().Max() + 1;
+            UpdateSets = new List<UpdateSet>();
         }
 
     }

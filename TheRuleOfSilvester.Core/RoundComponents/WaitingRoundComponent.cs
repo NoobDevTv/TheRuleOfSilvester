@@ -18,13 +18,22 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Stop(Game game)
         {
-            //game.MultiplayerComponent?.EndRound(game.Map.Players.First(p => p.IsLocal));
+            game.MultiplayerComponent?.EndRound();
         }
 
         public void Update(Game game)
         {
-            game.CurrentUpdateSets = game.MultiplayerComponent?.WaitingForServer();
-            RoundEnd = true;
+            if (game.MultiplayerComponent == null)
+            {
+                RoundEnd = true;
+                return;
+            }
+
+            if (game.MultiplayerComponent.WaitingForServer(out ICollection<UpdateSet> updateSet))
+            {
+                game.CurrentUpdateSets = updateSet;
+                RoundEnd = true;
+            };
         }
     }
 }

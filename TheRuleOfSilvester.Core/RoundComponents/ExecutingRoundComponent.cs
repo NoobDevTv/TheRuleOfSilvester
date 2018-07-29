@@ -23,7 +23,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Stop(Game game)
         {
-            game.MultiplayerComponent?.EndRound(game.Map.Players.First(p => p.IsLocal));
+            game.MultiplayerComponent?.EndRound();
         }
 
         public void Update(Game game)
@@ -31,6 +31,9 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             updateCount++;
 
             if (game.Frames / 2 != updateCount)
+                return;
+
+            if (CurrentUpdateSets.Count < 1)
                 return;
 
             (Player player, PlayerAction action) = CurrentUpdateSets.Pop();
@@ -43,14 +46,14 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     localPlayer.MoveGeneralRelative(action.Point);
                     break;
                 case ActionType.ChangedMapCell:
-                    var inventoryCell = localPlayer.Inventory.First();
+                    var inventoryCell = localPlayer.Inventory.First(x => x.Position.X == 1);
                     localPlayer.Inventory.Remove(inventoryCell);
 
-                    var mapCell = game.Map.ChangeCellOnPosition(inventoryCell, action.Point);
+                    var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point);
 
-                    //TODO Position gets -1 sometimes
                     localPlayer.Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
                     localPlayer.Inventory.Insert(0, mapCell);
+                    localPlayer.Invalid = true;
                     break;
                 case ActionType.None:
                 default:

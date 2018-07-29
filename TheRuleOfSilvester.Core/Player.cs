@@ -268,11 +268,30 @@ namespace TheRuleOfSilvester.Core
 
             return false;
         }
+        public static bool Equals(Player player1, Player player2)
+        {
+            if (((object)player1) == null && ((object)player2) == null)
+            {
+                return true;
+            }
+            else if (((object)player1) == null && ((object)player2) != null ||
+                     ((object)player1) != null && ((object)player2) == null)
+            {
+                return false;
+            }
+            else
+            {
+                return player1.Equals(player2);
+            }
+
+        }
 
         public static bool operator ==(Player player1, Player player2)
-            => player1.Equals(player2);
+            => Equals(player1, player2);
+
+
 
         public static bool operator !=(Player player1, Player player2)
-            => !player1.Equals(player2);
+            => !Equals(player1, player2);
     }
 }

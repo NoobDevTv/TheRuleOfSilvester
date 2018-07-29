@@ -54,15 +54,15 @@ namespace TheRuleOfSilvester.Core
 
         }
 
-        public Cell ChangeCellOnPosition(Cell cell, Point position)
+        public Cell SwapInventoryAndMapCell(Cell cell, Point position, int x = 5)
         {
-            var mapCell = Cells.First(x => x.Position == position);
+            var mapCell = Cells.First(c => c.Position == position);
 
             cell.Position = position;
             Cells.Remove(mapCell);
             Cells.Add(cell);
 
-            mapCell.Position = new Point(1, Height + 2);
+            mapCell.Position = new Point(x, Height + 2);
             cell.Invalid = true;
             mapCell.Invalid = true;
 
@@ -71,8 +71,8 @@ namespace TheRuleOfSilvester.Core
                               || c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y + 1
                               || c.Position.X == cell.Position.X - 1 && c.Position.Y == cell.Position.Y
                               || c.Position.X == cell.Position.X + 1 && c.Position.Y == cell.Position.Y)
-                              .Select(x => (MapCell)x).ToList();
-            cellsToNormalize.ForEach(x => x.NormalizeLayering());
+                              .Select(c => (MapCell)c).ToList();
+            cellsToNormalize.ForEach(c => c.NormalizeLayering());
 
             (cell as MapCell).NormalizeLayering();
             (mapCell as MapCell).NormalizeLayering();

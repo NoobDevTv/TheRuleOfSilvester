@@ -21,29 +21,31 @@ namespace TheRuleOfSilvester
 
         public void Update(Game game)
         {
-            var tmpList = GetPlayers();
-            foreach (var player in tmpList)
-            {
-                var tmpPlayer = game.Map.Players.FirstOrDefault(p => p.Name == player.Name);
+            //TODO: Implement waiting screen
+            //var tmpList = GetPlayers();
 
-                if (tmpPlayer == null)
-                {
-                    player.SetMap(game.Map);
-                    game.Map.Players.Add(player);
-                    player.Invalid = true;
-                }
-                else if (tmpPlayer.IsLocal)
-                {
-                    //UpdatePlayer(tmpPlayer);
-                    continue;
-                }
-                else
-                {
-                    tmpPlayer.MoveGeneral(player.Position);
-                    tmpPlayer.Invalid = true;
-                }
+            //foreach (var player in tmpList)
+            //{
+            //    var tmpPlayer = game.Map.Players.FirstOrDefault(p => p.Name == player.Name);
 
-            }
+            //    if (tmpPlayer == null)
+            //    {
+            //        player.SetMap(game.Map);
+            //        game.Map.Players.Add(player);
+            //        player.Invalid = true;
+            //    }
+            //    else if (tmpPlayer.IsLocal)
+            //    {
+            //        //UpdatePlayer(tmpPlayer);
+            //        continue;
+            //    }
+            //    else
+            //    {
+            //        tmpPlayer.MoveGeneral(player.Position);
+            //        tmpPlayer.Invalid = true;
+            //    }
+
+            //}
         }
 
         public Map GetMap()
@@ -62,14 +64,15 @@ namespace TheRuleOfSilvester
             => Send(CommandNames.TransmitActions,
                 SerializeHelper.Serialize<PlayerAction>(actions.ToList()));
 
-        public void EndRound(Player player)
+        public void EndRound()
             => Send(CommandNames.EndRound);
 
-        public ICollection<UpdateSet> WaitingForServer()
+        public bool WaitingForServer(out ICollection<UpdateSet> updateSet)
         {
             var answer = Send(CommandNames.Wait);
-            
-            return SerializeHelper.DeserializeToList<UpdateSet>(answer);
+
+            updateSet = SerializeHelper.DeserializeToList<UpdateSet>(answer.Skip(sizeof(bool)).ToArray());
+            return BitConverter.ToBoolean(answer, 0);
         }
 
         private byte[] Send(CommandNames command, params byte[] data)

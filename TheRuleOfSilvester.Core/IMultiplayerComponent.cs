@@ -23,8 +23,8 @@ namespace TheRuleOfSilvester.Core
 
         void TransmitActions(Stack<PlayerAction> actions, Player player);
 
-        void EndRound(Player player);
+        void EndRound();
 
-        ICollection<UpdateSet> WaitingForServer();
+        bool WaitingForServer(out ICollection<UpdateSet> updateSet);
     }
 }
