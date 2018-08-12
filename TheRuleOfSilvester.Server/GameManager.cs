@@ -15,15 +15,12 @@ namespace TheRuleOfSilvester.Server
         public static Dictionary<int, NetworkPlayer> Players { get; private set; }
         private static readonly Dictionary<Player, List<PlayerAction>> actionCache;
 
-
         static GameManager()
         {
             Map = GenerateMap();
             Players = new Dictionary<int, NetworkPlayer>();
             actionCache = new Dictionary<Player, List<PlayerAction>>();
         }
-
-        private static Map GenerateMap() => new MapGenerator().Generate(20, 10);
 
         internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
             => actionCache[player] = playerActions;
@@ -59,6 +56,9 @@ namespace TheRuleOfSilvester.Server
 
             CheckAllPlayersAsync();
         }
+
+        private static Map GenerateMap()
+            => new MapGenerator().Generate(20, 10);
 
         private static void CheckAllPlayersAsync()
         {
@@ -119,8 +119,8 @@ namespace TheRuleOfSilvester.Server
 
             foreach (var player in actionCache.Keys)
             {
-                var networkPlayer = Players[player.Id]; 
-                
+                var networkPlayer = Players[player.Id];
+
                 networkPlayer.UpdateSets = updateSets;
                 networkPlayer.RoundMode++;
             }

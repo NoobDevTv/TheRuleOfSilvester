@@ -12,41 +12,36 @@ namespace TheRuleOfSilvester
         public Client Client { get; private set; }
         public int Port { get; set; }
         public string Host { get; set; }
+        public ServerStatus CurrentServerStatus { get; set; }
 
-        public MultiplayerComponent() => Client = new Client();
+        public MultiplayerComponent()
+            => Client = new Client();
 
-        public void Connect() => Client.Connect(Host, Port);
+        public void Connect()
+            => Client.Connect(Host, Port);
 
-        public void Disconnect() => Client.Disconnect();
+        public void Disconnect()
+            => Client.Disconnect();
 
         public void Update(Game game)
         {
             //TODO: Implement waiting screen
-            //var tmpList = GetPlayers();
+            CurrentServerStatus = GetServerStatus();
 
-            //foreach (var player in tmpList)
-            //{
-            //    var tmpPlayer = game.Map.Players.FirstOrDefault(p => p.Name == player.Name);
+            switch (CurrentServerStatus)
+            {
+                case ServerStatus.Started:
+                    game.CurrentGameStatus = GameStatus.Running;
+                    game.Map.Players.AddRange(GetPlayers());
+                    break;
+                default:
+                    break;
+            }
 
-            //    if (tmpPlayer == null)
-            //    {
-            //        player.SetMap(game.Map);
-            //        game.Map.Players.Add(player);
-            //        player.Invalid = true;
-            //    }
-            //    else if (tmpPlayer.IsLocal)
-            //    {
-            //        //UpdatePlayer(tmpPlayer);
-            //        continue;
-            //    }
-            //    else
-            //    {
-            //        tmpPlayer.MoveGeneral(player.Position);
-            //        tmpPlayer.Invalid = true;
-            //    }
-
-            //}
         }
+
+        public ServerStatus GetServerStatus()
+            => (ServerStatus)Send(CommandNames.GetStatus)[0];
 
         public Map GetMap()
             => SerializeHelper.Deserialize<Map>(Send(CommandNames.GetMap));
@@ -67,7 +62,7 @@ namespace TheRuleOfSilvester
         public void EndRound()
             => Send(CommandNames.EndRound);
 
-        public bool WaitingForServer(out ICollection<UpdateSet> updateSet)
+        public bool GetUpdateSet(out ICollection<UpdateSet> updateSet)
         {
             var answer = Send(CommandNames.Wait);
 

@@ -20,6 +20,7 @@ namespace TheRuleOfSilvester.Server
                 OnRoundModeChange?.Invoke(this, roundMode);
             }
         }
+        public ServerStatus CurrentServerStatus { get; set; }
 
         public List<UpdateSet> UpdateSets { get; internal set; }
 
@@ -34,6 +35,7 @@ namespace TheRuleOfSilvester.Server
             Player = player;
             maxRoundMode = Enum.GetValues(typeof(RoundMode)).Cast<int>().Max() + 1;
             UpdateSets = new List<UpdateSet>();
+            CurrentServerStatus = ServerStatus.Waiting;
         }
 
     }

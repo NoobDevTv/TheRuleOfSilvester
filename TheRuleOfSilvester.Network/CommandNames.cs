@@ -13,6 +13,7 @@ namespace TheRuleOfSilvester.Network
         UpdatePlayer,
         TransmitActions,
         EndRound,
-        Wait
+        Wait,
+        GetStatus
     }
 }

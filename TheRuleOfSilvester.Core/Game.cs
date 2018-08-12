@@ -7,19 +7,23 @@ using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
-    public class Game : IDisposable
+    public class Game : IDisposable, IGameStatus
     {
         public ICollection<UpdateSet> CurrentUpdateSets { get; internal set; }
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }
         public IRoundManagerComponent RoundComponent { get; set; }
+        public IWaitingComponent WaitingComponent { get; set; }
+        public GameStatus CurrentGameStatus { get; set; }
+
         public int Frames { get; private set; }
 
         public Map Map { get; private set; }
 
         public bool IsRunning { get; private set; }
         public bool IsMutliplayer { get; private set; }
+
 
         private int ups;
         private Thread gameThread;
@@ -90,14 +94,41 @@ namespace TheRuleOfSilvester.Core
 
         public void Update()
         {
+            BeforeUpdate();
+            SystemUpdate();
+            UiUpdate();
+            AfterUpdate();
+        }
+
+        private void BeforeUpdate()
+        {
+
+        }
+
+        private void SystemUpdate()
+        {
             if (IsMutliplayer)
                 MultiplayerComponent.Update(this);
 
+            WaitingComponent?.Update(this);
+
+            if (CurrentGameStatus == GameStatus.Running)
+                GameUpdate();
+        }
+
+        private void GameUpdate()
+        {
             player.Update(this);
-
             RoundComponent.Update(this);
+        }
 
+        private void UiUpdate()
+        {
             DrawComponent.Draw(Map);
+        }
+
+        private void AfterUpdate()
+        {
             InputCompoment.LastKey = -1;
         }
 

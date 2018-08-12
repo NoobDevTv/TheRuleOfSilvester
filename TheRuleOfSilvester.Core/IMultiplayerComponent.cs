@@ -10,6 +10,7 @@ namespace TheRuleOfSilvester.Core
         Client Client { get; }
         int Port { get; }
         string Host { get; }
+        ServerStatus CurrentServerStatus { get; }
 
         void Connect();
 
@@ -25,6 +26,8 @@ namespace TheRuleOfSilvester.Core
 
         void EndRound();
 
-        bool WaitingForServer(out ICollection<UpdateSet> updateSet);
+        bool GetUpdateSet(out ICollection<UpdateSet> updateSet);
+
+        ServerStatus GetServerStatus();
     }
 }
