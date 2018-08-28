@@ -18,7 +18,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Stop(Game game)
         {
-            game.MultiplayerComponent?.EndRound();
+            //game.MultiplayerComponent?.EndRound();
         }
 
         public void Update(Game game)

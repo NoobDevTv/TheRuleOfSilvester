@@ -22,7 +22,17 @@ namespace TheRuleOfSilvester.Server
                 Console.CancelKeyPress += (s, e) => mResetEvent.Reset();
                 server.OnClientConnected += ServerOnClientConnected;
                 Console.WriteLine("Server has started, waiting for clients");
+                string command;
+                do
+                {
+                    command = "";
+                    command = Console.ReadLine();
+                } while (command.ToLower() != "!start");
+
+                Console.WriteLine("Game started.");
+                GameManager.StartGame();
                 mResetEvent.WaitOne();
+                GameManager.StopGame();
             }
         }
 

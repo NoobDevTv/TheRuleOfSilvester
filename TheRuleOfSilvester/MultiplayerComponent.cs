@@ -32,7 +32,9 @@ namespace TheRuleOfSilvester
             {
                 case ServerStatus.Started:
                     game.CurrentGameStatus = GameStatus.Running;
-                    game.Map.Players.AddRange(GetPlayers());
+                    var players = GetPlayers();
+                    players.ForEach(x => x.Map = game.Map);
+                    game.Map.Players.AddRange(players);
                     break;
                 default:
                     break;
@@ -46,7 +48,7 @@ namespace TheRuleOfSilvester
         public Map GetMap()
             => SerializeHelper.Deserialize<Map>(Send(CommandNames.GetMap));
 
-        public Player Connect(string character)
+        public Player ConnectPlayer(string character)
             => SerializeHelper.Deserialize<Player>(Send(CommandNames.NewPlayer, Encoding.UTF8.GetBytes(character)));
 
         public List<Player> GetPlayers()

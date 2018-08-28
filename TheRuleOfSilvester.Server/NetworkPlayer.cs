@@ -20,7 +20,14 @@ namespace TheRuleOfSilvester.Server
                 OnRoundModeChange?.Invoke(this, roundMode);
             }
         }
-        public ServerStatus CurrentServerStatus { get; set; }
+        public ServerStatus CurrentServerStatus { get
+            {
+                var tmp = currentServerStatus;
+                if (tmp == ServerStatus.Started)
+                    currentServerStatus = ServerStatus.Ok;
+                return tmp;
+            } set { currentServerStatus = value; } }
+        private ServerStatus currentServerStatus;
 
         public List<UpdateSet> UpdateSets { get; internal set; }
 

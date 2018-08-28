@@ -49,7 +49,7 @@ namespace TheRuleOfSilvester.Core
             if (multiplayer)
             {
                 Map = MultiplayerComponent.GetMap();
-                player = MultiplayerComponent.Connect(character);
+                player = MultiplayerComponent.ConnectPlayer(character);
                 player.Map = Map;
                 player.IsLocal = true;
                 player.Color = Color.Red;
@@ -64,6 +64,7 @@ namespace TheRuleOfSilvester.Core
                     Color = Color.Red,
                     Position = new Point(2, 1)
                 };
+                CurrentGameStatus = GameStatus.Running;
             }
 
 
@@ -124,7 +125,10 @@ namespace TheRuleOfSilvester.Core
 
         private void UiUpdate()
         {
-            DrawComponent.Draw(Map);
+            if (CurrentGameStatus == GameStatus.Running)
+                DrawComponent.Draw(Map);
+            else
+                DrawComponent.DrawCells(new List<TextCell> {new TextCell("NOT Running", Map)});
         }
 
         private void AfterUpdate()

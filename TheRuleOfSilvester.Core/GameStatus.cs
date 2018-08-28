@@ -6,8 +6,9 @@ namespace TheRuleOfSilvester.Core
 {
     public enum GameStatus
     {
-        Stoped,
+        Stopped,
         Paused,
-        Running
+        Running,
+        Waiting
     }
 }

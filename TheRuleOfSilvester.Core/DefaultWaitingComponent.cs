@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -11,7 +12,7 @@ namespace TheRuleOfSilvester.Core
         {
             if (game.IsMutliplayer)
             {
-                WaitForServer(game.MultiplayerComponent);
+                WaitForServer(game);
             }
             else
             {
@@ -20,9 +21,14 @@ namespace TheRuleOfSilvester.Core
 
         }
 
-        private void WaitForServer(IMultiplayerComponent multiplayerComponent)
+        private void WaitForServer(Game game)
         {
-            var status = multiplayerComponent.CurrentServerStatus;
+            var status = game.MultiplayerComponent.CurrentServerStatus;
+
+            if (status == ServerStatus.Waiting)
+                game.CurrentGameStatus = GameStatus.Waiting;
+            else if (status == ServerStatus.Started)
+                game.CurrentGameStatus = GameStatus.Running;
         }
     }
 }

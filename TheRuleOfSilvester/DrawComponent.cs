@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester
             Console.SetCursorPosition(Console.WindowWidth - 2, Console.WindowHeight - 2);
         }
 
-        private void DrawCells<T>(List<T> cells) where T : Cell
+        public void DrawCells<T>(List<T> cells) where T : Cell
         {
             foreach (var cell in cells.ToArray())
             {
@@ -40,7 +40,7 @@ namespace TheRuleOfSilvester
                     {
                         for (int h = 0; h < cell.Lines.GetLength(1); h++)
                         {
-                            Console.SetCursorPosition(cell.Position.X * cell.Width + l, cell.Position.Y * cell.Height + h);
+                            Console.SetCursorPosition((cell.Position.X * cell.Width) + l, (cell.Position.Y * cell.Height) + h);
 
                             if (cell.Layer[l, h] != null)
                                 Console.Write(BaseElementToChar(cell.Layer[l, h]));
@@ -88,5 +88,6 @@ namespace TheRuleOfSilvester
                     return (char)baseElement.ElementID;
             }
         }
+        
     }
 }

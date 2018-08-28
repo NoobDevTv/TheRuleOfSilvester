@@ -47,6 +47,17 @@ namespace TheRuleOfSilvester.Server
             return player;
         }
 
+        internal static void StopGame()
+        {
+            
+        }
+
+        internal static void StartGame()
+        {
+            foreach (var player in Players)
+                player.Value.CurrentServerStatus = ServerStatus.Started;
+        }
+
         internal static void EndRound(NetworkPlayer player)
         {
             player.RoundMode++;
