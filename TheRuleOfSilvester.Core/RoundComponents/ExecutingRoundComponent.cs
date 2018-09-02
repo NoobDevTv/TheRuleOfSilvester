@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 
 namespace TheRuleOfSilvester.Core.RoundComponents
 {
-    class ExecutingRoundComponent : IRoundComponent
+    internal class ExecutingRoundComponent : IRoundComponent
     {
         public RoundMode Round => RoundMode.Executing;
 
@@ -21,10 +19,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 .SelectMany(s => s.PlayerActions.Select(p => (s.Player, p))));
         }
 
-        public void Stop(Game game)
-        {
-            game.MultiplayerComponent?.EndRound();
-        }
+        public void Stop(Game game) => game.MultiplayerComponent?.EndRound();
 
         public void Update(Game game)
         {
@@ -38,22 +33,23 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
             (Player player, PlayerAction action) = CurrentUpdateSets.Pop();
 
-            var localPlayer = game.Map.Players.First(p => p == player);
+            var localUpdatePlayer = game.Map.Players.First(p => p == player);
 
             switch (action.ActionType)
             {
                 case ActionType.Moved:
-                    localPlayer.MoveGeneralRelative(action.Point);
+                    localUpdatePlayer.MoveGeneralRelative(action.Point);
+                    game.Map.Players./*Where(p => p.Position == action.Point).ToList().*/ForEach(x => x.Invalid = true);
                     break;
                 case ActionType.ChangedMapCell:
-                    var inventoryCell = localPlayer.Inventory.First(x => x.Position.X == 1);
-                    localPlayer.Inventory.Remove(inventoryCell);
+                    var inventoryCell = localUpdatePlayer.Inventory.First(x => x.Position.X == 1);
+                    localUpdatePlayer.Inventory.Remove(inventoryCell);
 
                     var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point);
 
-                    localPlayer.Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
-                    localPlayer.Inventory.Insert(0, mapCell);
-                    localPlayer.Invalid = true;
+                    localUpdatePlayer.Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
+                    localUpdatePlayer.Inventory.Insert(0, mapCell);
+                    localUpdatePlayer.Invalid = true;
                     break;
                 case ActionType.None:
                 default:

@@ -1,8 +1,10 @@
 # ToDo
-* Player auf anfangsposition zurücksetzen
-* Update aller Clients mit Server Action???
-* UndoLastMovement(Game game = null): Reduce duplicated code
-* Server sollte Player Inventar generieren
+* ~~Player auf anfangsposition zurücksetzen~~
+* ~~Update aller Clients mit Server Action???~~
+* ~~UndoLastMovement(Game game = null): Reduce duplicated code~~
+* ~~Server sollte Player Inventar generieren~~
+* Items implementieren
+* Timer implementieren
 
 # Spiele ideen
 - (Text Adventure)

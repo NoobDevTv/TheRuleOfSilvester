@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Cells;
@@ -13,12 +12,12 @@ namespace TheRuleOfSilvester
         public void Draw(Map map)
         {
             DrawCells(map.Cells);
-            
+
             //TODO: Quick and Dirty, must be set to player pos later on
             DrawCells(map.Players);
 
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
-            DrawCells(map.Players.FirstOrDefault(x=>x.IsLocal).Inventory);
+            DrawCells(map.Players.FirstOrDefault(x => x.IsLocal).Inventory);
 
             DrawCells(map.TextCells);
 
@@ -31,10 +30,7 @@ namespace TheRuleOfSilvester
             {
                 if (cell.Invalid)
                 {
-                    if (Enum.TryParse(cell.Color.Name, out ConsoleColor color))
-                        Console.ForegroundColor = color;
-                    else
-                        Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
 
                     for (int l = 0; l < cell.Lines.GetLength(0); l++)
                     {
@@ -60,6 +56,7 @@ namespace TheRuleOfSilvester
             //TODO implement Overlayering
             if (baseElement == null)
                 return ' ';
+
             switch (baseElement.ElementID)
             {
                 case 1: return '│';
@@ -88,6 +85,6 @@ namespace TheRuleOfSilvester
                     return (char)baseElement.ElementID;
             }
         }
-        
+
     }
 }

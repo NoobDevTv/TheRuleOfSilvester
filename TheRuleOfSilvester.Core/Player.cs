@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
@@ -11,7 +10,7 @@ namespace TheRuleOfSilvester.Core
     public class Player : Cell, IByteSerializable
     {
         public string Name { get; set; }
-        public Char Avatar { get; private set; }
+        public char Avatar { get; private set; }
         public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
         public int Id { get; set; }
@@ -229,6 +228,7 @@ namespace TheRuleOfSilvester.Core
             x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
             && x.Position.Y * x.Height < Position.Y && (x.Position.Y * x.Height + x.Height) > Position.Y);
             SetPosition(move);
+
             if (cell != null)
                 cell.Invalid = true;
         }
@@ -288,8 +288,6 @@ namespace TheRuleOfSilvester.Core
 
         public static bool operator ==(Player player1, Player player2)
             => Equals(player1, player2);
-
-
 
         public static bool operator !=(Player player1, Player player2)
             => !Equals(player1, player2);
