@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -14,6 +15,8 @@ namespace TheRuleOfSilvester.Core
         public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
         public int Id { get; set; }
+
+        public BaseRole Role { get; private set; }
 
         public event EventHandler<Cell> PlayerChangedCell;
 

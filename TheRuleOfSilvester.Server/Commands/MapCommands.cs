@@ -15,7 +15,7 @@ namespace TheRuleOfSilvester.Server.Commands
         
         [Command((short)CommandNames.GetPlayers)]
         public static byte[] GetPlayers(CommandArgs args)
-            => SerializeHelper.Serialize(GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId).ToList());
+            => SerializeHelper.SerializeList(GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId).ToList());
 
         [Command((short)CommandNames.UpdatePlayer)]
         public static byte[] UpdatePlayer(CommandArgs args)

@@ -87,7 +87,7 @@ namespace TheRuleOfSilvester.Core
             }
         }
 
-        public static byte[] Serialize<T>(ICollection<T> list) where T : IByteSerializable
+        public static byte[] SerializeList<T>(ICollection<T> list) where T : IByteSerializable
         {
             if (list == null)
                 return new byte[0];

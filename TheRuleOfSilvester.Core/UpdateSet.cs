@@ -32,7 +32,7 @@ namespace TheRuleOfSilvester.Core
         public void Serialize(BinaryWriter binaryWriter)
         {
             Player.Serialize(binaryWriter);
-            var bytes = SerializeHelper.Serialize<PlayerAction>(PlayerActions);
+            var bytes = SerializeHelper.SerializeList<PlayerAction>(PlayerActions);
             binaryWriter.Write(bytes.Length);
             binaryWriter.Write(bytes);
         }

@@ -59,7 +59,7 @@ namespace TheRuleOfSilvester
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
             => Send(CommandNames.TransmitActions,
-                SerializeHelper.Serialize<PlayerAction>(actions.ToList()));
+                SerializeHelper.SerializeList<PlayerAction>(actions.ToList()));
 
         public void EndRound()
             => Send(CommandNames.EndRound);
