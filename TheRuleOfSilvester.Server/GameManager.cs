@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Roles;
 using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Server
@@ -14,12 +15,13 @@ namespace TheRuleOfSilvester.Server
         public static Map Map { get; private set; }
         public static Dictionary<int, NetworkPlayer> Players { get; private set; }
         private static readonly Dictionary<Player, List<PlayerAction>> actionCache;
-
+        private static readonly Queue<BaseRole> roles;
         static GameManager()
         {
             Map = GenerateMap();
             Players = new Dictionary<int, NetworkPlayer>();
             actionCache = new Dictionary<Player, List<PlayerAction>>();
+            roles = RoleManager.GetAllRolesRandomized();
         }
 
         internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
@@ -32,10 +34,10 @@ namespace TheRuleOfSilvester.Server
             while (Players.ContainsKey(tmpId))
                 tmpId++;
 
-            var player = new Player(Map, character)
+            var player = new Player(Map, roles.Dequeue(), character)
             {
                 Name = Guid.NewGuid().ToString(),
-                Position = new Point(2, 1)
+                Position = new Point(2, 1),
             };
             Players.Add(tmpId, new NetworkPlayer(player)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core
@@ -27,6 +28,10 @@ namespace TheRuleOfSilvester.Core
         }
         public TextCell(string text, Map map) : this(text, text.Length, map)
         {
+        }
+        public TextCell(string text, Point pos, Map map) : this(text, map)
+        {
+            Position = pos;
         }
 
         public void MakeBlank()

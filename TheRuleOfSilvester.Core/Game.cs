@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -59,7 +60,7 @@ namespace TheRuleOfSilvester.Core
                 var generator = new MapGenerator();
                 Map = generator.Generate(20, 10);
 
-                player = new Player(Map, character)
+                player = new Player(Map, RoleManager.GetRandomRole(), character)
                 {
                     Color = Color.Red,
                     Position = new Point(2, 1)

@@ -14,6 +14,7 @@ namespace TheRuleOfSilvester.Core
         public char Avatar { get; private set; }
         public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
+        public List<TextCell> TextCells { get; set; }
         public int Id { get; set; }
 
         public BaseRole Role { get; private set; }
@@ -32,20 +33,24 @@ namespace TheRuleOfSilvester.Core
             Color = Color.Yellow;
             Lines = new BaseElement[1, 1];
             Name = "Tim";
+            Role = RoleManager.GetRandomRole();
             Inventory = new List<Cell>();
+            TextCells = new List<TextCell>();
             moveSizeX = 5;
             moveSizeY = 3;
         }
-        public Player(Map map, string character = "20050") : base(1, 1, map)
+        public Player(Map map, BaseRole role, string character = "20050") : base(1, 1, map)
         {
             Inventory = new List<Cell>();
+            TextCells = new List<TextCell>();
             Lines = new BaseElement[1, 1];
             IsLocal = true;
             moveSizeX = 5;
             moveSizeY = 3;
             Name = "Tim";
             ghostMode = false;
-
+            Role = role;
+            TextCells = new List<TextCell>();
             var random = new Random();
 
             GenerateInventory(map, random);
@@ -228,8 +233,8 @@ namespace TheRuleOfSilvester.Core
         public void MoveGeneral(Point move)
         {
             var cell = Map.Cells.FirstOrDefault(x =>
-            x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
-            && x.Position.Y * x.Height < Position.Y && (x.Position.Y * x.Height + x.Height) > Position.Y);
+                x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
+                && x.Position.Y * x.Height < Position.Y && (x.Position.Y * x.Height + x.Height) > Position.Y);
             SetPosition(move);
 
             if (cell != null)
@@ -242,6 +247,9 @@ namespace TheRuleOfSilvester.Core
             binaryWriter.Write(Avatar);
             binaryWriter.Write(Id);
             binaryWriter.Write(Name);
+
+            Role.Serialize(binaryWriter);
+
             binaryWriter.Write(Position.X);
             binaryWriter.Write(Position.Y);
 
@@ -256,12 +264,16 @@ namespace TheRuleOfSilvester.Core
             SetAvatar(binaryReader.ReadChar());
             Id = binaryReader.ReadInt32();
             Name = binaryReader.ReadString();
+
+            Role = (BaseRole)Activator.CreateInstance(Type.GetType(binaryReader.ReadString()));
+
             Position = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
 
             var count = binaryReader.ReadInt32();
 
             for (int i = 0; i < count; i++)
                 Inventory.Add(SerializeHelper.DeserializeMapCell(binaryReader));
+
         }
 
         public override bool Equals(object obj)

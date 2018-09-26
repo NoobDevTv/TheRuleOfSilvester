@@ -15,7 +15,8 @@ namespace TheRuleOfSilvester
 
             //TODO: Quick and Dirty, must be set to player pos later on
             DrawCells(map.Players);
-
+            //TODO Put status into UI not in player, it's way easier and cleaner
+            DrawCells(map.Players.FirstOrDefault(x => x.IsLocal).TextCells);
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
             DrawCells(map.Players.FirstOrDefault(x => x.IsLocal).Inventory);
 

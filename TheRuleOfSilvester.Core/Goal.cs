@@ -3,5 +3,6 @@
     //TODO Implement
     public class Goal
     {
+
     }
 }
