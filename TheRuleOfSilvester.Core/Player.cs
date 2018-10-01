@@ -14,7 +14,6 @@ namespace TheRuleOfSilvester.Core
         public char Avatar { get; private set; }
         public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
-        public List<TextCell> TextCells { get; set; }
         public int Id { get; set; }
 
         public BaseRole Role { get; private set; }
@@ -35,14 +34,12 @@ namespace TheRuleOfSilvester.Core
             Name = "Tim";
             Role = RoleManager.GetRandomRole();
             Inventory = new List<Cell>();
-            TextCells = new List<TextCell>();
             moveSizeX = 5;
             moveSizeY = 3;
         }
         public Player(Map map, BaseRole role, string character = "20050") : base(1, 1, map)
         {
             Inventory = new List<Cell>();
-            TextCells = new List<TextCell>();
             Lines = new BaseElement[1, 1];
             IsLocal = true;
             moveSizeX = 5;
@@ -50,7 +47,6 @@ namespace TheRuleOfSilvester.Core
             Name = "Tim";
             ghostMode = false;
             Role = role;
-            TextCells = new List<TextCell>();
             var random = new Random();
 
             GenerateInventory(map, random);
@@ -77,6 +73,8 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveUp()
         {
+            Role.HealthPoints -= 1;
+            Role.RedrawStats = true;
             if (Position.Y - moveSizeY <= 0 || MovementOccupied(-moveSizeY, false))
                 return;
 
@@ -85,10 +83,14 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveDown()
         {
+            Role.HealthPoints += 1;
+            Role.RedrawStats = true;
+
             if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
                 return;
 
             MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
+
         }
 
         public void MoveLeft()

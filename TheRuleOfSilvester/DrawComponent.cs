@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester
 {
@@ -15,14 +16,56 @@ namespace TheRuleOfSilvester
 
             //TODO: Quick and Dirty, must be set to player pos later on
             DrawCells(map.Players);
-            //TODO Put status into UI not in player, it's way easier and cleaner
-            DrawCells(map.Players.FirstOrDefault(x => x.IsLocal).TextCells);
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
             DrawCells(map.Players.FirstOrDefault(x => x.IsLocal).Inventory);
 
             DrawCells(map.TextCells);
+            DrawPlayerInfo(map.Players.FirstOrDefault(x => x.IsLocal), map);
 
             Console.SetCursorPosition(Console.WindowWidth - 2, Console.WindowHeight - 2);
+        }
+
+        private void DrawPlayerHealth(BaseRole role)
+        {
+            string s = "";
+
+            var points = role.HealthPoints * 10d / role.MaxHealthPoints;
+
+            for (int i = 1; i < points; points--)
+                s += "█";
+            Console.Write(s);//U+2588
+
+            char c = '█';
+            c += (char)Math.Ceiling(7 - points * 7);
+            Console.Write(c);
+
+            for (int i = 0; i < 10 - role.HealthPoints * 10 / role.MaxHealthPoints; i++)
+                Console.Write(" ");
+        }
+
+        public void DrawPlayerInfo(Player player, Map map)
+        {
+            if (!player.Role.RedrawStats)
+                return;
+            int topPos = 1;
+            void ResetCursor()
+            {
+                Console.CursorLeft = Console.WindowWidth - 26;
+                Console.CursorTop = topPos++;
+            }
+            ResetCursor();
+            Console.Write(player.Name);
+            ResetCursor();
+            Console.Write($"♥HP: {player.Role.HealthPoints}   ");
+            ResetCursor();
+            Console.ForegroundColor = ConsoleColor.Red;
+            DrawPlayerHealth(player.Role);
+            Console.ForegroundColor = ConsoleColor.White;
+            ResetCursor();
+            Console.Write("⚔ATK: " + player.Role.Attack);
+            ResetCursor();
+            Console.Write("⛨DEF: " + player.Role.Defence);
+            player.Role.RedrawStats = false;
         }
 
         public void DrawCells<T>(List<T> cells) where T : Cell

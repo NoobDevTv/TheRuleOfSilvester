@@ -11,12 +11,17 @@ namespace TheRuleOfSilvester.Core.Roles
         public List<Goal> Goals { get; set; }
 
         public int ActionsPoints { get; protected set; }
-        public int HealthPoints { get; protected set; }
+        public int HealthPoints { get; internal set; }
+        public int MaxHealthPoints { get; protected set; }
         public int Attack { get; protected set; }
         public int Defence { get; protected set; }
+        public bool RedrawStats { get; set; }
 
-        protected BaseRole(string name) 
-            => Name = name;
+        protected BaseRole(string name)
+        {
+            Name = name;
+            RedrawStats = true;
+        }
 
         public void Serialize(BinaryWriter binaryWriter)
             => binaryWriter.Write(GetType().FullName);

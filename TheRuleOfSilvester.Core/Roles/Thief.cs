@@ -9,6 +9,7 @@ namespace TheRuleOfSilvester.Core.Roles
         public Thief() : base(nameof(Thief))
         {
             HealthPoints = 70;
+            MaxHealthPoints = HealthPoints;
             ActionsPoints = 13;
             Attack = 15;
             Defence = 5;

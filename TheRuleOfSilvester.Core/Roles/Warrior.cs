@@ -9,6 +9,7 @@ namespace TheRuleOfSilvester.Core.Roles
         public Warrior() : base(nameof(Warrior))
         {
             HealthPoints = 120;
+            MaxHealthPoints = HealthPoints;
             ActionsPoints = 5;
             Attack = 20;
             Defence = 10;
