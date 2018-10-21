@@ -8,11 +8,12 @@ namespace TheRuleOfSilvester.Core.Roles
     {
         public Mage() : base(nameof(Mage))
         {
-            HealthPoints = 100;
-            MaxHealthPoints = HealthPoints;
+            MaxHealthPoints = 100;
+            HealthPoints = MaxHealthPoints;
             ActionsPoints = 8;
             Attack = 10;
             Defence = 2;
+            Avatar = '⛤';
         }
     }
 }
