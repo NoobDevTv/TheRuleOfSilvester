@@ -13,6 +13,13 @@
 - Dungeon
 - Karte manipulierbar
 
+Symbole: 
+⌘⛥⛦⛧♰♱➳➴➵➶➷➸➹👁🗡⛀⛁⛂⛃🌀🔪
+⌖ ⯐ †
+Krieger:♞
+Magier:⛤
+Dieb:✋
+Attentäter:➳
 
 # Real Tuktuk
 - 
