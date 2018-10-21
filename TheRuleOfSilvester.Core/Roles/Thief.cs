@@ -7,6 +7,7 @@ namespace TheRuleOfSilvester.Core.Roles
     public class Thief : BaseRole
     {
         public override char Avatar => '✋';
+
         public Thief() : base(nameof(Thief))
         {
             MaxHealthPoints = 70;
@@ -14,7 +15,6 @@ namespace TheRuleOfSilvester.Core.Roles
             ActionsPoints = 13;
             Attack = 15;
             Defence = 5;
-            Avatar = '✋';
         }
     }
 }

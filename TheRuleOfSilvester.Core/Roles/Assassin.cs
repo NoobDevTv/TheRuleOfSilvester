@@ -15,7 +15,6 @@ namespace TheRuleOfSilvester.Core.Roles
             ActionsPoints = 30;
             Attack = 30;
             Defence = 0;
-            Avatar = '➳';
         }
     }
 }
