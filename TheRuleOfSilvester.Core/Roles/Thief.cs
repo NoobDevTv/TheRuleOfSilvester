@@ -9,11 +9,12 @@ namespace TheRuleOfSilvester.Core.Roles
         public override char Avatar => '✋';
         public Thief() : base(nameof(Thief))
         {
-            HealthPoints = 70;
-            MaxHealthPoints = HealthPoints;
+            MaxHealthPoints = 70;
+            HealthPoints = MaxHealthPoints;
             ActionsPoints = 13;
             Attack = 15;
             Defence = 5;
+            Avatar = '✋';
         }
     }
 }

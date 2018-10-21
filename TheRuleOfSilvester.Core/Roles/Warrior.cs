@@ -9,11 +9,12 @@ namespace TheRuleOfSilvester.Core.Roles
         public override char Avatar => '♞';
         public Warrior() : base(nameof(Warrior))
         {
-            HealthPoints = 120;
-            MaxHealthPoints = HealthPoints;
+            MaxHealthPoints = 120;
+            HealthPoints = MaxHealthPoints;
             ActionsPoints = 5;
             Attack = 20;
             Defence = 10;
+            Avatar = '♞';
         }
     }
 }

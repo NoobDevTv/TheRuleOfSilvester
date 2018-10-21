@@ -10,11 +10,12 @@ namespace TheRuleOfSilvester.Core.Roles
 
         public Assassin() : base(nameof(Assassin))
         {
-            HealthPoints = 50;
-            MaxHealthPoints = HealthPoints;
+            MaxHealthPoints = 50;
+            HealthPoints = MaxHealthPoints;
             ActionsPoints = 30;
             Attack = 30;
             Defence = 0;
+            Avatar = '➳';
         }
     }
 }

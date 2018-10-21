@@ -83,8 +83,9 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveUp()
         {
-            Role.HealthPoints -= 1;
+            this.Role.HealthPoints -= 1;
             Role.RedrawStats = true;
+
             if (Position.Y - moveSizeY <= 0 || MovementOccupied(-moveSizeY, false))
                 return;
 
@@ -93,9 +94,9 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveDown()
         {
-            Role.HealthPoints += 1;
-            Role.RedrawStats = true;
 
+            this.Role.HealthPoints += 1;
+            Role.RedrawStats = true;
             if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
                 return;
 

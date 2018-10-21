@@ -11,12 +11,19 @@ namespace TheRuleOfSilvester.Core.Roles
         public List<Goal> Goals { get; set; }
 
         public int ActionsPoints { get; protected set; }
-        public int HealthPoints { get; internal set; }
+        public int HealthPoints
+        {
+            get => healthPoints;
+            internal set => healthPoints = value > MaxHealthPoints ? MaxHealthPoints : value;
+        }
+
         public int MaxHealthPoints { get; protected set; }
         public int Attack { get; protected set; }
         public int Defence { get; protected set; }
         public bool RedrawStats { get; set; }
         public abstract char Avatar { get; }
+
+        private int healthPoints;
 
         protected BaseRole(string name)
         {
