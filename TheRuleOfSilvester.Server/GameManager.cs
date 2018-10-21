@@ -86,7 +86,19 @@ namespace TheRuleOfSilvester.Server
                 }
 
                 ExecuteCache();
+                CheckWinCondition(tmpPlayers);
             });
+        }
+
+        private static void CheckWinCondition(List<NetworkPlayer> players)
+        {
+            foreach (var player in players)
+            {
+                var conditions = player.Player.Role.Conditions;
+
+                foreach (var condition in conditions)
+                    condition.Match(player.Player); //TODO: Work with return value
+            }
         }
 
         private static void ExecuteCache()
@@ -107,16 +119,16 @@ namespace TheRuleOfSilvester.Server
                         case ActionType.ChangedMapCell:
                             var cell = Map.Cells.First(c => c.Position == action.Point);
                             Map.Cells.Remove(cell);
-                            var inventoryCell = player.Inventory.First();
+                            var inventoryCell = player.CellInventory.First();
                             inventoryCell.Position = cell.Position;
                             inventoryCell.Invalid = true;
                             Map.Cells.Add(inventoryCell);
-                            player.Inventory.Remove(inventoryCell);
-                            player.Inventory.Add(cell);
+                            player.CellInventory.Remove(inventoryCell);
+                            player.CellInventory.Add(cell);
 
                             cell.Position = new Point(5, Map.Height + 2);
                             cell.Invalid = true;
-                            player.Inventory.ForEach(x =>
+                            player.CellInventory.ForEach(x =>
                             {
                                 x.Position = new Point(x.Position.X - 2, x.Position.Y);
                                 x.Invalid = true;

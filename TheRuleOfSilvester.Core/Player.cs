@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Items;
 using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester.Core
@@ -22,7 +23,8 @@ namespace TheRuleOfSilvester.Core
         }
         public char Avatar { get; private set; }
         public bool IsLocal { get; set; }
-        public List<Cell> Inventory { get; set; }
+        public List<BaseItemCell> ItemInventory { get; set; }
+        public List<Cell> CellInventory { get; set; }
         public int Id { get; set; }
 
         public BaseRole Role { get; private set; }
@@ -43,13 +45,13 @@ namespace TheRuleOfSilvester.Core
             Lines = new BaseElement[1, 1];
             Name = "Tim";
             Role = RoleManager.GetRandomRole();
-            Inventory = new List<Cell>();
+            CellInventory = new List<Cell>();
             moveSizeX = 5;
             moveSizeY = 3;
         }
         public Player(Map map, BaseRole role) : base(1, 1, map)
         {
-            Inventory = new List<Cell>();
+            CellInventory = new List<Cell>();
             Lines = new BaseElement[1, 1];
             IsLocal = true;
             moveSizeX = 5;
@@ -83,9 +85,6 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveUp()
         {
-            this.Role.HealthPoints -= 1;
-            Role.RedrawStats = true;
-
             if (Position.Y - moveSizeY <= 0 || MovementOccupied(-moveSizeY, false))
                 return;
 
@@ -94,14 +93,10 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveDown()
         {
-
-            this.Role.HealthPoints += 1;
-            Role.RedrawStats = true;
             if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
                 return;
 
             MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
-
         }
 
         public void MoveLeft()
@@ -166,7 +161,7 @@ namespace TheRuleOfSilvester.Core
             {
                 var cell = (Cell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map, true);
                 cell.Position = new Point(1 + i * 2, Map.Height + 2);
-                Inventory.Add(cell);
+                CellInventory.Add(cell);
             }
         }
 
@@ -192,8 +187,8 @@ namespace TheRuleOfSilvester.Core
                 }
                 Map.Cells.Remove(changedCell);
 
-                var inventoryCell = Inventory.FirstOrDefault();
-                Inventory.Remove(inventoryCell);
+                var inventoryCell = CellInventory.FirstOrDefault();
+                CellInventory.Remove(inventoryCell);
 
                 inventoryCell.Position = changedCell.Position;
                 inventoryCell.Invalid = true;
@@ -202,8 +197,8 @@ namespace TheRuleOfSilvester.Core
 
                 changedCell.Position = new Point(5, Map.Height + 2);
                 changedCell.Invalid = true;
-                Inventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
-                Inventory.Add(changedCell);
+                CellInventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
+                CellInventory.Add(changedCell);
 
 
                 var cellsToNormalize = Map.Cells.Where(c =>
@@ -253,7 +248,8 @@ namespace TheRuleOfSilvester.Core
             if (cell != null)
                 cell.Invalid = true;
         }
-        public void MoveGeneralRelative(Point move) => MoveGeneral(Position + new Size(move));
+        public void MoveGeneralRelative(Point move)
+            => MoveGeneral(Position + new Size(move));
 
         public void Serialize(BinaryWriter binaryWriter)
         {
@@ -266,9 +262,9 @@ namespace TheRuleOfSilvester.Core
             binaryWriter.Write(Position.X);
             binaryWriter.Write(Position.Y);
 
-            binaryWriter.Write(Inventory.Count);
+            binaryWriter.Write(CellInventory.Count);
 
-            foreach (MapCell cell in Inventory)
+            foreach (MapCell cell in CellInventory)
                 cell.Serialize(binaryWriter);
         }
 
@@ -285,7 +281,7 @@ namespace TheRuleOfSilvester.Core
             var count = binaryReader.ReadInt32();
 
             for (int i = 0; i < count; i++)
-                Inventory.Add(SerializeHelper.DeserializeMapCell(binaryReader));
+                CellInventory.Add(SerializeHelper.DeserializeMapCell(binaryReader));
 
         }
 

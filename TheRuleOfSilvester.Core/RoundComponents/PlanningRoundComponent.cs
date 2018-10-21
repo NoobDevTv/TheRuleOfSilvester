@@ -61,7 +61,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             game.MultiplayerComponent?.EndRound();
         }
 
-        public void UndoLastMovement(Game game = null)
+        public void UndoLastMovement(Game game)
         {
             if (actions.Count == 0)
                 return;
@@ -74,14 +74,14 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     break;
                 case ActionType.ChangedMapCell:
 
-                    var inventoryCell = player.Inventory.Last();
-                    player.Inventory.Remove(inventoryCell);
+                    var inventoryCell = player.CellInventory.Last();
+                    player.CellInventory.Remove(inventoryCell);
 
                     var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1);
 
                     //TODO Reduce duplicated code
-                    player.Inventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
-                    player.Inventory.Insert(0, mapCell);
+                    player.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
+                    player.CellInventory.Insert(0, mapCell);
                     break;
             }
         }
@@ -112,7 +112,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             propertyChangedRelevant = false;
             //Temp maybe make it different
             while (actions.Count > maxMoves)
-                UndoLastMovement();
+                UndoLastMovement(null);
 
             propertyChangedRelevant = true;
         }

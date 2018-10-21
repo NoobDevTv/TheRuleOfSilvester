@@ -13,7 +13,7 @@
 - Dungeon
 - Karte manipulierbar
 
-Symbole: 
+# Symbole: 
 ⌘⛥⛦⛧♰♱➳➴➵➶➷➸➹👁🗡⛀⛁⛂⛃🌀🔪
 ⌖ ⯐ †
 Krieger:♞

@@ -55,7 +55,7 @@ namespace TheRuleOfSilvester.Core
         }
         public Cell(Map map, bool movable = true) : this(5, 3, map, movable)
         {
-
+            
         }
 
         public void SetPosition(Point position)

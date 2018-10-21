@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using TheRuleOfSilvester.Core;
 
@@ -33,6 +34,7 @@ namespace TheRuleOfSilvester
             {
                 LastKey = Active ? (int)Console.ReadKey(true).Key : -1;
                 running = LastKey != (int)ConsoleKey.Escape;
+                Debug.WriteLine("Key Pressed: " + LastKey);
             }
         }
 

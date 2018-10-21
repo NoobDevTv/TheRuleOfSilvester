@@ -13,7 +13,7 @@ namespace TheRuleOfSilvester.Network
     {
         public bool IsClient { get; set; }
 
-        private static int clientReceived;
+        private static readonly int clientReceived;
 
         public Client() :
             base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -26,8 +26,6 @@ namespace TheRuleOfSilvester.Network
             Encoding.UTF8.GetBytes("PING", 0, 4, buffer, 0);
             Send(buffer, 4);
         }
-
-        public void Disconnect() => Socket.Disconnect(true);
 
         public void Connect(string host, int port)
         {

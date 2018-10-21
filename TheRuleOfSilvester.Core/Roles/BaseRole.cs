@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using TheRuleOfSilvester.Core.Conditions;
 
 namespace TheRuleOfSilvester.Core.Roles
 {
@@ -8,7 +9,7 @@ namespace TheRuleOfSilvester.Core.Roles
     {
         public string Name { get; private set; }
 
-        public List<Goal> Goals { get; set; }
+        public List<ICondition> Conditions { get; set; }
 
         public int ActionsPoints { get; protected set; }
         public int HealthPoints
@@ -29,6 +30,7 @@ namespace TheRuleOfSilvester.Core.Roles
         {
             Name = name;
             RedrawStats = true;
+            Conditions = new List<ICondition>();
         }
 
         public void Serialize(BinaryWriter binaryWriter)
