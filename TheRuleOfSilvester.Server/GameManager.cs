@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Server
 {
-    static class GameManager
+    internal static class GameManager
     {
         public static Map Map { get; private set; }
         public static Dictionary<int, NetworkPlayer> Players { get; private set; }
@@ -36,7 +37,7 @@ namespace TheRuleOfSilvester.Server
 
             var player = new Player(Map, roles.Dequeue(), character)
             {
-                Name = Guid.NewGuid().ToString(),
+                Name = Convert.ToBase64String(Guid.NewGuid().ToByteArray()), //TODO: Temporary workaround
                 Position = new Point(2, 1),
             };
             Players.Add(tmpId, new NetworkPlayer(player)
@@ -51,7 +52,7 @@ namespace TheRuleOfSilvester.Server
 
         internal static void StopGame()
         {
-            
+
         }
 
         internal static void StartGame()

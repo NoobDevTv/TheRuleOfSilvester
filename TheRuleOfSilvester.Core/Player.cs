@@ -10,7 +10,16 @@ namespace TheRuleOfSilvester.Core
 {
     public class Player : Cell, IByteSerializable
     {
-        public string Name { get; set; }
+        public string Name
+        {
+            get => name; set
+            {
+                if (value.Length > 20)
+                    name = value.Substring(0, 20);
+                else
+                    name = value;
+            }
+        }
         public char Avatar { get; private set; }
         public bool IsLocal { get; set; }
         public List<Cell> Inventory { get; set; }
@@ -25,6 +34,7 @@ namespace TheRuleOfSilvester.Core
 
         private bool ghostMode;
         private GhostPlayer ghost;
+        private string name;
 
         public Player() : base(1, 1, null)
         {
