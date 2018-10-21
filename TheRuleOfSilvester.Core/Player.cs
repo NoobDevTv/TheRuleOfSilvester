@@ -47,7 +47,7 @@ namespace TheRuleOfSilvester.Core
             moveSizeX = 5;
             moveSizeY = 3;
         }
-        public Player(Map map, BaseRole role, string character = "20050") : base(1, 1, map)
+        public Player(Map map, BaseRole role) : base(1, 1, map)
         {
             Inventory = new List<Cell>();
             Lines = new BaseElement[1, 1];
@@ -63,7 +63,7 @@ namespace TheRuleOfSilvester.Core
 
             map.TextCells.Add(new TextCell("Inventory:", map) { Position = new Point(0, (map.Height + 1) * 3 + 1) });
 
-            SetAvatar(character[0]);
+            SetAvatar(role.Avatar);
         }
 
 

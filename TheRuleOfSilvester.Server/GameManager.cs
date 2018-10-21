@@ -28,14 +28,14 @@ namespace TheRuleOfSilvester.Server
         internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
             => actionCache[player] = playerActions;
 
-        internal static Player GetNewPlayer(string character, ConnectedClient client)
+        internal static Player GetNewPlayer(ConnectedClient client)
         {
             int tmpId = Players.Count + 1;
 
             while (Players.ContainsKey(tmpId))
                 tmpId++;
 
-            var player = new Player(Map, roles.Dequeue(), character)
+            var player = new Player(Map, roles.Dequeue())
             {
                 Name = Convert.ToBase64String(Guid.NewGuid().ToByteArray()), //TODO: Temporary workaround
                 Position = new Point(2, 1),

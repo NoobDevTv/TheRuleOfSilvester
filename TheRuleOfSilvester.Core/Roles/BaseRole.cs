@@ -16,6 +16,7 @@ namespace TheRuleOfSilvester.Core.Roles
         public int Attack { get; protected set; }
         public int Defence { get; protected set; }
         public bool RedrawStats { get; set; }
+        public abstract char Avatar { get; }
 
         protected BaseRole(string name)
         {

@@ -11,7 +11,7 @@ namespace TheRuleOfSilvester.Server.Commands
     {
         [Command((short)CommandNames.NewPlayer)]
         public static byte[] NewPlayer(CommandArgs args)
-            => SerializeHelper.Serialize(GameManager.GetNewPlayer(Encoding.UTF8.GetString(args.Data), args.Client));
+            => SerializeHelper.Serialize(GameManager.GetNewPlayer(args.Client));
 
         [Command((short)CommandNames.GetStatus)]
         public static byte[] GetStatus(CommandArgs args) 

@@ -6,6 +6,7 @@ namespace TheRuleOfSilvester.Core.Roles
 {
     public class Warrior : BaseRole
     {
+        public override char Avatar => '♞';
         public Warrior() : base(nameof(Warrior))
         {
             HealthPoints = 120;
