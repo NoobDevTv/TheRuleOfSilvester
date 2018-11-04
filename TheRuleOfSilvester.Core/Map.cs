@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -34,7 +35,7 @@ namespace TheRuleOfSilvester.Core
 
         public bool IsTileOccupied(Point pos)
         {
-            var cellList = Cells.Where(x => x.GetType() != typeof(Player)).Where(x =>
+            var cellList = Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())).Where(x =>
                  x.Position.X * x.Width <= pos.X && (x.Position.X * x.Width + x.Width) > pos.X
                  && x.Position.Y * x.Height <= pos.Y && (x.Position.Y * x.Height + x.Height) > pos.Y);
 
@@ -86,8 +87,11 @@ namespace TheRuleOfSilvester.Core
             writer.Write(Width);
             writer.Write(Cells.Count);
 
-            foreach (MapCell cell in Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())))
+            foreach (IByteSerializable cell in Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType()) ||
+                                                                typeof(BaseItemCell).IsAssignableFrom(x.GetType())))
+            {
                 cell.Serialize(writer);
+            }
 
             writer.Write(MapGenerator.CellTypes.Count);
 
@@ -113,7 +117,7 @@ namespace TheRuleOfSilvester.Core
 
             MapGenerator = new MapGenerator(stringList.ToArray());
 
-            foreach (MapCell ourCell in Cells)
+            foreach (MapCell ourCell in Cells.Where(c => typeof(MapCell).IsAssignableFrom(c.GetType())))
                 ourCell.NormalizeLayering();
         }
 

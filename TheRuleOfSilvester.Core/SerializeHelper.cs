@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -19,7 +20,8 @@ namespace TheRuleOfSilvester.Core
         {
             mapCells = Assembly.GetExecutingAssembly()
                  .GetTypes()
-                 .Where(c => c.BaseType == typeof(MapCell) && c.GetCustomAttribute<GuidAttribute>() != null)
+                 .Where(c => (typeof(MapCell).IsAssignableFrom(c) || typeof(BaseItemCell).IsAssignableFrom(c)) 
+                                && c.GetCustomAttribute<GuidAttribute>() != null)
                  .ToDictionary(c => c.GetCustomAttribute<GuidAttribute>().Value,
                                c => c);
         }
@@ -64,12 +66,12 @@ namespace TheRuleOfSilvester.Core
             return tmpList;
         }
 
-        public static MapCell DeserializeMapCell(BinaryReader binaryReader)
+        public static Cell DeserializeMapCell(BinaryReader binaryReader)
         {
             var key = new Guid(binaryReader.ReadBytes(16)).ToString().ToUpper();
             var type = mapCells[key];
 
-            var cell = (MapCell)Activator.CreateInstance(type, new object[] { Map, binaryReader.ReadBoolean() });
+            var cell = (Cell)Activator.CreateInstance(type, new object[] { Map, binaryReader.ReadBoolean() });
             cell.Position = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
             cell.Color = Color.FromArgb(binaryReader.ReadInt32());
             return cell;

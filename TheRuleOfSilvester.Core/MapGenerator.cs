@@ -6,12 +6,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core
 {
     public class MapGenerator : BasicMapGenerator
     {
-
         public MapGenerator()
         {
             CellTypes = new List<Type>();
@@ -98,6 +98,10 @@ namespace TheRuleOfSilvester.Core
 
             foreach (MapCell ourCell in map.Cells)
                 ourCell.NormalizeLayering();
+
+
+            //Default coin stack
+            map.Cells.Add(new CoinStack(map) { Position = new Point(7, 4) });
 
             return map;
         }

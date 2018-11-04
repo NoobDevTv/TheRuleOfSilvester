@@ -1,17 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Items
 {
-    public class BaseItemCell : Cell
+    public class BaseItemCell : Cell, IByteSerializable
     {
-        public BaseItemCell(Map map, bool movable = true) : base(map, movable)
+        public Guid Guid { get; private set; }
+
+        public BaseItemCell(Map map, bool movable = true) : base(1, 1, map, movable)
         {
+            var guidVal = GetType().GetCustomAttribute<GuidAttribute>()?.Value;
+            Guid = string.IsNullOrWhiteSpace(guidVal) ? Guid.NewGuid() : new Guid(guidVal);
         }
 
-        public BaseItemCell(int width, int height, Map map, bool movable = true) : base(width, height, map, movable)
+        public void Serialize(BinaryWriter binaryWriter)
         {
+            binaryWriter.Write(Guid.ToByteArray());
+            binaryWriter.Write(Movable);
+            binaryWriter.Write(Position.X);
+            binaryWriter.Write(Position.Y);
+            binaryWriter.Write(Color.ToArgb());
         }
+
+        public void Deserialize(BinaryReader binaryReader)
+            => throw new NotSupportedException("Use SerializeHelper.DeserializeMapCell instead ;)");
+
     }
 }
