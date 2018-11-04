@@ -25,6 +25,7 @@ namespace TheRuleOfSilvester.Core
         public bool IsRunning { get; private set; }
         public bool IsMutliplayer { get; private set; }
 
+        internal InputAction InputAction { get; private set; }
 
         private int ups;
         private Thread gameThread;
@@ -43,7 +44,7 @@ namespace TheRuleOfSilvester.Core
 
             Frames = frame;
             this.ups = ups;
-            
+
             if (multiplayer)
             {
                 Map = MultiplayerComponent.GetMap();
@@ -101,7 +102,15 @@ namespace TheRuleOfSilvester.Core
 
         private void BeforeUpdate()
         {
-
+            if (InputCompoment.InputActions.TryDequeue(out var inputAction))
+            {
+                InputAction = inputAction;
+            }
+            else
+            {
+                InputAction?.SetInvalid();
+                InputAction = null;
+            }
         }
 
         private void SystemUpdate()
@@ -126,12 +135,13 @@ namespace TheRuleOfSilvester.Core
             if (CurrentGameStatus == GameStatus.Running)
                 DrawComponent.Draw(Map);
             else
-                DrawComponent.DrawCells(new List<TextCell> {new TextCell("NOT Running", Map)});
+                DrawComponent.DrawCells(new List<TextCell> { new TextCell("NOT Running", Map) });
         }
 
         private void AfterUpdate()
         {
-            InputCompoment.LastKey = -1;
+            InputAction?.SetInvalid();
+            InputAction = null;
         }
 
         public void Dispose()

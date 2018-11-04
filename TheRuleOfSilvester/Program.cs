@@ -9,7 +9,7 @@ using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester
 {
-    class Program
+    internal class Program
     {
         private static Game game;
         private static InputComponent inputComponent;
@@ -19,7 +19,7 @@ namespace TheRuleOfSilvester
         public static bool IsRunning { get; private set; }
 
         //┌┬┐└┴┘│├┼┤
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             //are = new AutoResetEvent(false);
             Console.OutputEncoding = Encoding.Unicode;
@@ -51,7 +51,7 @@ namespace TheRuleOfSilvester
             bool GetAddress(string value, out IPAddress ipAddress)
             {
                 //TODO: Port
-                if (value.ToLower() == "localhorst" || string.IsNullOrWhiteSpace(value)|| value.ToLower() == "horst")
+                if (value.ToLower() == "localhorst" || string.IsNullOrWhiteSpace(value) || value.ToLower() == "horst")
                     value = "localhost";
 
                 if (IPAddress.TryParse(value, out ipAddress))
@@ -89,15 +89,22 @@ namespace TheRuleOfSilvester
 
         private static void CreateGame(bool isMultiplayer)
         {
+            var manualReset = new ManualResetEventSlim(false);
             using (game = new Game())
             {
                 game.DrawComponent = new DrawComponent();
                 game.InputCompoment = inputComponent;
                 game.MultiplayerComponent = multiplayerComponent;
                 game.Run(60, 60, isMultiplayer);
-                inputComponent.Listen();
+                inputComponent.Start();
+
+                Console.CancelKeyPress += (s, e) => manualReset.Set();
+                manualReset.Wait();
+
+                inputComponent.Stop();
                 game.Stop();
             }
+
         }
     }
 }

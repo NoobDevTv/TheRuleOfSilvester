@@ -25,14 +25,14 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         public void Update(Game game)
         {
             //Undo Button iplementation
-            if (game.InputCompoment.RoundActionButton)
+            if (game.InputAction == null)
+                return;
+
+            if (game.InputAction.Type == InputActionType.RoundActionButton && game.InputAction.Valid)
             {
                 propertyChangedRelevant = false;
                 UndoLastMovement(game);
                 propertyChangedRelevant = true;
-            }
-            if (game.InputCompoment.StartAction)
-            {
             }
         }
 

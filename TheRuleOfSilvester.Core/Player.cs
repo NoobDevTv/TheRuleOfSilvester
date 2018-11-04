@@ -83,32 +83,56 @@ namespace TheRuleOfSilvester.Core
             Lines[0, 0] = Avatar;
         }
 
-        public void MoveUp()
+        public void MoveUp(bool ghostMode)
         {
+            if (ghostMode)
+            {
+                ghost.MoveUp();
+                return;
+            }
+
             if (Position.Y - moveSizeY <= 0 || MovementOccupied(-moveSizeY, false))
                 return;
 
             MoveGeneral(new Point(Position.X, Position.Y - moveSizeY));
         }
 
-        public void MoveDown()
+        public void MoveDown(bool ghostMode)
         {
+            if (ghostMode)
+            {
+                ghost.MoveDown();
+                return;
+            }
+
             if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
                 return;
 
             MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
         }
 
-        public void MoveLeft()
+        public void MoveLeft(bool ghostMode)
         {
+            if (ghostMode)
+            {
+                ghost.MoveLeft();
+                return;
+            }
+
             if (Position.X - moveSizeX <= 0 || MovementOccupied(-moveSizeX, true))
                 return;
 
             MoveGeneral(new Point(Position.X - moveSizeX, Position.Y));
         }
 
-        public void MoveRight()
+        public void MoveRight(bool ghostMode)
         {
+            if (ghostMode)
+            {
+                ghost.MoveRight();
+                return;
+            }
+
             if (Position.X == Map.Width * Map.Cells.FirstOrDefault().Width || MovementOccupied(moveSizeX, true))
                 return;
 
@@ -123,34 +147,34 @@ namespace TheRuleOfSilvester.Core
 
         public override void Update(Game game)
         {
-            var inputComponent = game.InputCompoment;
+            var lastInput = game.InputAction;
+
+            if (lastInput == null || !lastInput.Valid)
+                return;
 
             if (ghostMode)
                 Invalid = true;
 
-            if (inputComponent.Up && !ghostMode)
-                MoveUp();
-            else if (inputComponent.Up)
-                ghost.MoveUp();
-
-            if (inputComponent.Down && !ghostMode)
-                MoveDown();
-            else if (inputComponent.Down)
-                ghost.MoveDown();
-
-            if (inputComponent.Left && !ghostMode)
-                MoveLeft();
-            else if (inputComponent.Left)
-                ghost.MoveLeft();
-
-            if (inputComponent.Right && !ghostMode)
-                MoveRight();
-            else if (inputComponent.Right)
-                ghost.MoveRight();
-
-            if (inputComponent.StartAction)
-                StartAction();
-
+            switch (lastInput.Type)
+            {
+                case InputActionType.Up:
+                    MoveUp(ghostMode);
+                    break;
+                case InputActionType.Down:
+                    MoveDown(ghostMode);
+                    break;
+                case InputActionType.Left:
+                    MoveLeft(ghostMode);
+                    break;
+                case InputActionType.Right:
+                    MoveRight(ghostMode);
+                    break;
+                case InputActionType.StartAction:
+                    StartAction();
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void GenerateInventory(Map map, Random random)
@@ -292,6 +316,9 @@ namespace TheRuleOfSilvester.Core
 
             return false;
         }
+
+        public override int GetHashCode() => base.GetHashCode();
+
         public static bool Equals(Player player1, Player player2)
         {
             if (((object)player1) == null && ((object)player2) == null)

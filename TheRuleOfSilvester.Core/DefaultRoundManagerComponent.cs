@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System.Drawing;
-using TheRuleOfSilvester.Core.RoundComponents;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using TheRuleOfSilvester.Core.RoundComponents;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -47,9 +47,11 @@ namespace TheRuleOfSilvester.Core
 
             Round?.Update(game);
 
-            if (!game.InputCompoment.RoundButton && Round != null && !Round.RoundEnd)
+            if (game.InputAction?.Type != InputActionType.RoundButton &&
+                Round != null &&
+                !Round.RoundEnd)
                 return;
-
+            
             Round?.Stop(game);
             Round.RoundEnd = false;
 

@@ -1,40 +1,89 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester
 {
     public class InputComponent : IInputCompoment
     {
-        public bool Up => LastKey == (int)ConsoleKey.W || LastKey == (int)ConsoleKey.UpArrow;
-        public bool Down => LastKey == (int)ConsoleKey.S || LastKey == (int)ConsoleKey.DownArrow;
-        public bool Left => LastKey == (int)ConsoleKey.A || LastKey == (int)ConsoleKey.LeftArrow;
-        public bool Right => LastKey == (int)ConsoleKey.D || LastKey == (int)ConsoleKey.RightArrow;
-        public bool StartAction => LastKey == (int)ConsoleKey.Q || LastKey == (int)ConsoleKey.NumPad0;
-        public bool RoundButton => LastKey == (int)ConsoleKey.R;
-        public bool RoundActionButton => LastKey == (int)ConsoleKey.D1;
+        public ConcurrentQueue<InputAction> InputActions { get; private set; }
 
         public bool Active { get; set; }
-
-        public int LastKey { get; set; }
+        
+        private Thread inputThread;
+        private bool running;
 
         public InputComponent()
         {
-            LastKey = -1;
             Active = true;
+            InputActions = new ConcurrentQueue<InputAction>();
         }
 
-        internal void Listen()
+        internal void Start()
         {
-            var running = true;
+            running = true;
+            inputThread = new Thread(InternalListen)
+            {
+                IsBackground = true,
+                Name = "Input Thread"
+            };
 
+            inputThread.Start();
+        }
+
+        internal void Stop()
+        {
+            running = false;
+        }
+
+        private void InternalListen()
+        {
             while (running)
             {
-                LastKey = Active ? (int)Console.ReadKey(true).Key : -1;
-                running = LastKey != (int)ConsoleKey.Escape;
-                Debug.WriteLine("Key Pressed: " + LastKey);
+                var lastKey = Console.ReadKey(true).Key;
+
+                if (!Active)
+                    continue;
+
+                switch (lastKey)
+                {
+                    case ConsoleKey.UpArrow:
+                    case ConsoleKey.W:
+                        InputActions.Enqueue(new InputAction(InputActionType.Up));
+                        break;
+                    case ConsoleKey.DownArrow:
+                    case ConsoleKey.S:
+                        InputActions.Enqueue(new InputAction(InputActionType.Down));
+                        break;
+                    case ConsoleKey.LeftArrow:
+                    case ConsoleKey.A:
+                        InputActions.Enqueue(new InputAction(InputActionType.Left));
+                        break;
+                    case ConsoleKey.RightArrow:
+                    case ConsoleKey.D:
+                        InputActions.Enqueue(new InputAction(InputActionType.Right));
+                        break;
+                    case ConsoleKey.NumPad0:
+                    case ConsoleKey.Q:
+                        InputActions.Enqueue(new InputAction(InputActionType.StartAction));
+                        break;
+                    case ConsoleKey.R:
+                        InputActions.Enqueue(new InputAction(InputActionType.RoundButton));
+                        break;
+                    case ConsoleKey.D1:
+                        InputActions.Enqueue(new InputAction(InputActionType.RoundActionButton));
+                        break;
+
+                    case ConsoleKey.Escape:
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
