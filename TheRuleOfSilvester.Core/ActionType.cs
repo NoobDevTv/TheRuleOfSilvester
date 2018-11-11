@@ -4,6 +4,7 @@
     {
         None,
         Moved,
-        ChangedMapCell
+        ChangedMapCell,
+        CollectedItem
     }
 }

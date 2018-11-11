@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
+using System.Text;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core.RoundComponents
 {
-    class PlanningRoundComponent : IRoundComponent
+    internal class PlanningRoundComponent : IRoundComponent
     {
         public RoundMode Round => RoundMode.Planning;
 
@@ -36,7 +37,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             }
         }
 
-      
+
 
         public void Start(Game game)
         {
@@ -46,7 +47,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             Subscribe();
         }
 
-       
+
 
         public void Stop(Game game)
         {
@@ -57,7 +58,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             int z = actions.Count;
             for (int i = 0; i < z; i++)
                 UndoLastMovement(game);
-            
+
             game.MultiplayerComponent?.EndRound();
         }
 
@@ -71,6 +72,11 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             {
                 case ActionType.Moved:
                     player.MoveGeneral(new Point(player.Position.X - move.Point.X, player.Position.Y - move.Point.Y));
+                    game.Map
+                        .Cells
+                        .Where(c => typeof(BaseItemCell).IsAssignableFrom(c.GetType()))
+                        .ToList()
+                        .ForEach(i => i.Invalid = true);
                     break;
                 case ActionType.ChangedMapCell:
 
@@ -82,6 +88,13 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     //TODO Reduce duplicated code
                     player.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
                     player.CellInventory.Insert(0, mapCell);
+                    break;
+                case ActionType.CollectedItem:
+                    var item = player.ItemInventory.Last();
+                    item.Position = player.Position;
+                    game.Map.Cells.Add(item);
+                    player.ItemInventory.Remove(item);
+                    item.Invalid = true;
                     break;
             }
         }
@@ -115,19 +128,21 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 UndoLastMovement(null);
 
             propertyChangedRelevant = true;
+
+            if (player.TryCollectItem() && e.PropertyName == nameof(Player.Position))
+                actions.Push(new PlayerAction(ActionType.CollectedItem, player.Position));
         }
 
         private void PlayerPropertyChange(object sender, PropertyChangeEventArgs e)
         {
-            if (e.PropertyName != "Position")
+            if (e.PropertyName != nameof(Player.Position))
                 return;
 
-            Point newPos = (Point)e.NewValue;
-            Point oldPos = (Point)e.OldValue;
+            var newPos = (Point)e.NewValue;
+            var oldPos = (Point)e.OldValue;
 
             if (propertyChangedRelevant)
                 actions.Push(new PlayerAction(ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y)));
-
         }
     }
 }

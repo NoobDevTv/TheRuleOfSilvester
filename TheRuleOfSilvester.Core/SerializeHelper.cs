@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core

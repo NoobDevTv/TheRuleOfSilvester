@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester
@@ -59,7 +60,7 @@ namespace TheRuleOfSilvester
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
             => Send(CommandNames.TransmitActions,
-                SerializeHelper.SerializeList<PlayerAction>(actions.ToList()));
+                SerializeHelper.SerializeList(actions.ToList()));
 
         public void EndRound()
             => Send(CommandNames.EndRound);

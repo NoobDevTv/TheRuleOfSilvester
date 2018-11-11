@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Core

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace TheRuleOfSilvester.Core
+namespace TheRuleOfSilvester.Core.Interfaces
 {
     public interface IByteSerializable
     {

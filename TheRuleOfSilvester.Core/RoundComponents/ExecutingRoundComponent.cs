@@ -51,6 +51,9 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     localUpdatePlayer.CellInventory.Insert(0, mapCell);
                     localUpdatePlayer.Invalid = true;
                     break;
+                case ActionType.CollectedItem:
+                    localUpdatePlayer.TryCollectItem();
+                    break;
                 case ActionType.None:
                 default:
                     break;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TheRuleOfSilvester.Network;
 
-namespace TheRuleOfSilvester.Core
+namespace TheRuleOfSilvester.Core.Interfaces
 {
     public interface IMultiplayerComponent : IUpdateable
     {

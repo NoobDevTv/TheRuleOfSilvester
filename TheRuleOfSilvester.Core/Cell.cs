@@ -11,22 +11,12 @@ namespace TheRuleOfSilvester.Core
 {
     public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
-        public Point Position { get => position; set { OnPropertyChange(position, value); position = value; } }
+        public Point Position { get => position; set => SetValue(value, ref position); }
+        public bool Invalid { get => invalid; set => SetValue(value, ref invalid); }
 
 
         public int Width => Lines.GetLength(0);
         public int Height => Lines.GetLength(1);
-        public bool Invalid
-        {
-            get => invalid; set
-            {
-                if (invalid != value)
-                {
-                    invalid = value;
-                    OnPropertyChanged("Invalid");
-                }
-            }
-        }
         public bool Movable { get; set; }
         public Color Color { get; set; }
         public Map Map { get; set; }
@@ -41,7 +31,6 @@ namespace TheRuleOfSilvester.Core
         protected bool disposed;
 
         private Point position;
-
         private bool invalid;
 
         public Cell(int width, int height, Map map, bool movable = true)
@@ -55,7 +44,7 @@ namespace TheRuleOfSilvester.Core
         }
         public Cell(Map map, bool movable = true) : this(5, 3, map, movable)
         {
-            
+
         }
 
         public void SetPosition(Point position)
@@ -88,14 +77,17 @@ namespace TheRuleOfSilvester.Core
             GC.SuppressFinalize(this);
         }
 
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
 
-        private void OnPropertyChange(Point oldPosition, Point newPosition, [CallerMemberName] string name = null)
+        private void SetValue<T>(T value, ref T privateField, [CallerMemberName] string name = null)
         {
-            PropertyChange?.Invoke(this, new PropertyChangeEventArgs(name, oldPosition, newPosition));
+            if (value.Equals(privateField))
+                return;
+
+            PropertyChange?.Invoke(this, new PropertyChangeEventArgs(name, oldValue: privateField, newValue: value));
+
+            privateField = value;
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

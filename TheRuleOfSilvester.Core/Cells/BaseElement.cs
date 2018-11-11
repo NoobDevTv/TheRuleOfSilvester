@@ -15,7 +15,7 @@ namespace TheRuleOfSilvester.Core.Cells
             ElementID = elementID;
             Connections = connections;
         }
-
+        
         public static implicit operator BaseElement(char value)
         {
             switch (value)

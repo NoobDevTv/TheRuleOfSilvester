@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using TheRuleOfSilvester.Core.Interfaces;
 
 namespace TheRuleOfSilvester.Core.Cells
 {

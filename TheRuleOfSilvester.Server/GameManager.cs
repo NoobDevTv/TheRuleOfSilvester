@@ -134,6 +134,9 @@ namespace TheRuleOfSilvester.Server
                                 x.Invalid = true;
                             });
                             break;
+                        case ActionType.CollectedItem:
+                            player.TryCollectItem();
+                            break;
                         case ActionType.None:
                         default:
                             break;

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Items;
 using TheRuleOfSilvester.Core.Roles;
 
@@ -46,11 +47,13 @@ namespace TheRuleOfSilvester.Core
             Name = "Tim";
             Role = RoleManager.GetRandomRole();
             CellInventory = new List<Cell>();
+            ItemInventory = new List<BaseItemCell>();
             moveSizeX = 5;
             moveSizeY = 3;
         }
         public Player(Map map, BaseRole role) : base(1, 1, map)
         {
+            ItemInventory = new List<BaseItemCell>();
             CellInventory = new List<Cell>();
             Lines = new BaseElement[1, 1];
             IsLocal = true;
@@ -67,8 +70,6 @@ namespace TheRuleOfSilvester.Core
 
             SetAvatar(role.Avatar);
         }
-
-
 
         public void SetMap(Map map)
         {
@@ -307,6 +308,20 @@ namespace TheRuleOfSilvester.Core
             for (int i = 0; i < count; i++)
                 CellInventory.Add(SerializeHelper.DeserializeMapCell(binaryReader));
 
+        }
+
+        public bool TryCollectItem()
+        {
+            var item = Map.Cells.FirstOrDefault(
+                c => c.Position == Position && typeof(BaseItemCell).IsAssignableFrom(c.GetType()));
+
+            if (item == null)
+                return false;
+
+            Map.Cells.Remove(item);
+            ItemInventory.Add(item as BaseItemCell);
+
+            return true;
         }
 
         public override bool Equals(object obj)

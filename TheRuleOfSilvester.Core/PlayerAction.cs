@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using TheRuleOfSilvester.Core.Interfaces;
 
 namespace TheRuleOfSilvester.Core
 {

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester.Core

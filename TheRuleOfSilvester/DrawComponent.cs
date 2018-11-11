@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester
@@ -17,10 +18,13 @@ namespace TheRuleOfSilvester
             //TODO: Quick and Dirty, must be set to player pos later on
             DrawCells(map.Players);
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
-            DrawCells(map.Players.FirstOrDefault(x => x.IsLocal).CellInventory);
+
+            var localPlayer = map.Players.FirstOrDefault(x => x.IsLocal);
+            DrawCells(localPlayer.CellInventory);
 
             DrawCells(map.TextCells);
-            DrawPlayerInfo(map.Players.FirstOrDefault(x => x.IsLocal), map);
+            DrawPlayerInfo(localPlayer);
+            DrawItemInventory(localPlayer);
 
             Console.SetCursorPosition(Console.WindowWidth - 2, Console.WindowHeight - 2);
         }
@@ -43,7 +47,7 @@ namespace TheRuleOfSilvester
                 Console.Write(" ");
         }
 
-        public void DrawPlayerInfo(Player player, Map map)
+        public void DrawPlayerInfo(Player player)
         {
             if (!player.Role.RedrawStats)
                 return;
@@ -66,6 +70,22 @@ namespace TheRuleOfSilvester
             ResetCursor();
             Console.Write("⛨DEF: " + player.Role.Defence);
             player.Role.RedrawStats = false;
+        }
+
+        public void DrawItemInventory(Player player)
+        {
+            int topPos = 7;
+            void ResetCursor()
+            {
+                Console.CursorLeft = Console.WindowWidth - 26;
+                Console.CursorTop = topPos++;
+            }
+
+            foreach (var item in player.ItemInventory)
+            {
+                ResetCursor();
+                Console.Write((char)item.Lines[0, 0].ElementID);
+            }
         }
 
         public void DrawCells<T>(List<T> cells) where T : Cell

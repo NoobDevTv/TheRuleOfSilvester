@@ -1,4 +1,4 @@
-﻿namespace TheRuleOfSilvester.Core
+﻿namespace TheRuleOfSilvester.Core.Interfaces
 {
     public interface IUpdateable
     {

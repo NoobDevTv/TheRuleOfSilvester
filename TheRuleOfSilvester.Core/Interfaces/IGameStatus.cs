@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheRuleOfSilvester.Core
+namespace TheRuleOfSilvester.Core.Interfaces
 {
     public interface IGameStatus
     {

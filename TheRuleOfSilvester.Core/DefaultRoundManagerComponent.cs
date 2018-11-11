@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.RoundComponents;
 
 namespace TheRuleOfSilvester.Core

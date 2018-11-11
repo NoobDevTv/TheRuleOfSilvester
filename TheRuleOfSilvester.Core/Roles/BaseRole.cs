@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using TheRuleOfSilvester.Core.Conditions;
+using TheRuleOfSilvester.Core.Interfaces;
 
 namespace TheRuleOfSilvester.Core.Roles
 {
