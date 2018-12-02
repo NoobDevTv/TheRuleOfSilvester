@@ -26,7 +26,7 @@ namespace TheRuleOfSilvester.Core.Interfaces
 
         void EndRound();
 
-        bool GetUpdateSet(out ICollection<UpdateSet> updateSet);
+        bool GetUpdateSet(out ICollection<PlayerAction> updateSet);
 
         ServerStatus GetServerStatus();
     }

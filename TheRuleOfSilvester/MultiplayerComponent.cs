@@ -65,11 +65,11 @@ namespace TheRuleOfSilvester
         public void EndRound()
             => Send(CommandNames.EndRound);
 
-        public bool GetUpdateSet(out ICollection<UpdateSet> updateSet)
+        public bool GetUpdateSet(out ICollection<PlayerAction> updateSet)
         {
             var answer = Send(CommandNames.Wait);
 
-            updateSet = SerializeHelper.DeserializeToList<UpdateSet>(answer.Skip(sizeof(bool)).ToArray());
+            updateSet = SerializeHelper.DeserializeToList<PlayerAction>(answer.Skip(sizeof(bool)).ToArray());
             return BitConverter.ToBoolean(answer, 0);
         }
 

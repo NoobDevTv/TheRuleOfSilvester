@@ -11,7 +11,7 @@ namespace TheRuleOfSilvester.Core
 {
     public class Game : IDisposable, IGameStatus
     {
-        public ICollection<UpdateSet> CurrentUpdateSets { get; internal set; }
+        public ICollection<PlayerAction> CurrentUpdateSets { get; internal set; }
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }

@@ -9,14 +9,13 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         public RoundMode Round => RoundMode.Executing;
 
         public bool RoundEnd { get; set; }
-        public Stack<(Player Player, PlayerAction Action)> CurrentUpdateSets { get; private set; }
+        public Stack<PlayerAction> CurrentUpdateSets { get; private set; }
 
         private int updateCount;
 
         public void Start(Game game)
         {
-            CurrentUpdateSets = new Stack<(Player Player, PlayerAction Action)>(game.CurrentUpdateSets
-                .SelectMany(s => s.PlayerActions.Select(p => (s.Player, p))));
+            CurrentUpdateSets = new Stack<PlayerAction>(game.CurrentUpdateSets);
         }
 
         public void Stop(Game game) => game.MultiplayerComponent?.EndRound();
@@ -31,9 +30,9 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             if (CurrentUpdateSets.Count < 1)
                 return;
 
-            (Player player, PlayerAction action) = CurrentUpdateSets.Pop();
+            PlayerAction action = CurrentUpdateSets.Pop();
 
-            var localUpdatePlayer = game.Map.Players.First(p => p == player);
+            var localUpdatePlayer = game.Map.Players.First(p => p == action.Player);
 
             switch (action.ActionType)
             {

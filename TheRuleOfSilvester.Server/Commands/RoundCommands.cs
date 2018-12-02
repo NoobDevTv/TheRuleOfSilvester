@@ -33,7 +33,7 @@ namespace TheRuleOfSilvester.Server.Commands
         {
             return BitConverter
                  .GetBytes(args.NetworkPlayer.RoundMode == RoundMode.Executing)
-                 .Concat(SerializeHelper.SerializeList(args.NetworkPlayer.UpdateSets ?? new List<UpdateSet>()))
+                 .Concat(SerializeHelper.SerializeList(args.NetworkPlayer.UpdateSets ?? new List<PlayerAction>()))
                  .ToArray();
         }
     }

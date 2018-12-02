@@ -29,7 +29,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 return;
             }
 
-            if (game.MultiplayerComponent.GetUpdateSet(out ICollection<UpdateSet> updateSet))
+            if (game.MultiplayerComponent.GetUpdateSet(out ICollection<PlayerAction> updateSet))
             {
                 game.CurrentUpdateSets = updateSet;
                 RoundEnd = true;

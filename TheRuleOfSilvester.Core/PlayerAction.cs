@@ -7,25 +7,36 @@ using TheRuleOfSilvester.Core.Interfaces;
 
 namespace TheRuleOfSilvester.Core
 {
-    public struct PlayerAction : IByteSerializable
+    public class PlayerAction : IByteSerializable
     {
-        public ActionType ActionType;
-        public Point Point;
+        public Player Player { get; set; }
 
-        public PlayerAction(ActionType moveType, Point point) : this()
+        public ActionType ActionType { get; private set; }
+        public Point Point { get; private set; }
+
+        public PlayerAction()
         {
+
+        }
+
+        public PlayerAction(Player player, ActionType moveType, Point point) : this()
+        {
+            Player = player;
             ActionType = moveType;
             Point = point;
         }
 
         public void Deserialize(BinaryReader binaryReader)
         {
+            Player = new Player();
+            Player.Deserialize(binaryReader);
             Point = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
             ActionType = (ActionType)binaryReader.ReadInt32();
         }
 
         public void Serialize(BinaryWriter binaryWriter)
         {
+            Player.Serialize(binaryWriter);
             binaryWriter.Write(Point.X);
             binaryWriter.Write(Point.Y);
             binaryWriter.Write((int)ActionType);

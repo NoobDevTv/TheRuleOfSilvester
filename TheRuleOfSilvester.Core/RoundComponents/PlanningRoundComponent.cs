@@ -37,8 +37,6 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             }
         }
 
-
-
         public void Start(Game game)
         {
             game.InputCompoment.Active = true;
@@ -46,8 +44,6 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             actions = new Stack<PlayerAction>(maxMoves);
             Subscribe();
         }
-
-
 
         public void Stop(Game game)
         {
@@ -117,7 +113,14 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         private void OnPlayerChangedCell(object sender, Cell e)
         {
-            actions.Push(new PlayerAction(ActionType.ChangedMapCell, e.Position));
+            PlayerAction action;
+
+            if (sender is Player senderPlayer)
+                action = new PlayerAction(senderPlayer, ActionType.ChangedMapCell, e.Position);
+            else
+                action = new PlayerAction(player, ActionType.ChangedMapCell, e.Position);
+
+            actions.Push(action);
         }
 
         private void PlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -130,7 +133,15 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             propertyChangedRelevant = true;
 
             if (player.TryCollectItem() && e.PropertyName == nameof(Player.Position))
-                actions.Push(new PlayerAction(ActionType.CollectedItem, player.Position));
+            {
+                PlayerAction action;
+                if (sender is Player senderPlayer)
+                    action = new PlayerAction(senderPlayer, ActionType.CollectedItem, senderPlayer.Position);
+                else
+                    action = new PlayerAction(player, ActionType.CollectedItem, player.Position);
+
+                actions.Push(action);
+            }
         }
 
         private void PlayerPropertyChange(object sender, PropertyChangeEventArgs e)
@@ -142,7 +153,16 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             var oldPos = (Point)e.OldValue;
 
             if (propertyChangedRelevant)
-                actions.Push(new PlayerAction(ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y)));
+            {
+                PlayerAction action;
+
+                if (sender is Player senderPlayer)
+                    action = new PlayerAction(senderPlayer, ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
+                else
+                    action = new PlayerAction(player, ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
+
+                actions.Push(action);
+            }
         }
     }
 }

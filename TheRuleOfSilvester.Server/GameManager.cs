@@ -15,18 +15,24 @@ namespace TheRuleOfSilvester.Server
     {
         public static Map Map { get; private set; }
         public static Dictionary<int, NetworkPlayer> Players { get; private set; }
-        private static readonly Dictionary<Player, List<PlayerAction>> actionCache;
         private static readonly Queue<BaseRole> roles;
+        private static readonly ActionCache actionCache;
+        private static readonly Executor executor;
+
         static GameManager()
         {
             Map = GenerateMap();
+            actionCache = new ActionCache();
+            executor = new Executor(actionCache);
             Players = new Dictionary<int, NetworkPlayer>();
-            actionCache = new Dictionary<Player, List<PlayerAction>>();
             roles = RoleManager.GetAllRolesRandomized();
         }
 
         internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
-            => actionCache[player] = playerActions;
+        {
+            playerActions.ForEach(a => a.Player = player);
+            actionCache.AddRange(playerActions);
+        }
 
         internal static Player GetNewPlayer(ConnectedClient client)
         {
@@ -85,7 +91,7 @@ namespace TheRuleOfSilvester.Server
                         return;
                 }
 
-                ExecuteCache();
+                Execute();
                 CheckWinCondition(tmpPlayers);
             });
         }
@@ -101,57 +107,14 @@ namespace TheRuleOfSilvester.Server
             }
         }
 
-        private static void ExecuteCache()
+        private static void Execute()
         {
-            var updateSets = new List<UpdateSet>();
+            executor.Execute(Map);            
 
-            foreach (var cachEntry in actionCache)
+            foreach (var player in Players.Values)
             {
-                var player = cachEntry.Key;
-
-                foreach (var action in cachEntry.Value)
-                {
-                    switch (action.ActionType)
-                    {
-                        case ActionType.Moved:
-                            Map.Players.First(p => p == player).Position += new Size(action.Point);
-                            break;
-                        case ActionType.ChangedMapCell:
-                            var cell = Map.Cells.First(c => c.Position == action.Point);
-                            Map.Cells.Remove(cell);
-                            var inventoryCell = player.CellInventory.First();
-                            inventoryCell.Position = cell.Position;
-                            inventoryCell.Invalid = true;
-                            Map.Cells.Add(inventoryCell);
-                            player.CellInventory.Remove(inventoryCell);
-                            player.CellInventory.Add(cell);
-
-                            cell.Position = new Point(5, Map.Height + 2);
-                            cell.Invalid = true;
-                            player.CellInventory.ForEach(x =>
-                            {
-                                x.Position = new Point(x.Position.X - 2, x.Position.Y);
-                                x.Invalid = true;
-                            });
-                            break;
-                        case ActionType.CollectedItem:
-                            player.TryCollectItem();
-                            break;
-                        case ActionType.None:
-                        default:
-                            break;
-                    }
-                }
-
-                updateSets.Add(new UpdateSet(player, cachEntry.Value));
-            }
-
-            foreach (var player in actionCache.Keys)
-            {
-                var networkPlayer = Players[player.Id];
-
-                networkPlayer.UpdateSets = updateSets;
-                networkPlayer.RoundMode++;
+                player.UpdateSets = executor.UpdateSets;
+                player.RoundMode++;
             }
         }
 

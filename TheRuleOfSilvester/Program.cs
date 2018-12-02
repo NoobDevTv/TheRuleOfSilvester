@@ -27,7 +27,7 @@ namespace TheRuleOfSilvester
             inputComponent = new InputComponent();
             multiplayerComponent = new MultiplayerComponent();
             IsRunning = true;
-
+            
             menu = new GameMenu(new List<MenuItem>()
             {
                new MenuItem(true, "New Game", SinglePlayer),
