@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core.Conditions

@@ -24,7 +24,7 @@ namespace TheRuleOfSilvester.Core
         }
         public char Avatar { get; private set; }
         public bool IsLocal { get; set; }
-        public List<BaseItemCell> ItemInventory { get; set; }
+        public BaseItemCell[] ItemInventory { get; set; }
         public List<Cell> CellInventory { get; set; }
         public int Id { get; set; }
 
@@ -47,13 +47,13 @@ namespace TheRuleOfSilvester.Core
             Name = "Tim";
             Role = RoleManager.GetRandomRole();
             CellInventory = new List<Cell>();
-            ItemInventory = new List<BaseItemCell>();
+            ItemInventory = new BaseItemCell[10];
             moveSizeX = 5;
             moveSizeY = 3;
         }
         public Player(Map map, BaseRole role) : base(1, 1, map)
         {
-            ItemInventory = new List<BaseItemCell>();
+            ItemInventory = new BaseItemCell[10];
             CellInventory = new List<Cell>();
             Lines = new BaseElement[1, 1];
             IsLocal = true;
@@ -319,8 +319,15 @@ namespace TheRuleOfSilvester.Core
                 return false;
 
             Map.Cells.Remove(item);
-            ItemInventory.Add(item as BaseItemCell);
-
+            for (int i = 0; i < ItemInventory.Length; i++)
+            {
+                if (ItemInventory[i] == null)
+                {
+                    ItemInventory[i] = item as BaseItemCell;
+                    break;
+                }
+            }
+            
             return true;
         }
 

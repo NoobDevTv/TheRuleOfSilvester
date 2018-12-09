@@ -9,11 +9,11 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public static partial class GeneralCommands
     {
-        [Command((short)CommandNames.NewPlayer)]
+        [Command((short)CommandName.NewPlayer)]
         public static byte[] NewPlayer(CommandArgs args)
             => SerializeHelper.Serialize(GameManager.GetNewPlayer(args.Client));
 
-        [Command((short)CommandNames.GetStatus)]
+        [Command((short)CommandName.GetStatus)]
         public static byte[] GetStatus(CommandArgs args) 
             => new byte[] { (byte)args.NetworkPlayer.CurrentServerStatus };
     }

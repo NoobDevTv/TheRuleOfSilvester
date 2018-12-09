@@ -12,23 +12,23 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public partial class RoundCommands
     {
-        [Command((short)CommandNames.TransmitActions)]
+        [Command((short)CommandName.TransmitActions)]
         public static byte[] TransmitActions(CommandArgs args)
         {
             var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
             GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions);
 
-            return BitConverter.GetBytes((short)CommandNames.TransmitActions);
+            return BitConverter.GetBytes((short)CommandName.TransmitActions);
         }
 
-        [Command((short)CommandNames.EndRound)]
+        [Command((short)CommandName.EndRound)]
         public static byte[] EndRound(CommandArgs args)
         {
             GameManager.EndRound(args.NetworkPlayer);
-            return BitConverter.GetBytes((short)CommandNames.EndRound);
+            return BitConverter.GetBytes((short)CommandName.EndRound);
         }
 
-        [Command((short)CommandNames.Wait)]
+        [Command((short)CommandName.Wait)]
         public static byte[] Wait(CommandArgs args)
         {
             return BitConverter

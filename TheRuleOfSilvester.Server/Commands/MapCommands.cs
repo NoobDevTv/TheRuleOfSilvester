@@ -10,14 +10,14 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public partial class MapCommands
     {
-        [Command((short)CommandNames.GetMap)]
+        [Command((short)CommandName.GetMap)]
         public static byte[] GetMap(CommandArgs args) => SerializeHelper.Serialize(GameManager.Map);
         
-        [Command((short)CommandNames.GetPlayers)]
+        [Command((short)CommandName.GetPlayers)]
         public static byte[] GetPlayers(CommandArgs args)
             => SerializeHelper.SerializeList(GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId).ToList());
 
-        [Command((short)CommandNames.UpdatePlayer)]
+        [Command((short)CommandName.UpdatePlayer)]
         public static byte[] UpdatePlayer(CommandArgs args)
         {
             //if(!args.HavePlayer)
@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester.Server.Commands
 
             var newPlayer = SerializeHelper.Deserialize<Player>(args.Data);
             args.NetworkPlayer.Player.Position = newPlayer.Position;
-            return BitConverter.GetBytes((short)CommandNames.UpdatePlayer);
+            return BitConverter.GetBytes((short)CommandName.UpdatePlayer);
         }
 
     }

@@ -4,12 +4,14 @@ using System.Linq;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Cells;
 using TheRuleOfSilvester.Core.Interfaces;
+using TheRuleOfSilvester.Core.Items;
 using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester
 {
     internal class DrawComponent : IDrawComponent
     {
+        private BaseItemCell[] oldPlayerInventory;
 
         public void Draw(Map map)
         {
@@ -81,11 +83,25 @@ namespace TheRuleOfSilvester
                 Console.CursorTop = topPos++;
             }
 
-            foreach (var item in player.ItemInventory)
+            var itemInventory = player.ItemInventory;
+
+            if (oldPlayerInventory == null)
+                oldPlayerInventory = new BaseItemCell[itemInventory.Length];
+
+            for (int i = 0; i < itemInventory.Length; i++)
             {
                 ResetCursor();
-                Console.Write((char)item.Lines[0, 0].ElementID);
+
+                if (itemInventory[i] != oldPlayerInventory[i])
+                {
+                    if (itemInventory[i] == null)
+                        Console.Write(' ');
+                    else
+                        Console.Write((char)itemInventory[i].Lines[0, 0].ElementID);
+                }
             }
+
+            player.ItemInventory.CopyTo(oldPlayerInventory, 0);
         }
 
         public void DrawCells<T>(List<T> cells) where T : Cell

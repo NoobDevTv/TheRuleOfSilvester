@@ -44,36 +44,36 @@ namespace TheRuleOfSilvester
         }
 
         public ServerStatus GetServerStatus()
-            => (ServerStatus)Send(CommandNames.GetStatus)[0];
+            => (ServerStatus)Send(CommandName.GetStatus)[0];
 
         public Map GetMap()
-            => SerializeHelper.Deserialize<Map>(Send(CommandNames.GetMap));
+            => SerializeHelper.Deserialize<Map>(Send(CommandName.GetMap));
 
         public Player ConnectPlayer()
-            => SerializeHelper.Deserialize<Player>(Send(CommandNames.NewPlayer));
+            => SerializeHelper.Deserialize<Player>(Send(CommandName.NewPlayer));
 
         public List<Player> GetPlayers()
-            => SerializeHelper.DeserializeToList<Player>(Send(CommandNames.GetPlayers)).ToList();
+            => SerializeHelper.DeserializeToList<Player>(Send(CommandName.GetPlayers)).ToList();
 
         public void UpdatePlayer(Player player)
-            => Send(CommandNames.UpdatePlayer, SerializeHelper.Serialize(player));
+            => Send(CommandName.UpdatePlayer, SerializeHelper.Serialize(player));
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
-            => Send(CommandNames.TransmitActions,
+            => Send(CommandName.TransmitActions,
                 SerializeHelper.SerializeList(actions.ToList()));
 
         public void EndRound()
-            => Send(CommandNames.EndRound);
+            => Send(CommandName.EndRound);
 
         public bool GetUpdateSet(out ICollection<PlayerAction> updateSet)
         {
-            var answer = Send(CommandNames.Wait);
+            var answer = Send(CommandName.Wait);
 
             updateSet = SerializeHelper.DeserializeToList<PlayerAction>(answer.Skip(sizeof(bool)).ToArray());
             return BitConverter.ToBoolean(answer, 0);
         }
 
-        private byte[] Send(CommandNames command, params byte[] data)
+        private byte[] Send(CommandName command, params byte[] data)
             => Client.Send(BitConverter.GetBytes((short)command).Concat(data).ToArray());
     }
 }

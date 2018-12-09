@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Network
 {
-    public enum CommandNames : short
+    public enum CommandName : short
     {
         GetMap,
         GetMovableTiles,

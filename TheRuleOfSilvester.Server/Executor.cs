@@ -23,43 +23,46 @@ namespace TheRuleOfSilvester.Server
         {
             UpdateSets.Clear();
 
-            foreach (var action in actionCache)
+            foreach (var actions in actionCache)
             {
-                var player = action.Player;
-
-                switch (action.ActionType)
+                foreach (var action in actions)
                 {
-                    case ActionType.Moved:
-                        map.Players.First(p => p == player).MoveGeneral(action.Point);
-                        break;
-                    case ActionType.ChangedMapCell:
-                        var cell = map.Cells.First(c => c.Position == action.Point);
-                        map.Cells.Remove(cell);
-                        var inventoryCell = player.CellInventory.First();
-                        inventoryCell.Position = cell.Position;
-                        inventoryCell.Invalid = true;
-                        map.Cells.Add(inventoryCell);
-                        player.CellInventory.Remove(inventoryCell);
-                        player.CellInventory.Add(cell);
+                    var player = action.Player;
 
-                        cell.Position = new Point(5, map.Height + 2);
-                        cell.Invalid = true;
-                        player.CellInventory.ForEach(x =>
-                        {
-                            x.Position = new Point(x.Position.X - 2, x.Position.Y);
-                            x.Invalid = true;
-                        });
-                        break;
-                    case ActionType.CollectedItem:
-                        player.TryCollectItem();
-                        break;
-                    case ActionType.None:
-                    default:
-                        break;
+                    switch (action.ActionType)
+                    {
+                        case ActionType.Moved:
+                            map.Players.First(p => p == player).MoveGeneral(action.Point);
+                            break;
+                        case ActionType.ChangedMapCell:
+                            var cell = map.Cells.First(c => c.Position == action.Point);
+                            map.Cells.Remove(cell);
+                            var inventoryCell = player.CellInventory.First();
+                            inventoryCell.Position = cell.Position;
+                            inventoryCell.Invalid = true;
+                            map.Cells.Add(inventoryCell);
+                            player.CellInventory.Remove(inventoryCell);
+                            player.CellInventory.Add(cell);
 
+                            cell.Position = new Point(5, map.Height + 2);
+                            cell.Invalid = true;
+                            player.CellInventory.ForEach(x =>
+                            {
+                                x.Position = new Point(x.Position.X - 2, x.Position.Y);
+                                x.Invalid = true;
+                            });
+                            break;
+                        case ActionType.CollectedItem:
+                            player.TryCollectItem();
+                            break;
+                        case ActionType.None:
+                        default:
+                            break;
+
+                    }
+
+                    UpdateSets.Add(action);
                 }
-
-                UpdateSets.Add(action);
             }
         }
     }

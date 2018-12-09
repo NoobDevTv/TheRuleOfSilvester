@@ -8,13 +8,13 @@ namespace TheRuleOfSilvester.Server
 {
     class Program
     {
-        private static DefaultCommandManager<CommandNames, CommandArgs, byte[]> manager;
+        private static DefaultCommandManager<CommandName, CommandArgs, byte[]> manager;
         static Network.Server server;
 
         static void Main(string[] args)
         {
             var mResetEvent = new ManualResetEvent(false);
-            manager = new DefaultCommandManager<CommandNames, CommandArgs, byte[]>(typeof(Program).Namespace + ".Commands");
+            manager = new DefaultCommandManager<CommandName, CommandArgs, byte[]>(typeof(Program).Namespace + ".Commands");
 
             using (server = new Network.Server())
             {
@@ -46,7 +46,7 @@ namespace TheRuleOfSilvester.Server
                 if (connectedClient.Registered)
                     GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
 
-                var answer = manager.Dispatch(command: (CommandNames)args.Command, new CommandArgs(player, connectedClient, args.Data));
+                var answer = manager.Dispatch(command: (CommandName)args.Command, new CommandArgs(player, connectedClient, args.Data));
                 
                 e.Send(answer, answer.Length);
             };
