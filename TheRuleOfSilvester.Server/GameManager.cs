@@ -44,7 +44,7 @@ namespace TheRuleOfSilvester.Server
             var player = new Player(Map, roles.Dequeue())
             {
                 Name = Convert.ToBase64String(Guid.NewGuid().ToByteArray()), //TODO: Temporary workaround
-                Position = new Point(2, 1),
+                Position = new Point(7, 4),
             };
             Players.Add(tmpId, new NetworkPlayer(player)
             {
@@ -84,6 +84,7 @@ namespace TheRuleOfSilvester.Server
         {
             Task.Run(() =>
             {
+                var referee = new Referee();
                 var tmpPlayers = Players.Values.ToList();
                 foreach (var player in tmpPlayers)
                 {
@@ -92,24 +93,23 @@ namespace TheRuleOfSilvester.Server
                 }
 
                 Execute();
-                CheckWinCondition(tmpPlayers);
+                var winners = referee.GetWinners(tmpPlayers.Select(t => t.Player));
+                if (winners.Count() > 0)
+                {
+                    Console.Clear();
+                    foreach (var winner in winners)
+                    {
+                        Console.WriteLine($"{winner.Name} has won the match :)");
+                    }
+                }
             });
         }
 
-        private static void CheckWinCondition(List<NetworkPlayer> players)
-        {
-            foreach (var player in players)
-            {
-                var conditions = player.Player.Role.Conditions;
 
-                foreach (var condition in conditions)
-                    condition.Match(player.Player); //TODO: Work with return value
-            }
-        }
 
         private static void Execute()
         {
-            executor.Execute(Map);            
+            executor.Execute(Map);
 
             foreach (var player in Players.Values)
             {

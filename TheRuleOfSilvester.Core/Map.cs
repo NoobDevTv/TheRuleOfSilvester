@@ -36,9 +36,7 @@ namespace TheRuleOfSilvester.Core
 
         public bool IsTileOccupied(Point pos)
         {
-            var cellList = Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())).Where(x =>
-                 x.Position.X * x.Width <= pos.X && (x.Position.X * x.Width + x.Width) > pos.X
-                 && x.Position.Y * x.Height <= pos.Y && (x.Position.Y * x.Height + x.Height) > pos.Y);
+            var cellList = Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())).Where(x => Cell.IsOnPosition(pos, x));
 
             foreach (var cell in cellList)
             {
@@ -50,9 +48,7 @@ namespace TheRuleOfSilvester.Core
         }
         public Cell GetTileAbsolutePos(Point pos)
         {
-            return Cells.Where(x => x.GetType() != typeof(Player)).FirstOrDefault(x =>
-                 x.Position.X * x.Width <= pos.X && (x.Position.X * x.Width + x.Width) > pos.X
-                 && x.Position.Y * x.Height <= pos.Y && (x.Position.Y * x.Height + x.Height) > pos.Y);
+            return Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())).FirstOrDefault(x => Cell.IsOnPosition(pos, x));
 
         }
 
@@ -122,6 +118,6 @@ namespace TheRuleOfSilvester.Core
                 ourCell.NormalizeLayering();
         }
 
-        
+
     }
 }

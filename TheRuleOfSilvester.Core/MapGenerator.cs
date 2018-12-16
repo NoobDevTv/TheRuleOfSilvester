@@ -99,9 +99,9 @@ namespace TheRuleOfSilvester.Core
             foreach (MapCell ourCell in map.Cells)
                 ourCell.NormalizeLayering();
 
-
             //Default coin stack
-            map.Cells.Add(new CoinStack(map) { Position = new Point(7, 4) });
+            var r = new Random();
+            map.Cells.Add(new CoinStack(map) { Position = new Point(5 * r.Next(1, map.Width - 2) - 3, 3 * r.Next(1, map.Height - 2) - 2) });
 
             return map;
         }

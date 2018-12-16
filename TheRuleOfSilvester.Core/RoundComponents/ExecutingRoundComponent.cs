@@ -47,7 +47,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point);
 
                     localUpdatePlayer.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
-                    localUpdatePlayer.CellInventory.Insert(0, mapCell);
+                    localUpdatePlayer.CellInventory.Add(mapCell);
                     localUpdatePlayer.Invalid = true;
                     break;
                 case ActionType.CollectedItem:

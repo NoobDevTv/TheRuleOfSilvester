@@ -92,9 +92,6 @@ namespace TheRuleOfSilvester.Core
                 return;
             }
 
-            if (Position.Y - moveSizeY <= 0 || MovementOccupied(-moveSizeY, false))
-                return;
-
             MoveGeneral(new Point(Position.X, Position.Y - moveSizeY));
         }
 
@@ -105,9 +102,6 @@ namespace TheRuleOfSilvester.Core
                 ghost.MoveDown();
                 return;
             }
-
-            if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height || MovementOccupied(moveSizeY, false))
-                return;
 
             MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
         }
@@ -120,9 +114,6 @@ namespace TheRuleOfSilvester.Core
                 return;
             }
 
-            if (Position.X - moveSizeX <= 0 || MovementOccupied(-moveSizeX, true))
-                return;
-
             MoveGeneral(new Point(Position.X - moveSizeX, Position.Y));
         }
 
@@ -133,9 +124,6 @@ namespace TheRuleOfSilvester.Core
                 ghost.MoveRight();
                 return;
             }
-
-            if (Position.X == Map.Width * Map.Cells.FirstOrDefault().Width || MovementOccupied(moveSizeX, true))
-                return;
 
             MoveGeneral(new Point(Position.X + moveSizeX, Position.Y));
         }
@@ -265,9 +253,15 @@ namespace TheRuleOfSilvester.Core
 
         public void MoveGeneral(Point move)
         {
-            var cell = Map.Cells.FirstOrDefault(x =>
-                x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
-                && x.Position.Y * x.Height < Position.Y && (x.Position.Y * x.Height + x.Height) > Position.Y);
+            var mapCells = Map.Cells.OfType<MapCell>();
+
+            int m = move.X - Position.X + move.Y - Position.Y;
+            bool xDir = move.X - Position.X != 0;
+            if (MovementOccupied(m, xDir))
+                return;
+
+            var cell = mapCells.FirstOrDefault(x => IsOnPosition(Position, x));
+
             SetPosition(move);
 
             if (cell != null)

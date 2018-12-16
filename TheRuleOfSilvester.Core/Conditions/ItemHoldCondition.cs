@@ -8,11 +8,11 @@ namespace TheRuleOfSilvester.Core.Conditions
 {
     public class ItemHoldCondition : ICondition
     {
-        public BaseItemCell Item { get; set; } 
+        public Type ItemType { get; set; } 
 
         public bool Match(Player player)
         {
-            return player.ItemInventory.Contains(Item);
+            return player.ItemInventory.Any(i => ItemType.IsAssignableFrom(i?.GetType()));
         }
     }
 }

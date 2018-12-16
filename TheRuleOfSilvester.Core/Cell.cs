@@ -89,5 +89,9 @@ namespace TheRuleOfSilvester.Core
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+        public static bool IsOnPosition(Point pos, Cell x) =>
+                 x.Position.X * x.Width <= pos.X && (x.Position.X * x.Width + x.Width) > pos.X
+                 && x.Position.Y * x.Height <= pos.Y && (x.Position.Y * x.Height + x.Height) > pos.Y;
     }
 }

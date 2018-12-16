@@ -72,7 +72,7 @@ namespace TheRuleOfSilvester
                 Console.WriteLine("You've entered a wrong ip. Please try again! ☺");
                 Console.Write("IP Address of Server: ");
             }
-
+            Console.Clear();
             multiplayerComponent.Host = address.ToString();
             multiplayerComponent.Port = 4400;
 

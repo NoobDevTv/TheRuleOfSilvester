@@ -12,7 +12,7 @@ namespace TheRuleOfSilvester.Core.Cells
     public abstract class MapCell : Cell, IByteSerializable
     {
         public Guid Guid { get; private set; }
-        
+
 
         public MapCell(Map map, bool movable = true) : base(5, 3, map, movable)
         {
@@ -23,12 +23,13 @@ namespace TheRuleOfSilvester.Core.Cells
         public void NormalizeLayering()
         {
             ClearLayer();
-            var nTopCell = Map.Cells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y - 1);
-            var nDownCell = Map.Cells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y + 1);
-            var nLeftCell = Map.Cells.FirstOrDefault(c => c.Position.X == Position.X - 1 && c.Position.Y == Position.Y);
-            var nRightCell = Map.Cells.FirstOrDefault(c => c.Position.X == Position.X + 1 && c.Position.Y == Position.Y);
+            var mapCells = Map.Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType()));
 
-            //var ourCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY);
+            var nTopCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y - 1);
+            var nDownCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y + 1);
+            var nLeftCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X - 1 && c.Position.Y == Position.Y);
+            var nRightCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X + 1 && c.Position.Y == Position.Y);
+
             if (nLeftCell != null)
             {
                 Layer[0, 0] = (Layer[0, 0] == null ? ConnectionPoints.None : Layer[0, 0].Connections) | Lines[0, 0].Connections | ((nLeftCell.Lines[4, 0].Connections & ConnectionPoints.Right) == ConnectionPoints.Right ? ConnectionPoints.Left : ConnectionPoints.None);
@@ -72,7 +73,7 @@ namespace TheRuleOfSilvester.Core.Cells
             binaryWriter.Write(Color.ToArgb());
         }
 
-        public void Deserialize(BinaryReader binaryReader) 
+        public void Deserialize(BinaryReader binaryReader)
             => throw new NotSupportedException("Use SerializeHelper.DeserializeMapCell instead ;)");
     }
 }

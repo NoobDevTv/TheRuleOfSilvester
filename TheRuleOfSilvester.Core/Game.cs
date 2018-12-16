@@ -62,7 +62,7 @@ namespace TheRuleOfSilvester.Core
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {
                     Color = Color.Red,
-                    Position = new Point(2, 1)
+                    Position = new Point(7, 4)
                 };
                 CurrentGameStatus = GameStatus.Running;
             }

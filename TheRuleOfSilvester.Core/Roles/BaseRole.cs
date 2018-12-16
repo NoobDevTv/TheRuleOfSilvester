@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using TheRuleOfSilvester.Core.Conditions;
 using TheRuleOfSilvester.Core.Interfaces;
+using TheRuleOfSilvester.Core.Items;
 
 namespace TheRuleOfSilvester.Core.Roles
 {
@@ -31,7 +32,7 @@ namespace TheRuleOfSilvester.Core.Roles
         {
             Name = name;
             RedrawStats = true;
-            Conditions = new List<ICondition>();
+            Conditions = new List<ICondition>() { new ItemHoldCondition() { ItemType = typeof(CoinStack) } };
         }
 
         public void Serialize(BinaryWriter binaryWriter)

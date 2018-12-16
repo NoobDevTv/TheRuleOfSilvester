@@ -51,7 +51,7 @@ namespace TheRuleOfSilvester.Server
                 e.Send(answer, answer.Length);
             };
 
-            Console.WriteLine("New Client has connected. Current Amount: " + server.ClientAmount + 1);
+            Console.WriteLine("New Client has connected. Current Amount: " + (server.ClientAmount + 1));
         }
     }
 }
