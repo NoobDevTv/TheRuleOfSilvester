@@ -12,7 +12,7 @@ namespace TheRuleOfSilvester.Core.Roles
         {
             MaxHealthPoints = 70;
             HealthPoints = MaxHealthPoints;
-            ActionsPoints = 13;
+            ActionsPoints = 8;
             Attack = 15;
             Defence = 5;
         }

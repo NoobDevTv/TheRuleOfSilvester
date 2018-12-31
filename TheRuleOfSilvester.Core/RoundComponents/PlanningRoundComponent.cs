@@ -18,7 +18,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         public RoundMode Round => RoundMode.Planning;
 
         public bool RoundEnd { get; set; }
-        
+
         private Player player;
 
         private Stack<PlayerAction> actions;
@@ -144,7 +144,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
             propertyChangedRelevant = true;
 
-            if (player.TryCollectItem() && e.PropertyName == nameof(Player.Position))
+            if (e.PropertyName == nameof(Player.Position) && player.TryCollectItem())
             {
                 PlayerAction action;
                 if (sender is Player senderPlayer)
