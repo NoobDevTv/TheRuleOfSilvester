@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuleOfSilvester", "TheRuleOfSilvester\TheRuleOfSilvester.csproj", "{C68BA472-A503-47C4-B9CE-56C47D963044}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester", "TheRuleOfSilvester\TheRuleOfSilvester.csproj", "{C68BA472-A503-47C4-B9CE-56C47D963044}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuleOfSilvester.Core", "TheRuleOfSilvester.Core\TheRuleOfSilvester.Core.csproj", "{02EBCB6A-D3FB-4186-B2CB-4D59AC0A7010}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Core", "TheRuleOfSilvester.Core\TheRuleOfSilvester.Core.csproj", "{02EBCB6A-D3FB-4186-B2CB-4D59AC0A7010}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Network", "TheRuleOfSilvester.Network\TheRuleOfSilvester.Network.csproj", "{B398BF7B-2601-4FD0-99DA-F983A389524C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuleOfSilvester.Server", "TheRuleOfSilvester.Server\TheRuleOfSilvester.Server.csproj", "{09086C9C-0F90-436D-BC43-76D5376C2D35}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{02EBCB6A-D3FB-4186-B2CB-4D59AC0A7010}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02EBCB6A-D3FB-4186-B2CB-4D59AC0A7010}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02EBCB6A-D3FB-4186-B2CB-4D59AC0A7010}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B398BF7B-2601-4FD0-99DA-F983A389524C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B398BF7B-2601-4FD0-99DA-F983A389524C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B398BF7B-2601-4FD0-99DA-F983A389524C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B398BF7B-2601-4FD0-99DA-F983A389524C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09086C9C-0F90-436D-BC43-76D5376C2D35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09086C9C-0F90-436D-BC43-76D5376C2D35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09086C9C-0F90-436D-BC43-76D5376C2D35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09086C9C-0F90-436D-BC43-76D5376C2D35}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

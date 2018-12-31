@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public class StraightUpDown : Cell
+    [Guid("5729128C-5D6E-4ABA-BCC6-F6190D1F7FF0")]
+    public class StraightUpDown : MapCell
     {
-        public StraightUpDown() : base()
+
+        public StraightUpDown(Map map, bool movable = true) : base(map, movable)
         {
             for (int i = 0; i < 3; i++)
             {
-                Lines[i, 0] = "│";
-                Lines[i, 4] = "│";
+                Lines[0, i] = Movable ? '│' : '║';
+                Lines[4, i] = Movable ? '│' : '║';
             }
         }
     }

@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    public class CornerRightDown : Cell
+    [Guid("0D85862D-0B7D-4613-A513-F47EE3E6F8D7")]
+    public class CornerRightDown : MapCell
     {
-        public CornerRightDown() : base()
+
+        public CornerRightDown(Map map, bool movable = true) : base(map, movable)
         {
-            Lines[2, 0] = "│";
-            Lines[2, 4] = "┌";
-            Lines[1, 0] = "│";
-            Lines[0, 0] = "┌";
+            Lines[0, 2] = Movable ? '│' : '║';
+            Lines[4, 2] = Movable ? '┌' : '╔';
+            Lines[0, 1] = Movable ? '│' : '║';
+            Lines[0, 0] = Movable ? '┌' : '╔';
             for (int i = 1; i < 5; i++)
-                Lines[0, i] = "─";
+                Lines[i, 0] = Movable ? '─' : '═';
         }
     }
 }

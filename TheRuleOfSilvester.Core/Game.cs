@@ -1,40 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Interfaces;
+using TheRuleOfSilvester.Core.Roles;
 
 namespace TheRuleOfSilvester.Core
 {
-    public class Game : IDisposable
+    public class Game : IDisposable, IGameStatus
     {
+        public ICollection<PlayerAction> CurrentUpdateSets { get; internal set; }
         public IDrawComponent DrawComponent { get; set; }
+        public IInputCompoment InputCompoment { get; set; }
+        public IMultiplayerComponent MultiplayerComponent { get; set; }
+        public IRoundManagerComponent RoundComponent { get; set; }
+        public IWaitingComponent WaitingComponent { get; set; }
+        public GameStatus CurrentGameStatus { get; set; }
 
-        private int frame;
+        public int Frames { get; private set; }
+
+        public Map Map { get; private set; }
+
+        public bool IsRunning { get; private set; }
+        public bool IsMutliplayer { get; private set; }
+
+        internal InputAction InputAction { get; private set; }
+        public List<Player> Winners { get; internal set; }
+
         private int ups;
         private Thread gameThread;
-        private Map map;
-        private List<Cell> cells;
-        int c = 0;
+        private Player player;
+        private readonly ManualResetEventSlim manualResetEvent;
 
-        public void Run(int frame, int ups)
+        public Game() => manualResetEvent = new ManualResetEventSlim(false);
+
+        public void Run(int frame, int ups, bool multiplayer, string playername = "")
         {
-            this.frame = frame;
+            IsMutliplayer = multiplayer;
+
+            if (multiplayer)
+                MultiplayerComponent.Connect();
+
+            Frames = frame;
             this.ups = ups;
-            map = new Map();
-            cells = new List<Cell> {
-                new CornerLeftDown(),
-                new CornerLeftUp(),
-                new CornerRightDown(),
-                new CornerRightUp(),
-                new Cross(),
-                new LeftDownRight(),
-                new LeftUpRight(),
-                new StraightLeftRight(),
-                new StraightUpDown(),
-                new UpDownLeft(),
-                new UpDownRight(),
-            };
+
+            if (multiplayer)
+            {
+                Map = MultiplayerComponent.GetMap();
+                player = MultiplayerComponent.ConnectPlayer(playername);
+                player.Map = Map;
+                player.IsLocal = true;
+                player.Color = Color.Red;
+            }
+            else
+            {
+                var generator = new MapGenerator();
+                Map = generator.Generate(20, 10);
+
+                player = new Player(Map, RoleManager.GetRandomRole())
+                {
+                    Color = Color.Red,
+                    Position = new Point(7, 4)
+                };
+                CurrentGameStatus = GameStatus.Running;
+            }
+
+
+            Map.Players.Add(player);
+
+            if (RoundComponent == null)
+                RoundComponent = new DefaultRoundManagerComponent(Map);
+
+            IsRunning = true;
 
             gameThread = new Thread(Loop)
             {
@@ -43,35 +82,89 @@ namespace TheRuleOfSilvester.Core
 
             gameThread.Start();
         }
+        public void Run(int frame, int ups) => Run(frame, ups, false);
 
         public void Stop()
         {
+            if (IsMutliplayer)
+                MultiplayerComponent.Disconnect();
+
             if (gameThread.IsAlive)
-                gameThread.Abort();
+                IsRunning = false;
+
+            CurrentGameStatus = GameStatus.Stopped;
         }
 
         public void Update()
         {
-            DrawComponent.Draw(map);
-            cells[c].Invalid = true;
-            map.Cells[3, 3] = cells[c++];
-            c %= cells.Count;
+            BeforeUpdate();
+            SystemUpdate();
+            UiUpdate();
+            AfterUpdate();
         }
 
-        public void Dispose()
+        public void Wait()
+            => manualResetEvent.Wait();
+
+        private void BeforeUpdate()
         {
+            if (InputCompoment.InputActions.TryDequeue(out var inputAction))
+            {
+                InputAction = inputAction;
+            }
+            else
+            {
+                InputAction?.SetInvalid();
+                InputAction = null;
+            }
+        }
+
+        private void SystemUpdate()
+        {
+            if (IsMutliplayer)
+                MultiplayerComponent.Update(this);
+
+            WaitingComponent?.Update(this);
+
+            if (CurrentGameStatus == GameStatus.Running)
+                GameUpdate();
+        }
+
+        private void GameUpdate()
+        {
+            player.Update(this);
+            RoundComponent.Update(this);
+        }
+
+        private void UiUpdate()
+        {
+            if (CurrentGameStatus == GameStatus.Running)
+                DrawComponent.Draw(Map);
+            else 
+                DrawComponent.DrawCells(new List<TextCell> { new TextCell("NOT Running", Map) });
+        }
+
+        private void AfterUpdate()
+        {
+            InputAction?.SetInvalid();
+            InputAction = null;
+        }
+
+        public void Dispose() =>
             //Stop();
 
-            //gameThread = null;
-        }
+            gameThread = null;
 
         private void Loop()
         {
-            while (true)
+            while (IsRunning)
             {
                 Update();
-                Thread.Sleep(1000 / frame);
+                Thread.Sleep(1000 / Frames);
             }
+
+            manualResetEvent.Set();
         }
+
     }
 }

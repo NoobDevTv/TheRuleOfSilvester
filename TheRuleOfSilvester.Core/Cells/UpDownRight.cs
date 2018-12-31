@@ -1,17 +1,20 @@
-﻿using System;
+﻿using System.Runtime.InteropServices;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace TheRuleOfSilvester.Core.Cells
 {
-    class UpDownRight : Cell
+    [Guid("6971B8CC-9A66-45F4-98B4-6497A43F74E8")]
+    class UpDownRight : MapCell
     {
-        public UpDownRight()
+
+        public UpDownRight(Map map, bool movable = true) : base(map, movable)
         {
-            Lines[2, 4] = "┌";
-            Lines[0, 4] = "└";
+            Lines[4, 2] = Movable ? '┌' : '╔';
+            Lines[4, 0] = Movable ? '└' : '╚';
             for (int i = 0; i < 3; i++)
-                Lines[i, 0] = "│";
+                Lines[0, i] = Movable ? '│' : '║';
         }
     }
 }
