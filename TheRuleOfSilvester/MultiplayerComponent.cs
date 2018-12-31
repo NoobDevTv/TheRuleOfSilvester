@@ -49,11 +49,14 @@ namespace TheRuleOfSilvester
         public Map GetMap()
             => SerializeHelper.Deserialize<Map>(Send(CommandName.GetMap));
 
-        public Player ConnectPlayer()
-            => SerializeHelper.Deserialize<Player>(Send(CommandName.NewPlayer));
+        public Player ConnectPlayer(string playername)
+            => SerializeHelper.Deserialize<Player>(Send(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
 
         public List<Player> GetPlayers()
             => SerializeHelper.DeserializeToList<Player>(Send(CommandName.GetPlayers)).ToList();
+
+        public List<Player> GetWinners()
+           => SerializeHelper.DeserializeToList<Player>(Send(CommandName.GetWinners)).ToList();
 
         public void UpdatePlayer(Player player)
             => Send(CommandName.UpdatePlayer, SerializeHelper.Serialize(player));

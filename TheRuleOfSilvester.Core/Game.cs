@@ -27,16 +27,16 @@ namespace TheRuleOfSilvester.Core
         public bool IsMutliplayer { get; private set; }
 
         internal InputAction InputAction { get; private set; }
+        public List<Player> Winners { get; internal set; }
 
         private int ups;
         private Thread gameThread;
         private Player player;
+        private readonly ManualResetEventSlim manualResetEvent;
 
-        public Game()
-        {
-        }
+        public Game() => manualResetEvent = new ManualResetEventSlim(false);
 
-        public void Run(int frame, int ups, bool multiplayer)
+        public void Run(int frame, int ups, bool multiplayer, string playername = "")
         {
             IsMutliplayer = multiplayer;
 
@@ -49,7 +49,7 @@ namespace TheRuleOfSilvester.Core
             if (multiplayer)
             {
                 Map = MultiplayerComponent.GetMap();
-                player = MultiplayerComponent.ConnectPlayer();
+                player = MultiplayerComponent.ConnectPlayer(playername);
                 player.Map = Map;
                 player.IsLocal = true;
                 player.Color = Color.Red;
@@ -91,6 +91,8 @@ namespace TheRuleOfSilvester.Core
 
             if (gameThread.IsAlive)
                 IsRunning = false;
+
+            CurrentGameStatus = GameStatus.Stopped;
         }
 
         public void Update()
@@ -100,6 +102,9 @@ namespace TheRuleOfSilvester.Core
             UiUpdate();
             AfterUpdate();
         }
+
+        public void Wait()
+            => manualResetEvent.Wait();
 
         private void BeforeUpdate()
         {
@@ -135,7 +140,7 @@ namespace TheRuleOfSilvester.Core
         {
             if (CurrentGameStatus == GameStatus.Running)
                 DrawComponent.Draw(Map);
-            else
+            else 
                 DrawComponent.DrawCells(new List<TextCell> { new TextCell("NOT Running", Map) });
         }
 
@@ -145,12 +150,10 @@ namespace TheRuleOfSilvester.Core
             InputAction = null;
         }
 
-        public void Dispose()
-        {
+        public void Dispose() =>
             //Stop();
 
             gameThread = null;
-        }
 
         private void Loop()
         {
@@ -159,6 +162,8 @@ namespace TheRuleOfSilvester.Core
                 Update();
                 Thread.Sleep(1000 / Frames);
             }
+
+            manualResetEvent.Set();
         }
 
     }

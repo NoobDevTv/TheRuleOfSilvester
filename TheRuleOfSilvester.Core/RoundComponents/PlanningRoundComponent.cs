@@ -11,17 +11,24 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 {
     internal class PlanningRoundComponent : IRoundComponent
     {
+        public uint NextOrder => currentOrder++;
+
+        private uint currentOrder;
+
         public RoundMode Round => RoundMode.Planning;
 
         public bool RoundEnd { get; set; }
-
-        private readonly int maxMoves = 70;
-
+        
         private Player player;
 
         private Stack<PlayerAction> actions;
 
         private bool propertyChangedRelevant = true;
+
+        public PlanningRoundComponent()
+        {
+            currentOrder = 1;
+        }
 
         public void Update(Game game)
         {
@@ -32,7 +39,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             if (game.InputAction.Type == InputActionType.RoundActionButton && game.InputAction.Valid)
             {
                 propertyChangedRelevant = false;
-                UndoLastMovement(game);
+                UndoLastMovement(game.Map);
                 propertyChangedRelevant = true;
             }
         }
@@ -41,7 +48,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         {
             game.InputCompoment.Active = true;
             player = game.Map.Players.FirstOrDefault(x => x.IsLocal);
-            actions = new Stack<PlayerAction>(maxMoves);
+            actions = new Stack<PlayerAction>(player.Role.ActionsPoints);
             Subscribe();
         }
 
@@ -53,22 +60,23 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
             int z = actions.Count;
             for (int i = 0; i < z; i++)
-                UndoLastMovement(game);
+                UndoLastMovement(game.Map);
 
             game.MultiplayerComponent?.EndRound();
         }
 
-        public void UndoLastMovement(Game game)
+        public void UndoLastMovement(Map map)
         {
             if (actions.Count == 0)
                 return;
 
             var move = actions.Pop();
+            player.Role.SetUsedActionPoints(actions.Count);
             switch (move.ActionType)
             {
                 case ActionType.Moved:
                     player.MoveGeneral(new Point(player.Position.X - move.Point.X, player.Position.Y - move.Point.Y));
-                    game.Map
+                    map
                         .Cells
                         .Where(c => typeof(BaseItemCell).IsAssignableFrom(c.GetType()))
                         .ToList()
@@ -79,7 +87,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     var inventoryCell = player.CellInventory.Last();
                     player.CellInventory.Remove(inventoryCell);
 
-                    var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1);
+                    var mapCell = map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1);
 
                     //TODO Reduce duplicated code
                     player.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
@@ -89,9 +97,10 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     var itemIndex = Array.FindLastIndex(player.ItemInventory, x => x != null);
                     var item = player.ItemInventory[itemIndex];
                     item.Position = player.Position;
-                    game.Map.Cells.Add(item);
+                    map.Cells.Add(item);
                     player.ItemInventory[itemIndex] = null;
                     item.Invalid = true;
+                    player.Role.RedrawStats = true;
                     break;
             }
         }
@@ -121,15 +130,17 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             else
                 action = new PlayerAction(player, ActionType.ChangedMapCell, e.Position);
 
+            action.Order = NextOrder;
             actions.Push(action);
+            player.Role.SetUsedActionPoints(actions.Count);
         }
 
         private void PlayerPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             propertyChangedRelevant = false;
             //Temp maybe make it different
-            while (actions.Count > maxMoves)
-                UndoLastMovement(null);
+            while (player.Role.RestActionPoints < 0)
+                UndoLastMovement(player.Map);
 
             propertyChangedRelevant = true;
 
@@ -141,7 +152,9 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 else
                     action = new PlayerAction(player, ActionType.CollectedItem, player.Position);
 
+                action.Order = NextOrder;
                 actions.Push(action);
+                player.Role.SetUsedActionPoints(actions.Count);
             }
         }
 
@@ -162,7 +175,9 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                 else
                     action = new PlayerAction(player, ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
 
+                action.Order = NextOrder;
                 actions.Push(action);
+                player.Role.SetUsedActionPoints(actions.Count);
             }
         }
     }

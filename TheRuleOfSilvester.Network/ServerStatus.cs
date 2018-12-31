@@ -17,6 +17,7 @@ namespace TheRuleOfSilvester.Network
         Waiting = 22,
         Stopped = 23,
         Paused = 24,
+        Ended = 25,
         //30 - 39   -> Player Information
         Joined = 30,
         Left = 31,

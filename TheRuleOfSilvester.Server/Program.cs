@@ -47,7 +47,6 @@ namespace TheRuleOfSilvester.Server
                     GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
 
                 var answer = manager.Dispatch(command: (CommandName)args.Command, new CommandArgs(player, connectedClient, args.Data));
-                
                 e.Send(answer, answer.Length);
             };
 

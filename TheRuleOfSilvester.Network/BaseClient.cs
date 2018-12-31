@@ -54,7 +54,7 @@ namespace TheRuleOfSilvester.Network
 
         public void Disconnect()
         {
-            Socket.Disconnect(true);
+            Socket.Disconnect(false);
         }
 
         public void Send(byte[] data, int len)

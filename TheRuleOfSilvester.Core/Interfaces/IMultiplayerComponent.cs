@@ -18,9 +18,11 @@ namespace TheRuleOfSilvester.Core.Interfaces
 
         Map GetMap();
 
-        Player ConnectPlayer();
+        Player ConnectPlayer(string playername);
 
         List<Player> GetPlayers();
+
+        List<Player> GetWinners();
 
         void TransmitActions(Stack<PlayerAction> actions, Player player);
 

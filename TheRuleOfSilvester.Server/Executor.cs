@@ -32,7 +32,8 @@ namespace TheRuleOfSilvester.Server
                     switch (action.ActionType)
                     {
                         case ActionType.Moved:
-                            map.Players.First(p => p == player).MoveGeneral(action.Point);
+                            var point = new Point(player.Position.X + action.Point.X, player.Position.Y + action.Point.Y);
+                            map.Players.First(p => p == player).MoveGeneral(point);
                             break;
                         case ActionType.ChangedMapCell:
                             var cell = map.Cells.First(c => c.Position == action.Point);

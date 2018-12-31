@@ -4,8 +4,10 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Roles;
 using TheRuleOfSilvester.Network;
 
@@ -19,13 +21,29 @@ namespace TheRuleOfSilvester.Server
         private static readonly ActionCache actionCache;
         private static readonly Executor executor;
 
+        private static SemaphoreSlim winnersSemaphore;
+        private static List<Player> listOfWinners;
+
         static GameManager()
         {
             Map = GenerateMap();
+
+            listOfWinners = new List<Player>();
+            winnersSemaphore = new SemaphoreSlim(1, 1);
+
             actionCache = new ActionCache();
             executor = new Executor(actionCache);
             Players = new Dictionary<int, NetworkPlayer>();
             roles = RoleManager.GetAllRolesRandomized();
+        }
+
+        internal static List<Player> GetWinners()
+        {
+            var tmpPlayer = new List<Player>();
+            winnersSemaphore.Wait();
+            tmpPlayer.AddRange(listOfWinners);
+            winnersSemaphore.Release();
+            return tmpPlayer;
         }
 
         internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
@@ -34,7 +52,7 @@ namespace TheRuleOfSilvester.Server
             actionCache.AddRange(playerActions);
         }
 
-        internal static Player GetNewPlayer(ConnectedClient client)
+        internal static Player GetNewPlayer(ConnectedClient client, string playername)
         {
             int tmpId = Players.Count + 1;
 
@@ -43,7 +61,7 @@ namespace TheRuleOfSilvester.Server
 
             var player = new Player(Map, roles.Dequeue())
             {
-                Name = Convert.ToBase64String(Guid.NewGuid().ToByteArray()), //TODO: Temporary workaround
+                Name = playername, 
                 Position = new Point(7, 4),
             };
             Players.Add(tmpId, new NetworkPlayer(player)
@@ -101,6 +119,12 @@ namespace TheRuleOfSilvester.Server
                     {
                         Console.WriteLine($"{winner.Name} has won the match :)");
                     }
+
+                    tmpPlayers.ForEach(p => p.CurrentServerStatus = ServerStatus.Ended);
+
+                    winnersSemaphore.Wait();
+                    listOfWinners.AddRange(winners);
+                    winnersSemaphore.Release();
                 }
             });
         }

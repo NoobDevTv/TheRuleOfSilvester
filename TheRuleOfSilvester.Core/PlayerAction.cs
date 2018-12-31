@@ -11,6 +11,8 @@ namespace TheRuleOfSilvester.Core
     {
         public Player Player { get; set; }
 
+        public uint Order { get; set; }
+
         public ActionType ActionType { get; private set; }
         public Point Point { get; private set; }
 
@@ -32,6 +34,7 @@ namespace TheRuleOfSilvester.Core
             Player.Deserialize(binaryReader);
             Point = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
             ActionType = (ActionType)binaryReader.ReadInt32();
+            Order = binaryReader.ReadUInt32();
         }
 
         public void Serialize(BinaryWriter binaryWriter)
@@ -40,6 +43,7 @@ namespace TheRuleOfSilvester.Core
             binaryWriter.Write(Point.X);
             binaryWriter.Write(Point.Y);
             binaryWriter.Write((int)ActionType);
+            binaryWriter.Write(Order);
         }
 
         public override string ToString() => ActionType.ToString() + " | " + Point.ToString();

@@ -76,8 +76,7 @@ namespace TheRuleOfSilvester.Core
             if (Map == null)
                 Map = map;
         }
-
-
+               
         public void SetAvatar(char avatar)
         {
             Avatar = avatar;

@@ -14,6 +14,7 @@ namespace TheRuleOfSilvester.Network
         TransmitActions,
         EndRound,
         Wait,
-        GetStatus
+        GetStatus,
+        GetWinners
     }
 }

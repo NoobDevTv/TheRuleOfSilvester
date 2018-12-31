@@ -16,35 +16,51 @@ namespace TheRuleOfSilvester
         private static MultiplayerComponent multiplayerComponent;
         private static GameMenu menu;
 
-        public static bool IsRunning { get; private set; }
+        public static bool Running { get; private set; }
+
+        private static string playerName;
 
         //┌┬┐└┴┘│├┼┤
         private static void Main(string[] args)
         {
-            //are = new AutoResetEvent(false);
-            Console.OutputEncoding = Encoding.Unicode;
-            Console.CursorVisible = false;
-            inputComponent = new InputComponent();
-            multiplayerComponent = new MultiplayerComponent();
-            IsRunning = true;
-            
-            menu = new GameMenu(new List<MenuItem>()
+            do
             {
-               new MenuItem(true, "New Game", SinglePlayer),
-               new MenuItem(false, "Multiplayer", MultiPlayer),
-               new MenuItem(false, "Exit", () => false)
-            });
+                Console.Clear();
+                //are = new AutoResetEvent(false);
+                Console.OutputEncoding = Encoding.Unicode;
+                Console.CursorVisible = false;
+                inputComponent = new InputComponent();
+                multiplayerComponent = new MultiplayerComponent();
+                Running = true;
 
-            while (IsRunning)
-            {
-                var menuItem = menu.Run();
-                IsRunning = menuItem.Action();
-            }
+                menu = new GameMenu(new List<MenuItem>()
+                {
+                   new MenuItem(true, "New Game", SinglePlayer),
+                   new MenuItem(false, "Multiplayer", MultiPlayer),
+                   new MenuItem(false, "Exit", () => Running = false)
+                });
+
+                if (Running)
+                {
+                    var menuItem = menu.Run();
+                    menuItem.Action();
+                }
+
+            } while (Running);
         }
 
-        private static bool MultiPlayer()
+        private static void MultiPlayer()
         {
             Console.Clear();
+
+            do
+            {
+                Console.Write("Spielername: ");
+
+                playerName = Console.ReadLine();
+                Console.Clear();
+            }
+            while (string.IsNullOrWhiteSpace(playerName));
 
             Console.Write("IP Address of Server: ");
 
@@ -77,32 +93,41 @@ namespace TheRuleOfSilvester
             multiplayerComponent.Port = 4400;
 
             CreateGame(true);
-            return true;
         }
 
-        private static bool SinglePlayer()
+        private static void SinglePlayer()
         {
             Console.Clear();
             CreateGame(false);
-            return true;
         }
 
         private static void CreateGame(bool isMultiplayer)
         {
-            var manualReset = new ManualResetEventSlim(false);
             using (game = new Game())
             {
                 game.DrawComponent = new DrawComponent();
                 game.InputCompoment = inputComponent;
                 game.MultiplayerComponent = multiplayerComponent;
-                game.Run(60, 60, isMultiplayer);
+                game.Run(60, 60, isMultiplayer, playerName);
                 inputComponent.Start();
 
-                Console.CancelKeyPress += (s, e) => manualReset.Set();
-                manualReset.Wait();
+                Console.CancelKeyPress += (s, e) => game.Stop();
+                game.Wait();
 
+                Console.Clear();
                 inputComponent.Stop();
-                game.Stop();
+
+                if (game.Winners.Count > 0)
+                {
+                    Console.WriteLine("The winners are: ");
+                    Console.WriteLine();
+                    foreach (var winner in game.Winners)
+                        Console.WriteLine(winner.Name);
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Please press any key");
+                Console.ReadKey();
             }
 
         }

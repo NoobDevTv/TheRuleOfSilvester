@@ -16,7 +16,7 @@ namespace TheRuleOfSilvester.Server.Commands
         public static byte[] TransmitActions(CommandArgs args)
         {
             var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
-            GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions);
+            GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
 
             return BitConverter.GetBytes((short)CommandName.TransmitActions);
         }

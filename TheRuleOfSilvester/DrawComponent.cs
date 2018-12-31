@@ -71,6 +71,8 @@ namespace TheRuleOfSilvester
             Console.Write("⚔ATK: " + player.Role.Attack);
             ResetCursor();
             Console.Write("⛨DEF: " + player.Role.Defence);
+            ResetCursor();
+            Console.Write("▼AP: " + player.Role.RestActionPoints);
             player.Role.RedrawStats = false;
         }
 
