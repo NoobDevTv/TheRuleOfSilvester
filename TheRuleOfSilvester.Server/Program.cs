@@ -20,6 +20,19 @@ namespace TheRuleOfSilvester.Server
             {
                 server.Start(IPAddress.Any, 4400);
                 Console.CancelKeyPress += (s, e) => mResetEvent.Reset();
+
+                server.OnCommandReceived += (s, e) =>
+                {
+                    var connectedClient = (ConnectedClient)e.Client;
+                    NetworkPlayer player = null;
+
+                    if (connectedClient.Registered)
+                        GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
+
+                    var answer = manager.Dispatch(command: e.CommandName, new CommandArgs(player, connectedClient, e.Data));
+                    e.Client.Send(answer, answer.Length);
+                };
+
                 server.OnClientConnected += ServerOnClientConnected;
                 Console.WriteLine("Server has started, waiting for clients");
                 string command;
@@ -38,18 +51,6 @@ namespace TheRuleOfSilvester.Server
 
         private static void ServerOnClientConnected(object sender, ConnectedClient e)
         {
-            e.OnCommandReceived += (s, args) =>
-            {
-                var connectedClient = (ConnectedClient)s;
-                NetworkPlayer player = null;
-
-                if (connectedClient.Registered)
-                    GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
-
-                var answer = manager.Dispatch(command: (CommandName)args.Command, new CommandArgs(player, connectedClient, args.Data));
-                e.Send(answer, answer.Length);
-            };
-
             Console.WriteLine("New Client has connected. Current Amount: " + (server.ClientAmount + 1));
         }
     }
