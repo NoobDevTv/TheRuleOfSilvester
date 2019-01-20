@@ -5,7 +5,7 @@ using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Core.Interfaces
 {
-    public interface IMultiplayerComponent : IUpdateable
+    public interface IMultiplayerComponent : IUpdateable, IObserver<Package>
     {
         Client Client { get; }
         int Port { get; }

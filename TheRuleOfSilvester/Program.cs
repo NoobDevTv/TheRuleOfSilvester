@@ -22,7 +22,7 @@ namespace TheRuleOfSilvester
 
         //┌┬┐└┴┘│├┼┤
         private static void Main(string[] args)
-        {
+        {           
             do
             {
                 Console.Clear();

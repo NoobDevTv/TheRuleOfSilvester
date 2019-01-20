@@ -11,12 +11,20 @@ namespace TheRuleOfSilvester
     public class MultiplayerComponent : IMultiplayerComponent
     {
         public Client Client { get; private set; }
+
         public int Port { get; set; }
         public string Host { get; set; }
         public ServerStatus CurrentServerStatus { get; set; }
 
+        private IDisposable subscription;
+        private readonly Dictionary<int, Awaiter> waitingDic;
+
         public MultiplayerComponent()
-            => Client = new Client();
+        {
+            waitingDic = new Dictionary<int, Awaiter>();
+            Client = new Client();
+            subscription = Client.Subscribe(this);
+        }
 
         public void Connect()
             => Client.Connect(Host, Port);
@@ -43,20 +51,20 @@ namespace TheRuleOfSilvester
 
         }
 
-        public ServerStatus GetServerStatus()
-            => (ServerStatus)Send(CommandName.GetStatus)[0];
+        public ServerStatus GetServerStatus() 
+            => (ServerStatus)AwaitableSend(CommandName.GetStatus)[0];
 
-        public Map GetMap()
-            => SerializeHelper.Deserialize<Map>(Send(CommandName.GetMap));
+        public Map GetMap() 
+            => SerializeHelper.Deserialize<Map>(AwaitableSend(CommandName.GetMap));
 
-        public Player ConnectPlayer(string playername)
-            => SerializeHelper.Deserialize<Player>(Send(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
+        public Player ConnectPlayer(string playername) 
+            => SerializeHelper.Deserialize<Player>(AwaitableSend(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
 
-        public List<Player> GetPlayers()
-            => SerializeHelper.DeserializeToList<Player>(Send(CommandName.GetPlayers)).ToList();
+        public List<Player> GetPlayers() 
+            => SerializeHelper.DeserializeToList<Player>(AwaitableSend(CommandName.GetPlayers)).ToList();
 
-        public List<Player> GetWinners()
-           => SerializeHelper.DeserializeToList<Player>(Send(CommandName.GetWinners)).ToList();
+        public List<Player> GetWinners() 
+            => SerializeHelper.DeserializeToList<Player>(AwaitableSend(CommandName.GetWinners)).ToList();
 
         public void UpdatePlayer(Player player)
             => Send(CommandName.UpdatePlayer, SerializeHelper.Serialize(player));
@@ -70,13 +78,49 @@ namespace TheRuleOfSilvester
 
         public bool GetUpdateSet(out ICollection<PlayerAction> updateSet)
         {
-            var answer = Send(CommandName.Wait);
-
-            updateSet = SerializeHelper.DeserializeToList<PlayerAction>(answer.Skip(sizeof(bool)).ToArray());
-            return BitConverter.ToBoolean(answer, 0);
+            var data = AwaitableSend(CommandName.Wait);
+            updateSet = SerializeHelper.DeserializeToList<PlayerAction>(data.Skip(sizeof(bool)).ToArray());
+            return BitConverter.ToBoolean(data, 0);
         }
 
-        private byte[] Send(CommandName command, params byte[] data)
-            => Client.Send(BitConverter.GetBytes((short)command).Concat(data).ToArray());
+        public void OnNext(Package package)
+        {
+            if (waitingDic.TryGetValue(package.Id, out Awaiter awaiter))
+            {
+                awaiter.SetResult(package.Data);
+                waitingDic.Remove(package.Id);
+            } else
+            {
+                throw new KeyNotFoundException($"Not found any awaiter with id {package.Id} as Command {package.CommandName}");
+            }
+        }
+
+        public void OnCompleted()
+        {
+            subscription?.Dispose();
+            subscription = null;
+        }
+
+        public void OnError(Exception error) => throw error;
+
+        private Awaiter Send(CommandName command, params byte[] data)
+        {
+            var package = new Package(command, data);
+            var awaiter = new Awaiter(package.Id);
+
+            if (waitingDic.TryAdd(package.Id, awaiter))
+                Client.Send(package);
+            else
+                throw new Exception("Not sendable");
+
+            return awaiter;
+        }
+
+        private byte[] AwaitableSend(CommandName command, params byte[] data)
+        {
+            var awaiter = Send(command, data);
+            awaiter.WaitOn();
+            return awaiter.Data;
+        }
     }
 }

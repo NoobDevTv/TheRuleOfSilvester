@@ -23,14 +23,15 @@ namespace TheRuleOfSilvester.Server
 
                 server.OnCommandReceived += (s, e) =>
                 {
+
                     var connectedClient = (ConnectedClient)e.Client;
                     NetworkPlayer player = null;
 
                     if (connectedClient.Registered)
                         GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
 
-                    var answer = manager.Dispatch(command: e.CommandName, new CommandArgs(player, connectedClient, e.Data));
-                    e.Client.Send(answer, answer.Length);
+                    e.Data = manager.Dispatch(command: e.CommandName, new CommandArgs(player, connectedClient, e.Data));
+                    e.Client.Send(e);
                 };
 
                 server.OnClientConnected += ServerOnClientConnected;

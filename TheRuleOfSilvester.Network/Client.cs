@@ -28,6 +28,6 @@ namespace TheRuleOfSilvester.Network
         {
             Socket.EndConnect(ar);
             Start();
-        }
+        }        
     }
 }

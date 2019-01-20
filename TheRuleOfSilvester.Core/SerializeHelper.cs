@@ -9,6 +9,7 @@ using System.Text;
 using TheRuleOfSilvester.Core.Cells;
 using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Items;
+using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Core
 {
@@ -29,7 +30,7 @@ namespace TheRuleOfSilvester.Core
 
         public static T Deserialize<T>(byte[] value) where T : IByteSerializable, new()
         {
-            var tmpObj = Activator.CreateInstance<T>();
+            var tmpObj = new T();
 
             using (var memoryStream = new MemoryStream(value))
             {
@@ -44,7 +45,7 @@ namespace TheRuleOfSilvester.Core
 
         public static ICollection<T> DeserializeToList<T>(byte[] value) where T : IByteSerializable, new()
         {
-            var tmpList = Activator.CreateInstance<List<T>>();
+            var tmpList = new List<T>();
 
             if (value.Length > 0)
             {
@@ -55,7 +56,7 @@ namespace TheRuleOfSilvester.Core
                         var count = binaryReader.ReadInt32();
                         for (int i = 0; i < count; i++)
                         {
-                            var tmpObj = Activator.CreateInstance<T>();
+                            var tmpObj = new T();
                             tmpObj.Deserialize(binaryReader);
                             tmpList.Add(tmpObj);
                         }
@@ -66,7 +67,7 @@ namespace TheRuleOfSilvester.Core
 
             return tmpList;
         }
-
+        
         public static Cell DeserializeMapCell(BinaryReader binaryReader)
         {
             var key = new Guid(binaryReader.ReadBytes(16)).ToString().ToUpper();

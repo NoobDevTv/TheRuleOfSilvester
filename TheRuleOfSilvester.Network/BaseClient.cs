@@ -12,8 +12,6 @@ namespace TheRuleOfSilvester.Network
 {
     public abstract class BaseClient : IObservable<Package>
     {
-        public event EventHandler<(byte[] Data, int Length)> OnMessageReceived;
-
         protected readonly Socket Socket;
         protected readonly SocketAsyncEventArgs ReceiveArgs;
 
@@ -65,7 +63,7 @@ namespace TheRuleOfSilvester.Network
         {
             Socket.Disconnect(false);
         }
-
+        
         public void Send(byte[] data, int len)
         {
             lock (sendLock)
@@ -83,44 +81,25 @@ namespace TheRuleOfSilvester.Network
 
         }
 
-        public byte[] Send(byte[] data)
+        public void Send(Package package)
         {
-            var resetEvent = new ManualResetEvent(false);
-            (byte[] Data, int Length) localData = (new byte[0], 0);
-
-            void messageReceived(object sender, (byte[] Data, int Length) args)
-            {
-                localData = args;
-                resetEvent.Set();
-            }
-
-            OnMessageReceived += messageReceived;
-            Send(data, data.Length);
-            resetEvent.WaitOne();
-            OnMessageReceived -= messageReceived;
-            return localData.Data.Take(localData.Length).ToArray();
-        }
+            Send(package.ToByteArray(), package.Data.Length + Package.HEADER_SIZE);
+        }       
 
         protected virtual int ProcessInternal(byte[] receiveArgsBuffer, int receiveArgsCount, int offset)
         {
-            if (receiveArgsCount < 2)
-                receiveArgsCount = 2; //because of the substraction in the next lines
-
-            (short Command, byte[] Data) = (0, new byte[receiveArgsCount - 2]);
-            Command = BitConverter.ToInt16(receiveArgsBuffer, 0);
-            Array.Copy(receiveArgsBuffer, 2, Data, 0, receiveArgsCount - 2);
+            var data = new byte[receiveArgsCount];
+            Buffer.BlockCopy(receiveArgsBuffer, offset, data, 0, receiveArgsCount);
+            var package = Package.FromByteArray(data);
+            package.Client = this;
 
             semaphoreSlim.Wait();
 
             foreach (var observer in observers)
-                observer.OnNext(new Package(Command, Data)
-                {
-                    Client = this
-                });
+                observer.OnNext(package);
 
-            semaphoreSlim.Release();
-
-            OnMessageReceived?.Invoke(this,(Data, Data.Length));
+            semaphoreSlim.Release();  
+            
             return receiveArgsCount;
         }
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester", "TheRuleOfSilvester\TheRuleOfSilvester.csproj", "{C68BA472-A503-47C4-B9CE-56C47D963044}"
 EndProject
@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Network", "TheRuleOfSilvester.Network\TheRuleOfSilvester.Network.csproj", "{B398BF7B-2601-4FD0-99DA-F983A389524C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuleOfSilvester.Server", "TheRuleOfSilvester.Server\TheRuleOfSilvester.Server.csproj", "{09086C9C-0F90-436D-BC43-76D5376C2D35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Server", "TheRuleOfSilvester.Server\TheRuleOfSilvester.Server.csproj", "{09086C9C-0F90-436D-BC43-76D5376C2D35}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
