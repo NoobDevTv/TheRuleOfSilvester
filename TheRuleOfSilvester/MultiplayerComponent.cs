@@ -34,8 +34,7 @@ namespace TheRuleOfSilvester
 
         public void Wait()
           => Client.Wait();
-
-
+        
         public void Update(Game game)
         {
             //TODO: Implement waiting screen

@@ -26,6 +26,10 @@ namespace TheRuleOfSilvester.Network
 
         public void Wait()
         {
+            //Wait for Connection
+            while (!Socket.Connected)
+                Thread.Sleep(1);
+
             var buffer = new byte[1];
             Socket.Receive(buffer);
 

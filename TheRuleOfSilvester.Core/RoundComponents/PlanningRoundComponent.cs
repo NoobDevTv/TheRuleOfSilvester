@@ -57,7 +57,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             Desubscribe();
 
             game.MultiplayerComponent?.TransmitActions(actions, player);
-
+            currentOrder = 1;
             int z = actions.Count;
             for (int i = 0; i < z; i++)
                 UndoLastMovement(game.Map);
