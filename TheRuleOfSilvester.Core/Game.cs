@@ -40,8 +40,10 @@ namespace TheRuleOfSilvester.Core
         {
             IsMutliplayer = multiplayer;
 
-            if (multiplayer)
+            if (multiplayer) { 
                 MultiplayerComponent.Connect();
+                MultiplayerComponent.Wait();
+            }
 
             Frames = frame;
             this.ups = ups;

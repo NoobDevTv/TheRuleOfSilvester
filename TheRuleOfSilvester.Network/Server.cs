@@ -81,6 +81,7 @@ namespace TheRuleOfSilvester.Network
             semaphore.Release();
 
             client.Start();
+            client.Send(new byte[] { 1 }, 1);
             socket.BeginAccept(OnClientAccepted, null);
         }
 

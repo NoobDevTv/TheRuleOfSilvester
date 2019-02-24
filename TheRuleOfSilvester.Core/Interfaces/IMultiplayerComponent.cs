@@ -16,6 +16,8 @@ namespace TheRuleOfSilvester.Core.Interfaces
 
         void Disconnect();
 
+        void Wait();
+
         Map GetMap();
 
         Player ConnectPlayer(string playername);

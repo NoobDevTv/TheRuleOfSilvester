@@ -22,12 +22,21 @@ namespace TheRuleOfSilvester.Network
                 a => a.AddressFamily == Socket.AddressFamily);
 
             Socket.BeginConnect(new IPEndPoint(address, port), OnConnected, null);
-        }        
+        }
+
+        public void Wait()
+        {
+            var buffer = new byte[1];
+            Socket.Receive(buffer);
+
+            if (buffer[0] == 0)
+                throw new Exception("Connection Error");
+        }
 
         private void OnConnected(IAsyncResult ar)
         {
             Socket.EndConnect(ar);
             Start();
-        }        
+        }
     }
 }

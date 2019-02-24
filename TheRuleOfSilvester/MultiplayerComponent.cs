@@ -32,6 +32,10 @@ namespace TheRuleOfSilvester
         public void Disconnect()
             => Client.Disconnect();
 
+        public void Wait()
+          => Client.Wait();
+
+
         public void Update(Game game)
         {
             //TODO: Implement waiting screen
@@ -51,19 +55,19 @@ namespace TheRuleOfSilvester
 
         }
 
-        public ServerStatus GetServerStatus() 
+        public ServerStatus GetServerStatus()
             => (ServerStatus)AwaitableSend(CommandName.GetStatus)[0];
 
-        public Map GetMap() 
+        public Map GetMap()
             => SerializeHelper.Deserialize<Map>(AwaitableSend(CommandName.GetMap));
 
-        public Player ConnectPlayer(string playername) 
+        public Player ConnectPlayer(string playername)
             => SerializeHelper.Deserialize<Player>(AwaitableSend(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
 
-        public List<Player> GetPlayers() 
+        public List<Player> GetPlayers()
             => SerializeHelper.DeserializeToList<Player>(AwaitableSend(CommandName.GetPlayers)).ToList();
 
-        public List<Player> GetWinners() 
+        public List<Player> GetWinners()
             => SerializeHelper.DeserializeToList<Player>(AwaitableSend(CommandName.GetWinners)).ToList();
 
         public void UpdatePlayer(Player player)
@@ -89,7 +93,8 @@ namespace TheRuleOfSilvester
             {
                 awaiter.SetResult(package.Data);
                 waitingDic.Remove(package.Id);
-            } else
+            }
+            else
             {
                 throw new KeyNotFoundException($"Not found any awaiter with id {package.Id} as Command {package.CommandName}");
             }
