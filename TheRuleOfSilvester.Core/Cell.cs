@@ -12,6 +12,7 @@ namespace TheRuleOfSilvester.Core
     public abstract class Cell : IDisposable, INotifyPropertyChanged
     {
         public Point Position { get => position; set => SetValue(value, ref position); }
+        public Point AbsolutPosition => new Point(position.X * Width, position.Y * Height);
         public bool Invalid { get => invalid; set => SetValue(value, ref invalid); }
 
 

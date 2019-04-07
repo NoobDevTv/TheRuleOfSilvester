@@ -59,7 +59,7 @@ namespace TheRuleOfSilvester.Core
             else
             {
                 var generator = new MapGenerator();
-                Map = generator.Generate(20, 10);
+                Map = generator.Generate(50, 50);
 
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {

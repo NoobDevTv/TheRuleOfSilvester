@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester.Core.Roles
         public int Defence { get; protected set; }
         public bool RedrawStats { get; set; }
         public abstract char Avatar { get; }
-        public int RestActionPoints => ActionsPoints - currentActionPoints;
+        public int RestActionPoints => ActionsPoints;//- currentActionPoints;
 
         private int healthPoints;
         private int currentActionPoints;
