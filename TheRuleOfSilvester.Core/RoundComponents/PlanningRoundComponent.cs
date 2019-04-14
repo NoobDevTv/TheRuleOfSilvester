@@ -87,18 +87,17 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     var inventoryCell = player.CellInventory.Last();
                     player.CellInventory.Remove(inventoryCell);
 
-                    var mapCell = map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1);
+                    var mapCell = map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1) as MapCell;
 
                     //TODO Reduce duplicated code
                     player.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
-                    player.CellInventory.Insert(0, mapCell);
+                    player.CellInventory.Add(mapCell, 0);
                     break;
                 case ActionType.CollectedItem:
-                    var itemIndex = Array.FindLastIndex(player.ItemInventory, x => x != null);
-                    var item = player.ItemInventory[itemIndex];
+                    var item = player.ItemInventory.LastOrDefault();
                     item.Position = player.Position;
                     map.Cells.Add(item);
-                    player.ItemInventory[itemIndex] = null;
+                    player.ItemInventory.Remove(item);
                     item.Invalid = true;
                     player.Role.RedrawStats = true;
                     break;

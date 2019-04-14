@@ -20,8 +20,8 @@ namespace TheRuleOfSilvester
             ChunkPosition = chunkPoint;
 
             Cells = cells.Where(x =>
-                x.AbsolutPosition.X / (chunkWidth - 8) >= chunkPoint.X
-                && x.AbsolutPosition.X / (chunkWidth - 8) < chunkPoint.X + 1
+                x.AbsolutPosition.X / (chunkWidth) >= chunkPoint.X
+                && x.AbsolutPosition.X / (chunkWidth) < chunkPoint.X + 1
                 && x.AbsolutPosition.Y / chunkHeight >= chunkPoint.Y
                 && x.AbsolutPosition.Y / chunkHeight < chunkPoint.Y + 1).ToList();
         }

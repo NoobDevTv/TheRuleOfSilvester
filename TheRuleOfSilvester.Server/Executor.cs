@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Server
 {
@@ -43,7 +44,7 @@ namespace TheRuleOfSilvester.Server
                             inventoryCell.Invalid = true;
                             map.Cells.Add(inventoryCell);
                             player.CellInventory.Remove(inventoryCell);
-                            player.CellInventory.Add(cell);
+                            player.CellInventory.Add(cell as MapCell);
 
                             cell.Position = new Point(5, map.Height + 2);
                             cell.Invalid = true;

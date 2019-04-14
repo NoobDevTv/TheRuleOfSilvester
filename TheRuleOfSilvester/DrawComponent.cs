@@ -41,9 +41,9 @@ namespace TheRuleOfSilvester
             Console.CursorVisible = false;
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
             var localPlayer = map.Players.FirstOrDefault(x => x.IsLocal);
-            
-            var chunkPosX = (localPlayer.Position.X-1) / CurrentWidth;
-            var chunkPosY = (localPlayer.Position.Y-1) / CurrentHeight;
+
+            var chunkPosX = (localPlayer.Position.X - 1) / (CurrentWidth-8);
+            var chunkPosY = (localPlayer.Position.Y - 1) / CurrentHeight;
 
             if (oldChunkPos.X != chunkPosX || oldChunkPos.Y != chunkPosY)
             {
@@ -56,15 +56,75 @@ namespace TheRuleOfSilvester
 
             //DrawCells(map.Cells, chunks[chunkPosX, chunkPosY]);
             ////TODO: Quick and Dirty, must be set to player pos later on
-            DrawCells(map.Players, chunks[chunkPosX, chunkPosY]);
-
-            DrawCells(localPlayer.CellInventory);
-
-            DrawCells(map.TextCells);
-            DrawPlayerInfo(localPlayer);
-            DrawItemInventory(localPlayer);
+            try
+            {
+                DrawCells(map.Players, chunks[chunkPosX, chunkPosY]);
+                DrawCells(map.TextCells);
+                DrawPlayerInfo(localPlayer);
+                DrawItemInventory(localPlayer);
+                DrawCellInventory(localPlayer.CellInventory);
+            }
+            catch (Exception e)
+            {
+            }
             chunkChange = false;
             Console.SetCursorPosition(Console.WindowWidth - 2, Console.WindowHeight - 2);
+        }
+
+
+
+        public void DrawCells<T>(List<T> cells) where T : Cell
+        {
+            foreach (var cell in cells.ToArray())
+            {
+                if (cell.Invalid || chunkChange)
+                {
+                    Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
+
+                    for (int l = 0; l < cell.Lines.GetLength(0); l++)
+                    {
+                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
+                        {
+                            Console.SetCursorPosition((cell.Position.X * cell.Width) + l, (cell.Position.Y * cell.Height) + h);
+
+                            if (cell.Layer[l, h] != null)
+                                Console.Write(BaseElementToChar(cell.Layer[l, h]));
+                            else
+                                Console.Write(BaseElementToChar(cell.Lines[l, h]));
+
+                            cell.Invalid = false;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        private void DrawCells<T>(List<T> cells, Chunk chunk) where T : Cell
+        {
+            foreach (var cell in chunk.Cells.Concat(cells))
+            {
+                if (cell.Invalid || chunkChange)
+                {
+                    Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
+
+                    for (int w = 0; w < cell.Lines.GetLength(0); w++)
+                    {
+                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
+                        {
+                            Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth-8)) + w, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
+
+                            if (cell.Layer[w, h] != null)
+                                Console.Write(BaseElementToChar(cell.Layer[w, h]));
+                            else
+                                Console.Write(BaseElementToChar(cell.Lines[w, h]));
+
+                            cell.Invalid = false;
+                        }
+                    }
+                }
+            }
+
         }
 
         private void RecalculateChunks(Map map)
@@ -100,7 +160,7 @@ namespace TheRuleOfSilvester
                 Console.Write(" ");
         }
 
-        public void DrawPlayerInfo(Player player)
+        private void DrawPlayerInfo(Player player)
         {
             if (!player.Role.RedrawStats && !chunkChange)
                 return;
@@ -127,6 +187,30 @@ namespace TheRuleOfSilvester
             player.Role.RedrawStats = false;
         }
 
+        private void DrawCellInventory(Inventory<MapCell> cellInventory)
+        {
+            var cellsToRefresh = cellInventory.Where(cell => cell.Invalid || chunkChange).ToArray();
+            for (int i = 0; i < cellsToRefresh.Length; i++)
+            {
+                var cell = cellsToRefresh[i];
+                Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
+                for (int l = 0; l < cell.Lines.GetLength(0); l++)
+                {
+                    for (int h = 0; h < cell.Lines.GetLength(1); h++)
+                    {
+                        Console.SetCursorPosition(l + (i * 10), CurrentHeight + 4 + h);
+
+                        if (cell.Layer[l, h] != null)
+                            Console.Write(BaseElementToChar(cell.Layer[l, h]));
+                        else
+                            Console.Write(BaseElementToChar(cell.Lines[l, h]));
+
+                        cell.Invalid = false;
+                    }
+                }
+            }
+        }
+
         public void DrawItemInventory(Player player)
         {
             int topPos = 7;
@@ -139,9 +223,9 @@ namespace TheRuleOfSilvester
             var itemInventory = player.ItemInventory;
 
             if (oldPlayerInventory == null)
-                oldPlayerInventory = new BaseItemCell[itemInventory.Length];
+                oldPlayerInventory = new BaseItemCell[itemInventory.Count];
 
-            for (int i = 0; i < itemInventory.Length; i++)
+            for (int i = 0; i < itemInventory.Count; i++)
             {
                 ResetCursor();
 
@@ -156,61 +240,6 @@ namespace TheRuleOfSilvester
 
             player.ItemInventory.CopyTo(oldPlayerInventory, 0);
         }
-
-        public void DrawCells<T>(List<T> cells) where T : Cell
-        {
-            foreach (var cell in cells.ToArray())
-            {
-                if (cell.Invalid || chunkChange)
-                {
-                    Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
-
-                    for (int l = 0; l < cell.Lines.GetLength(0); l++)
-                    {
-                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
-                        {
-                            Console.SetCursorPosition((cell.Position.X * cell.Width) + l, (cell.Position.Y * cell.Height) + h);
-
-                            if (cell.Layer[l, h] != null)
-                                Console.Write(BaseElementToChar(cell.Layer[l, h]));
-                            else
-                                Console.Write(BaseElementToChar(cell.Lines[l, h]));
-
-                            cell.Invalid = false;
-                        }
-                    }
-                }
-            }
-
-        }
-
-        public void DrawCells<T>(List<T> cells, Chunk chunk) where T : Cell
-        {
-            foreach (var cell in chunk.Cells.Concat(cells))
-            {
-                if (cell.Invalid || chunkChange)
-                {
-                    Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
-
-                    for (int l = 0; l < cell.Lines.GetLength(0); l++)
-                    {
-                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
-                        {
-                            Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * CurrentWidth) + l, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
-
-                            if (cell.Layer[l, h] != null)
-                                Console.Write(BaseElementToChar(cell.Layer[l, h]));
-                            else
-                                Console.Write(BaseElementToChar(cell.Lines[l, h]));
-
-                            cell.Invalid = false;
-                        }
-                    }
-                }
-            }
-
-        }
-
 
         private char BaseElementToChar(BaseElement baseElement)
         {

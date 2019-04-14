@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core.RoundComponents
 {
@@ -52,7 +53,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     var inventoryCell = localUpdatePlayer.CellInventory.First(x => x.Position.X == 1);
                     localUpdatePlayer.CellInventory.Remove(inventoryCell);
 
-                    var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point);
+                    var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point) as MapCell;
 
                     localUpdatePlayer.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
                     localUpdatePlayer.CellInventory.Add(mapCell);
