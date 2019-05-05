@@ -46,6 +46,7 @@ namespace TheRuleOfSilvester.Core
             binaryWriter.Write(Order);
         }
 
-        public override string ToString() => ActionType.ToString() + " | " + Point.ToString();
+        public override string ToString() 
+            => ActionType.ToString() + " | " + Point.ToString();
     }
 }

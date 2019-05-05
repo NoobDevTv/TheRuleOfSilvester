@@ -12,7 +12,8 @@ namespace TheRuleOfSilvester.Core.Cells
     public abstract class MapCell : Cell, IByteSerializable
     {
         public Guid Guid { get; private set; }
-
+        public abstract string CellName { get; }
+        public abstract ConnectionPoint ConnectionPoint { get;  }
 
         public MapCell(Map map, bool movable = true) : base(5, 3, map, movable)
         {
@@ -20,10 +21,10 @@ namespace TheRuleOfSilvester.Core.Cells
             Guid = string.IsNullOrWhiteSpace(guidVal) ? Guid.NewGuid() : new Guid(guidVal);
         }
 
-        public void NormalizeLayering()
+        
+        public void NormalizeLayering(List<MapCell> mapCells)
         {
-            ClearLayer();
-            var mapCells = Map.Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType()));
+            ClearLayer();            
 
             var nTopCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y - 1);
             var nDownCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y + 1);
@@ -32,23 +33,23 @@ namespace TheRuleOfSilvester.Core.Cells
 
             if (nLeftCell != null)
             {
-                Layer[0, 0] = (Layer[0, 0] == null ? ConnectionPoints.None : Layer[0, 0].Connections) | Lines[0, 0].Connections | ((nLeftCell.Lines[4, 0].Connections & ConnectionPoints.Right) == ConnectionPoints.Right ? ConnectionPoints.Left : ConnectionPoints.None);
-                Layer[0, 2] = (Layer[0, 2] == null ? ConnectionPoints.None : Layer[0, 2].Connections) | Lines[0, 2].Connections | ((nLeftCell.Lines[4, 2].Connections & ConnectionPoints.Right) == ConnectionPoints.Right ? ConnectionPoints.Left : ConnectionPoints.None);
+                Layer[0, 0] = (Layer[0, 0] == null ? ConnectionPoint.None : Layer[0, 0].Connections) | Lines[0, 0].Connections | ((nLeftCell.Lines[4, 0].Connections & ConnectionPoint.Right) == ConnectionPoint.Right ? ConnectionPoint.Left : ConnectionPoint.None);
+                Layer[0, 2] = (Layer[0, 2] == null ? ConnectionPoint.None : Layer[0, 2].Connections) | Lines[0, 2].Connections | ((nLeftCell.Lines[4, 2].Connections & ConnectionPoint.Right) == ConnectionPoint.Right ? ConnectionPoint.Left : ConnectionPoint.None);
             }
             if (nTopCell != null)
             {
-                Layer[0, 0] = (Layer[0, 0] == null ? ConnectionPoints.None : Layer[0, 0].Connections) | Lines[0, 0].Connections | ((nTopCell.Lines[0, 2].Connections & ConnectionPoints.Down) == ConnectionPoints.Down ? ConnectionPoints.Up : ConnectionPoints.None);
-                Layer[4, 0] = (Layer[4, 0] == null ? ConnectionPoints.None : Layer[4, 0].Connections) | Lines[4, 0].Connections | ((nTopCell.Lines[4, 2].Connections & ConnectionPoints.Down) == ConnectionPoints.Down ? ConnectionPoints.Up : ConnectionPoints.None);
+                Layer[0, 0] = (Layer[0, 0] == null ? ConnectionPoint.None : Layer[0, 0].Connections) | Lines[0, 0].Connections | ((nTopCell.Lines[0, 2].Connections & ConnectionPoint.Down) == ConnectionPoint.Down ? ConnectionPoint.Up : ConnectionPoint.None);
+                Layer[4, 0] = (Layer[4, 0] == null ? ConnectionPoint.None : Layer[4, 0].Connections) | Lines[4, 0].Connections | ((nTopCell.Lines[4, 2].Connections & ConnectionPoint.Down) == ConnectionPoint.Down ? ConnectionPoint.Up : ConnectionPoint.None);
             }
             if (nDownCell != null)
             {
-                Layer[0, 2] = (Layer[0, 2] == null ? ConnectionPoints.None : Layer[0, 2].Connections) | Lines[0, 2].Connections | ((nDownCell.Lines[0, 0].Connections & ConnectionPoints.Up) == ConnectionPoints.Up ? ConnectionPoints.Down : ConnectionPoints.None);
-                Layer[4, 2] = (Layer[4, 2] == null ? ConnectionPoints.None : Layer[4, 2].Connections) | Lines[4, 2].Connections | ((nDownCell.Lines[4, 0].Connections & ConnectionPoints.Up) == ConnectionPoints.Up ? ConnectionPoints.Down : ConnectionPoints.None);
+                Layer[0, 2] = (Layer[0, 2] == null ? ConnectionPoint.None : Layer[0, 2].Connections) | Lines[0, 2].Connections | ((nDownCell.Lines[0, 0].Connections & ConnectionPoint.Up) == ConnectionPoint.Up ? ConnectionPoint.Down : ConnectionPoint.None);
+                Layer[4, 2] = (Layer[4, 2] == null ? ConnectionPoint.None : Layer[4, 2].Connections) | Lines[4, 2].Connections | ((nDownCell.Lines[4, 0].Connections & ConnectionPoint.Up) == ConnectionPoint.Up ? ConnectionPoint.Down : ConnectionPoint.None);
             }
             if (nRightCell != null)
             {
-                Layer[4, 0] = (Layer[4, 0] == null ? ConnectionPoints.None : Layer[4, 0].Connections) | Lines[4, 0].Connections | ((nRightCell.Lines[0, 0].Connections & ConnectionPoints.Left) == ConnectionPoints.Left ? ConnectionPoints.Right : ConnectionPoints.None);
-                Layer[4, 2] = (Layer[4, 2] == null ? ConnectionPoints.None : Layer[4, 2].Connections) | Lines[4, 2].Connections | ((nRightCell.Lines[0, 2].Connections & ConnectionPoints.Left) == ConnectionPoints.Left ? ConnectionPoints.Right : ConnectionPoints.None);
+                Layer[4, 0] = (Layer[4, 0] == null ? ConnectionPoint.None : Layer[4, 0].Connections) | Lines[4, 0].Connections | ((nRightCell.Lines[0, 0].Connections & ConnectionPoint.Left) == ConnectionPoint.Left ? ConnectionPoint.Right : ConnectionPoint.None);
+                Layer[4, 2] = (Layer[4, 2] == null ? ConnectionPoint.None : Layer[4, 2].Connections) | Lines[4, 2].Connections | ((nRightCell.Lines[0, 2].Connections & ConnectionPoint.Left) == ConnectionPoint.Left ? ConnectionPoint.Right : ConnectionPoint.None);
             }
 
             if (!Movable)
@@ -58,6 +59,8 @@ namespace TheRuleOfSilvester.Core.Cells
 
             Invalid = true;
         }
+        public void NormalizeLayering()
+            => NormalizeLayering(Map.Cells.OfType<MapCell>().ToList());
 
         public void ClearLayer()
         {

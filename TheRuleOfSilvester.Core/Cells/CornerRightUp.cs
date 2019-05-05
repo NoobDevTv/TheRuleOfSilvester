@@ -8,6 +8,9 @@ namespace TheRuleOfSilvester.Core.Cells
     [Guid("A0D9A44A-EF84-4E5A-929E-2664E51F481C")]
     public class CornerRightUp : MapCell
     {
+        public override string CellName => nameof(CornerRightUp);
+
+        public override ConnectionPoint ConnectionPoint => ConnectionPoint.Right | ConnectionPoint.Up;
 
         public CornerRightUp(Map map, bool movable = true) : base(map, movable)
         {
@@ -16,8 +19,8 @@ namespace TheRuleOfSilvester.Core.Cells
             Lines[4, 0] = Movable ? '└' : '╚';
             Lines[0, 1] = Movable ? '│' : '║';
             Lines[0, 2] = Movable ? '└' : '╚';
-            for (int i = 1; i < 5; i++)
-                Lines[i, 2] = Movable ? '─' : '═'; 
+            for (var i = 1; i < 5; i++)
+                Lines[i, 2] = Movable ? '─' : '═';
         }
     }
 }

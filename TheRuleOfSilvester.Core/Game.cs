@@ -34,7 +34,8 @@ namespace TheRuleOfSilvester.Core
         private Player player;
         private readonly ManualResetEventSlim manualResetEvent;
 
-        public Game() => manualResetEvent = new ManualResetEventSlim(false);
+        public Game() 
+            => manualResetEvent = new ManualResetEventSlim(false);
 
         public void Run(int frame, int ups, bool multiplayer, string playername = "")
         {
@@ -59,7 +60,7 @@ namespace TheRuleOfSilvester.Core
             else
             {
                 var generator = new MapGenerator();
-                Map = generator.Generate(50, 50);
+                Map = generator.Generate(300, 300);
 
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {
@@ -84,7 +85,8 @@ namespace TheRuleOfSilvester.Core
 
             gameThread.Start();
         }
-        public void Run(int frame, int ups) => Run(frame, ups, false);
+        public void Run(int frame, int ups) 
+            => Run(frame, ups, false);
 
         public void Stop()
         {

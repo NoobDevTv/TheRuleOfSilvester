@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using TheRuleOfSilvester.Core.Cells;
 using TheRuleOfSilvester.Core.Items;
 
@@ -29,79 +30,93 @@ namespace TheRuleOfSilvester.Core
         {
             var map = new Map(x, y, this);
             map.Cells.Clear();
+            MapCell[,] mapCells = new MapCell[x, y];
 
-            //var tileSet = BuildTileSet();
 
-            var topCells = CellTypes.Where(ct => !ct.Name.ToLower().Contains("up")).ToList();
-            var downCells = CellTypes.Where(ct => !ct.Name.ToLower().Contains("down")).ToList();
-            var leftCells = CellTypes.Where(ct => !ct.Name.ToLower().Contains("left")).ToList();
-            var rightCells = CellTypes.Where(ct => !ct.Name.ToLower().Contains("right")).ToList();
+            var localCellTypes = CellTypes.Select(t => new
+            {
+                Type = t,
+                ((MapCell)Activator.CreateInstance(t, map, true)).ConnectionPoint
+            }).ToList();
 
-            map.Cells.Add(new CornerRightDown(map, false) { Position = new Point(0, 0) });
-            map.Cells.Add(new CornerLeftDown(map, false) { Position = new Point(x, 0) });
-            map.Cells.Add(new CornerRightUp(map, false) { Position = new Point(0, y) });
-            map.Cells.Add(new CornerLeftUp(map, false) { Position = new Point(x, y) });
+            var topCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Up) > 0)).Select(x => x.Type).ToList();
+            var downCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Down) > 0)).Select(x => x.Type).ToList();
+            var leftCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Left) > 0)).Select(x => x.Type).ToList();
+            var rightCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Right) > 0)).Select(x => x.Type).ToList();
+
+            mapCells[0, 0] = new CornerRightDown(map, false) { Position = new Point(0, 0) };
+            mapCells[x-1, 0] = new CornerLeftDown(map, false) { Position = new Point(x, 0) };
+            mapCells[0, y-1] = new CornerRightUp(map, false) { Position = new Point(0, y) };
+            mapCells[x-1, y-1] = new CornerLeftUp(map, false) { Position = new Point(x, y) };
 
             //Todo should be more generic
 
-            for (int i = 1; i < x; i++)
+            for (var i = 1; i < x; i++)
             {
-                var cell = (Cell)Activator.CreateInstance(topCells[random.Next(0, topCells.Count)], map, false);
+                var cell = (MapCell)Activator.CreateInstance(topCells[random.Next(0, topCells.Count)], map, false);
                 cell.Position = new Point(i, 0);
-                map.Cells.Add(cell);
+                mapCells[i, 0] = cell;
+
             }
 
-            for (int i = 1; i < y; i++)
+            for (var i = 1; i < y; i++)
             {
-                var cell = (Cell)Activator.CreateInstance(leftCells[random.Next(0, topCells.Count)], map, false);
+                var cell = (MapCell)Activator.CreateInstance(leftCells[random.Next(0, topCells.Count)], map, false);
                 cell.Position = new Point(0, i);
                 cell.Movable = false;
-                map.Cells.Add(cell);
+                mapCells[0, i] = cell;
             }
 
-            for (int i = 1; i < x; i++)
+            for (var i = 1; i < x; i++)
             {
-                var cell = (Cell)Activator.CreateInstance(downCells[random.Next(0, topCells.Count)], map, false);
+                var cell = (MapCell)Activator.CreateInstance(downCells[random.Next(0, topCells.Count)], map, false);
                 cell.Position = new Point(i, y);
                 cell.Movable = false;
-                map.Cells.Add(cell);
+                mapCells[i, y-1] = cell;
             }
 
-            for (int i = 1; i < y; i++)
+            for (var i = 1; i < y; i++)
             {
-                var cell = (Cell)Activator.CreateInstance(rightCells[random.Next(0, topCells.Count)], map, false);
+                var cell = (MapCell)Activator.CreateInstance(rightCells[random.Next(0, topCells.Count)], map, false);
                 cell.Position = new Point(x, i);
                 cell.Movable = false;
-                map.Cells.Add(cell);
+                mapCells[x-1, i] = cell;
             }
             //x + 1 bis x - 1
             //y + 1 bis y - 1
-
-            for (int tempX = 1; tempX < x; tempX++)
-                for (int tempY = 1; tempY < y; tempY++)
+            for (var tempX = 1; tempX < x-1; tempX++)
+            {
+                for (var tempY = 1; tempY < y-1; tempY++)
                 {
-                    var nTopCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY - 1);
-                    var nDownCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX && c.Position.Y == tempY + 1);
-                    var nLeftCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX - 1 && c.Position.Y == tempY);
-                    var nRightCell = map.Cells.FirstOrDefault(c => c.Position.X == tempX + 1 && c.Position.Y == tempY);
+                    bool nTopCell = (mapCells[tempX, tempY - 1]?.ConnectionPoint & ConnectionPoint.Down) > 0;
+                    bool nDownCell = (mapCells[tempX, tempY + 1]?.ConnectionPoint & ConnectionPoint.Up) > 0;
+                    bool nLeftCell = (mapCells[tempX - 1, tempY]?.ConnectionPoint & ConnectionPoint.Right) > 0;
+                    bool nRightCell = (mapCells[tempX + 1, tempY]?.ConnectionPoint & ConnectionPoint.Left) > 0;
 
-                    var possibleCells = CellTypes.Where(cellType => ((nTopCell != null
-                                    && nTopCell.GetType().Name.ToLower().Contains("down")) ? (cellType.Name.ToLower().Contains("up") ? true : false) : true)
-                                    && ((nDownCell != null && nDownCell.GetType().Name.ToLower().Contains("up")) ? (cellType.Name.ToLower().Contains("down") ? true : false) : true)
-                                    && ((nLeftCell != null && nLeftCell.GetType().Name.ToLower().Contains("right")) ? (cellType.Name.ToLower().Contains("left") ? true : false) : true)
-                                    && ((nRightCell != null && nLeftCell.GetType().Name.ToLower().Contains("left")) ? (cellType.Name.ToLower().Contains("right") ? true : false) : true)).ToArray();
+                    var possibleCells = localCellTypes.Where(cellType =>
+                                                (nTopCell ? (((cellType.ConnectionPoint & ConnectionPoint.Up) > 0) ? true : false) : true)
+                                            && (nDownCell ? (((cellType.ConnectionPoint & ConnectionPoint.Down) > 0) ? true : false) : true)
+                                            && (nLeftCell ? (((cellType.ConnectionPoint & ConnectionPoint.Left) > 0) ? true : false) : true)
+                                            && (nRightCell ? (((cellType.ConnectionPoint & ConnectionPoint.Right) > 0) ? true : false) : true))
+                                .Select(x => x.Type).ToArray();
 
-                    var cell = (Cell)Activator.CreateInstance(possibleCells[random.Next(0, possibleCells.Length)], map, true);
+                    var cell = (MapCell)Activator.CreateInstance(possibleCells[random.Next(0, possibleCells.Length)], map, true);
                     cell.Position = new Point(tempX, tempY);
-                    map.Cells.Add(cell);
+
+                    mapCells[tempX, tempY] = cell;
+                    //localMapCells.Add(cell);
                 }
+            }
 
-            foreach (MapCell ourCell in map.Cells)
-                ourCell.NormalizeLayering();
+            var localMapCells = new List<MapCell>(x*y);
+            foreach (var cell in mapCells)
+                localMapCells.Add(cell);
 
+            Parallel.ForEach(localMapCells, ourCell => (ourCell as MapCell).NormalizeLayering(localMapCells));
+
+            map.Cells = localMapCells.OfType<Cell>().ToList();
             //Default coin stack
-            var r = new Random();
-            map.Cells.Add(new CoinStack(map) { Position = new Point(5 * r.Next(1, map.Width - 2) - 3, 3 * r.Next(1, map.Height - 2) - 2) });
+            map.Cells.Add(new CoinStack(map) { Position = new Point(5 * random.Next(1, map.Width - 2) - 3, 3 * random.Next(1, map.Height - 2) - 2) });
 
             return map;
         }

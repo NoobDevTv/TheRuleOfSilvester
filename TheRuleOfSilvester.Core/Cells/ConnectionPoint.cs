@@ -5,7 +5,7 @@ using System.Text;
 namespace TheRuleOfSilvester.Core.Cells
 {
 
-    public enum ConnectionPoints
+    public enum ConnectionPoint
     {
         None = 0,
         Up = 1,
