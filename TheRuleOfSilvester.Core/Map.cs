@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Core.Extensions;
 using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Items;
 
@@ -34,9 +35,9 @@ namespace TheRuleOfSilvester.Core
         }
         public Map() : this(0, 0, null) { }
 
-        public bool IsTileOccupied(Point pos)
+        public bool IsTileOccupied(Position pos)
         {
-            var cellList = Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())).Where(x => Cell.IsOnPosition(pos, x));
+            var cellList = Cells.OfType<MapCell>().Where(x => Cell.IsOnPosition(pos, x));
 
             foreach (var cell in cellList)
             {
@@ -46,13 +47,10 @@ namespace TheRuleOfSilvester.Core
 
             return false;
         }
-        public Cell GetTileAbsolutePos(Point pos)
-        {
-            return Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType())).FirstOrDefault(x => Cell.IsOnPosition(pos, x));
+        public Cell GetTileAbsolutePos(Position pos)
+            => Cells.OfType<MapCell>().FirstOrDefault(x => Cell.IsOnPosition(pos, x));
 
-        }
-
-        public Cell SwapInventoryAndMapCell(Cell cell, Point position, int x = 5)
+        public Cell SwapInventoryAndMapCell(Cell cell, Position position, int x = 5)
         {
             var mapCell = Cells.First(c => c.Position == position);
 
@@ -60,17 +58,17 @@ namespace TheRuleOfSilvester.Core
             Cells.Remove(mapCell);
             Cells.Add(cell);
 
-            mapCell.Position = new Point(x, Height + 2);
+            mapCell.Position = new Position(x, Height + 2);
             cell.Invalid = true;
             mapCell.Invalid = true;
 
-            var cellsToNormalize = Cells.Where(c =>
-                                  c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y - 1
-                              || c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y + 1
-                              || c.Position.X == cell.Position.X - 1 && c.Position.Y == cell.Position.Y
-                              || c.Position.X == cell.Position.X + 1 && c.Position.Y == cell.Position.Y)
-                              .Select(c => (MapCell)c).ToList();
-            cellsToNormalize.ForEach(c => c.NormalizeLayering());
+            Cells.Where(c =>
+                               c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y - 1
+                            || c.Position.X == cell.Position.X && c.Position.Y == cell.Position.Y + 1
+                            || c.Position.X == cell.Position.X - 1 && c.Position.Y == cell.Position.Y
+                            || c.Position.X == cell.Position.X + 1 && c.Position.Y == cell.Position.Y)
+                            .Select(c => (MapCell)c)
+                            .ForEach(c => c.NormalizeLayering());
 
             (cell as MapCell).NormalizeLayering();
             (mapCell as MapCell).NormalizeLayering();
@@ -84,8 +82,7 @@ namespace TheRuleOfSilvester.Core
             writer.Write(Width);
             writer.Write(Cells.Count);
 
-            foreach (IByteSerializable cell in Cells.Where(x => typeof(MapCell).IsAssignableFrom(x.GetType()) ||
-                                                                typeof(BaseItemCell).IsAssignableFrom(x.GetType())))
+            foreach (IByteSerializable cell in Cells.Where(x => x is MapCell || x is BaseItemCell))
             {
                 cell.Serialize(writer);
             }

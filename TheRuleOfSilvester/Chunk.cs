@@ -8,14 +8,14 @@ namespace TheRuleOfSilvester
     public class Chunk
     {
         public List<Cell> Cells { get; private set; }
-        public Point ChunkPosition { get; private set; }
+        public Position ChunkPosition { get; private set; }
 
-        public Chunk(IEnumerable<Cell> cells, int chunkWidth, int chunkHeight, Point chunkPoint)
+        public Chunk(IEnumerable<Cell> cells, int chunkWidth, int chunkHeight, Position chunkPoint)
         {
             FillCells(cells, chunkWidth, chunkHeight, chunkPoint);
         }
 
-        public void FillCells(IEnumerable<Cell> cells, int chunkWidth, int chunkHeight, Point chunkPoint)
+        public void FillCells(IEnumerable<Cell> cells, int chunkWidth, int chunkHeight, Position chunkPoint)
         {
             ChunkPosition = chunkPoint;
 

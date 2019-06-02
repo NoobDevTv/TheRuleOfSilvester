@@ -65,7 +65,7 @@ namespace TheRuleOfSilvester.Core
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {
                     Color = Color.Red,
-                    Position = new Point(7, 4)
+                    Position = new Position(7, 4)
                 };
                 CurrentGameStatus = GameStatus.Running;
             }
@@ -145,7 +145,7 @@ namespace TheRuleOfSilvester.Core
             if (CurrentGameStatus == GameStatus.Running)
                 DrawComponent.Draw(Map);
             else 
-                DrawComponent.DrawCells(new List<TextCell> { new TextCell("NOT Running", Map) });
+                DrawComponent.DrawTextCells(new List<TextCell> { new TextCell("NOT Running", Map) });
         }
 
         private void AfterUpdate()

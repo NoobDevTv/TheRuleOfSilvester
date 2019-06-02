@@ -13,7 +13,7 @@ namespace TheRuleOfSilvester.Core.Cells
     {
         public Guid Guid { get; private set; }
         public abstract string CellName { get; }
-        public abstract ConnectionPoint ConnectionPoint { get;  }
+        public abstract ConnectionPoint ConnectionPoint { get; }
 
         public MapCell(Map map, bool movable = true) : base(5, 3, map, movable)
         {
@@ -21,15 +21,19 @@ namespace TheRuleOfSilvester.Core.Cells
             Guid = string.IsNullOrWhiteSpace(guidVal) ? Guid.NewGuid() : new Guid(guidVal);
         }
 
-        
-        public void NormalizeLayering(List<MapCell> mapCells)
-        {
-            ClearLayer();            
 
-            var nTopCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y - 1);
-            var nDownCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == Position.Y + 1);
-            var nLeftCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X - 1 && c.Position.Y == Position.Y);
-            var nRightCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X + 1 && c.Position.Y == Position.Y);
+        public void NormalizeLayering(IEnumerable<MapCell> mapCells)
+        {
+            ClearLayer();
+
+            var xMinus = Position.X - 1;
+            var xAdd = Position.X + 1;
+            var yMinus = Position.Y - 1;
+            var yAdd = Position.Y + 1;
+            var nTopCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == yMinus);
+            var nDownCell = mapCells.FirstOrDefault(c => c.Position.X == Position.X && c.Position.Y == yAdd);
+            var nLeftCell = mapCells.FirstOrDefault(c => c.Position.X == xMinus && c.Position.Y == Position.Y);
+            var nRightCell = mapCells.FirstOrDefault(c => c.Position.X == xAdd && c.Position.Y == Position.Y);
 
             if (nLeftCell != null)
             {
@@ -53,18 +57,20 @@ namespace TheRuleOfSilvester.Core.Cells
             }
 
             if (!Movable)
+            {
                 foreach (var item in Layer)
                     if (item != null && item.ElementID % 2 == 1)
                         item.ElementID++;
+            }
 
             Invalid = true;
         }
         public void NormalizeLayering()
-            => NormalizeLayering(Map.Cells.OfType<MapCell>().ToList());
+            => NormalizeLayering(Map.Cells.OfType<MapCell>());
 
         public void ClearLayer()
         {
-            Layer = new BaseElement[Layer.GetLength(0), Layer.GetLength(1)];
+            Layer = new BaseElement[Width, Height];
         }
 
         public void Serialize(BinaryWriter binaryWriter)

@@ -14,14 +14,14 @@ namespace TheRuleOfSilvester.Core
         public uint Order { get; set; }
 
         public ActionType ActionType { get; private set; }
-        public Point Point { get; private set; }
+        public Position Point { get; private set; }
 
         public PlayerAction()
         {
 
         }
 
-        public PlayerAction(Player player, ActionType moveType, Point point) : this()
+        public PlayerAction(Player player, ActionType moveType, Position point) : this()
         {
             Player = player;
             ActionType = moveType;
@@ -32,7 +32,7 @@ namespace TheRuleOfSilvester.Core
         {
             Player = new Player();
             Player.Deserialize(binaryReader);
-            Point = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+            Point = new Position(binaryReader.ReadInt32(), binaryReader.ReadInt32());
             ActionType = (ActionType)binaryReader.ReadInt32();
             Order = binaryReader.ReadUInt32();
         }

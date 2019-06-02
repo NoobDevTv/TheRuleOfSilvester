@@ -67,7 +67,7 @@ namespace TheRuleOfSilvester.Core
 
             GenerateInventory(map, random);
 
-            map.TextCells.Add(new TextCell("Inventory:", map) { Position = new Point(0, (map.Height + 1) * 3 + 1) });
+            map.TextCells.Add(new TextCell("Inventory:", map) { Position = new Position(0, (map.Height + 1) * 3 + 1) });
 
             SetAvatar(role.Avatar);
         }
@@ -92,7 +92,7 @@ namespace TheRuleOfSilvester.Core
                 return;
             }
 
-            MoveGeneral(new Point(Position.X, Position.Y - moveSizeY));
+            MoveGeneral(new Position(Position.X, Position.Y - moveSizeY));
         }
 
         public void MoveDown(bool ghostMode)
@@ -103,7 +103,7 @@ namespace TheRuleOfSilvester.Core
                 return;
             }
 
-            MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
+            MoveGeneral(new Position(Position.X, Position.Y + moveSizeY));
         }
 
         public void MoveLeft(bool ghostMode)
@@ -114,7 +114,7 @@ namespace TheRuleOfSilvester.Core
                 return;
             }
 
-            MoveGeneral(new Point(Position.X - moveSizeX, Position.Y));
+            MoveGeneral(new Position(Position.X - moveSizeX, Position.Y));
         }
 
         public void MoveRight(bool ghostMode)
@@ -125,7 +125,7 @@ namespace TheRuleOfSilvester.Core
                 return;
             }
 
-            MoveGeneral(new Point(Position.X + moveSizeX, Position.Y));
+            MoveGeneral(new Position(Position.X + moveSizeX, Position.Y));
         }
 
         public void StartAction()
@@ -173,7 +173,7 @@ namespace TheRuleOfSilvester.Core
             for (int i = 0; i < 3; i++)
             {
                 var cell = (MapCell)Activator.CreateInstance(cellTypes[random.Next(0, cellTypes.Count)], map, true);
-                cell.Position = new Point(1 + i * 2, Map.Height + 2);
+                cell.Position = new Position(1 + i * 2, Map.Height + 2);
                 CellInventory.Add(cell);
                 
             }
@@ -209,9 +209,9 @@ namespace TheRuleOfSilvester.Core
 
                 Map.Cells.Add(inventoryCell);
 
-                changedCell.Position = new Point(5, Map.Height + 2);
+                changedCell.Position = new Position(5, Map.Height + 2);
                 changedCell.Invalid = true;                
-                CellInventory.ForEach(x => { x.Position = new Point(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
+                CellInventory.ForEach(x => { x.Position = new Position(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
                 CellInventory.Add(changedCell as MapCell);
 
 
@@ -239,12 +239,12 @@ namespace TheRuleOfSilvester.Core
             {
                 if (XDirection)
                 {
-                    if (Map.IsTileOccupied(new Point(Position.X + i, Position.Y)))
+                    if (Map.IsTileOccupied(new Position(Position.X + i, Position.Y)))
                         return true;
                 }
                 else
                 {
-                    if (Map.IsTileOccupied(new Point(Position.X, Position.Y + i)))
+                    if (Map.IsTileOccupied(new Position(Position.X, Position.Y + i)))
                         return true;
                 }
             }
@@ -252,7 +252,7 @@ namespace TheRuleOfSilvester.Core
             return false;
         }
 
-        public void MoveGeneral(Point move)
+        public void MoveGeneral(Position move)
         {
             var mapCells = Map.Cells.OfType<MapCell>();
 
@@ -268,8 +268,8 @@ namespace TheRuleOfSilvester.Core
             if (cell != null)
                 cell.Invalid = true;
         }
-        public void MoveGeneralRelative(Point move)
-            => MoveGeneral(Position + new Size(move));
+        public void MoveGeneralRelative(Position move)
+            => MoveGeneral(Position + move);
 
         public void Serialize(BinaryWriter binaryWriter)
         {
@@ -296,7 +296,7 @@ namespace TheRuleOfSilvester.Core
 
             Role = (BaseRole)Activator.CreateInstance(Type.GetType(binaryReader.ReadString()));
 
-            Position = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+            Position = new Position(binaryReader.ReadInt32(), binaryReader.ReadInt32());
 
             var count = binaryReader.ReadInt32();
 
@@ -308,7 +308,7 @@ namespace TheRuleOfSilvester.Core
         public bool TryCollectItem()
         {
             var item = Map.Cells.FirstOrDefault(
-                c => c.Position == Position && typeof(BaseItemCell).IsAssignableFrom(c.GetType()));
+                c => c.Position == Position && c is BaseItemCell);
 
             if (item == null)
                 return false;
@@ -338,19 +338,12 @@ namespace TheRuleOfSilvester.Core
 
         public static bool Equals(Player player1, Player player2)
         {
-            if (((object)player1) == null && ((object)player2) == null)
-            {
+            if (player1 is null && player2 is null)
                 return true;
-            }
-            else if (((object)player1) == null && ((object)player2) != null ||
-                     ((object)player1) != null && ((object)player2) == null)
-            {
+            else if (player1 is null ^ player2 is null)
                 return false;
-            }
-            else
-            {
-                return player1.Equals(player2);
-            }
+
+            return player1.Equals(player2);
 
         }
 

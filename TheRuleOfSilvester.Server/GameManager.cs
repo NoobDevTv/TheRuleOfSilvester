@@ -62,7 +62,7 @@ namespace TheRuleOfSilvester.Server
             var player = new Player(Map, roles.Dequeue())
             {
                 Name = playername, 
-                Position = new Point(7, 4),
+                Position = new Position(7, 4),
             };
             Players.Add(tmpId, new NetworkPlayer(player)
             {

@@ -74,7 +74,7 @@ namespace TheRuleOfSilvester.Core
             var type = mapCells[key];
 
             var cell = (Cell)Activator.CreateInstance(type, new object[] { Map, binaryReader.ReadBoolean() });
-            cell.Position = new Point(binaryReader.ReadInt32(), binaryReader.ReadInt32());
+            cell.Position = new Position(binaryReader.ReadInt32(), binaryReader.ReadInt32());
             cell.Color = Color.FromArgb(binaryReader.ReadInt32());
             return cell;
         }

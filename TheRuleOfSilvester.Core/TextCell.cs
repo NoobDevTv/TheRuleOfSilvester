@@ -29,7 +29,7 @@ namespace TheRuleOfSilvester.Core
         public TextCell(string text, Map map) : this(text, text.Length, map)
         {
         }
-        public TextCell(string text, Point pos, Map map) : this(text, map)
+        public TextCell(string text, Position pos, Map map) : this(text, map)
         {
             Position = pos;
         }

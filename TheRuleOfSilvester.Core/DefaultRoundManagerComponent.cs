@@ -33,7 +33,7 @@ namespace TheRuleOfSilvester.Core
             firstRun = true;
 
             roundModeCell = new TextCell(("RoundMode: " + RoundMode).PadRight(20, ' '), 20, map)
-            { Position = new Point(4, (map.Height * 3) + 3) };
+            { Position = new Position(4, (map.Height * 3) + 3) };
 
             map.TextCells.Add(roundModeCell);
         }

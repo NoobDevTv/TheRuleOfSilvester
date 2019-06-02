@@ -22,7 +22,7 @@ namespace TheRuleOfSilvester.Core
             Lines = new BaseElement[1, 1];
             player = original;
             Color = Color.Green;
-            text = new TextCell("Ghostmode ACTIVATED", map) { Position = new Point(0, (Map.Height + 1) * 3)};
+            text = new TextCell("Ghostmode ACTIVATED", map) { Position = new Position(0, (Map.Height + 1) * 3)};
           
             text.Color = Color.Red;
             moveSizeX = 5;
@@ -39,7 +39,7 @@ namespace TheRuleOfSilvester.Core
             if (Position.Y - moveSizeY <= 0)
                 return;
 
-            MoveGeneral(new Point(Position.X, Position.Y - moveSizeY));
+            MoveGeneral(new Position(Position.X, Position.Y - moveSizeY));
         }
 
         public void MoveDown()
@@ -47,7 +47,7 @@ namespace TheRuleOfSilvester.Core
             if (Position.Y >= Map.Height * Map.Cells.FirstOrDefault().Height)
                 return;
 
-            MoveGeneral(new Point(Position.X, Position.Y + moveSizeY));
+            MoveGeneral(new Position(Position.X, Position.Y + moveSizeY));
         }
 
         public void MoveLeft()
@@ -55,7 +55,7 @@ namespace TheRuleOfSilvester.Core
             if (Position.X - moveSizeX <= 0)
                 return;
 
-            MoveGeneral(new Point(Position.X - moveSizeX, Position.Y));
+            MoveGeneral(new Position(Position.X - moveSizeX, Position.Y));
         }
 
         public void MoveRight()
@@ -63,10 +63,10 @@ namespace TheRuleOfSilvester.Core
             if (Position.X >= Map.Width * Map.Cells.FirstOrDefault().Width)
                 return;
 
-            MoveGeneral(new Point(Position.X + moveSizeX, Position.Y));
+            MoveGeneral(new Position(Position.X + moveSizeX, Position.Y));
         }
 
-        private void MoveGeneral(Point move)
+        private void MoveGeneral(Position move)
         {
             var cell = Map.Cells.FirstOrDefault(x =>
             x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X

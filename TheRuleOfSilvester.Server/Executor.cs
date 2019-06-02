@@ -33,7 +33,7 @@ namespace TheRuleOfSilvester.Server
                     switch (action.ActionType)
                     {
                         case ActionType.Moved:
-                            var point = new Point(player.Position.X + action.Point.X, player.Position.Y + action.Point.Y);
+                            var point = new Position(player.Position.X + action.Point.X, player.Position.Y + action.Point.Y);
                             map.Players.First(p => p == player).MoveGeneral(point);
                             break;
                         case ActionType.ChangedMapCell:
@@ -46,11 +46,11 @@ namespace TheRuleOfSilvester.Server
                             player.CellInventory.Remove(inventoryCell);
                             player.CellInventory.Add(cell as MapCell);
 
-                            cell.Position = new Point(5, map.Height + 2);
+                            cell.Position = new Position(5, map.Height + 2);
                             cell.Invalid = true;
                             player.CellInventory.ForEach(x =>
                             {
-                                x.Position = new Point(x.Position.X - 2, x.Position.Y);
+                                x.Position = new Position(x.Position.X - 2, x.Position.Y);
                                 x.Invalid = true;
                             });
                             break;

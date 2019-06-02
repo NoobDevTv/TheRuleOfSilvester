@@ -44,17 +44,17 @@ namespace TheRuleOfSilvester.Core
             var leftCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Left) > 0)).Select(x => x.Type).ToList();
             var rightCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Right) > 0)).Select(x => x.Type).ToList();
 
-            mapCells[0, 0] = new CornerRightDown(map, false) { Position = new Point(0, 0) };
-            mapCells[x-1, 0] = new CornerLeftDown(map, false) { Position = new Point(x, 0) };
-            mapCells[0, y-1] = new CornerRightUp(map, false) { Position = new Point(0, y) };
-            mapCells[x-1, y-1] = new CornerLeftUp(map, false) { Position = new Point(x, y) };
+            mapCells[0, 0] = new CornerRightDown(map, false) { Position = new Position(0, 0) };
+            mapCells[x-1, 0] = new CornerLeftDown(map, false) { Position = new Position(x, 0) };
+            mapCells[0, y-1] = new CornerRightUp(map, false) { Position = new Position(0, y) };
+            mapCells[x-1, y-1] = new CornerLeftUp(map, false) { Position = new Position(x, y) };
 
             //Todo should be more generic
 
             for (var i = 1; i < x; i++)
             {
                 var cell = (MapCell)Activator.CreateInstance(topCells[random.Next(0, topCells.Count)], map, false);
-                cell.Position = new Point(i, 0);
+                cell.Position = new Position(i, 0);
                 mapCells[i, 0] = cell;
 
             }
@@ -62,7 +62,7 @@ namespace TheRuleOfSilvester.Core
             for (var i = 1; i < y; i++)
             {
                 var cell = (MapCell)Activator.CreateInstance(leftCells[random.Next(0, topCells.Count)], map, false);
-                cell.Position = new Point(0, i);
+                cell.Position = new Position(0, i);
                 cell.Movable = false;
                 mapCells[0, i] = cell;
             }
@@ -70,7 +70,7 @@ namespace TheRuleOfSilvester.Core
             for (var i = 1; i < x; i++)
             {
                 var cell = (MapCell)Activator.CreateInstance(downCells[random.Next(0, topCells.Count)], map, false);
-                cell.Position = new Point(i, y);
+                cell.Position = new Position(i, y);
                 cell.Movable = false;
                 mapCells[i, y-1] = cell;
             }
@@ -78,7 +78,7 @@ namespace TheRuleOfSilvester.Core
             for (var i = 1; i < y; i++)
             {
                 var cell = (MapCell)Activator.CreateInstance(rightCells[random.Next(0, topCells.Count)], map, false);
-                cell.Position = new Point(x, i);
+                cell.Position = new Position(x, i);
                 cell.Movable = false;
                 mapCells[x-1, i] = cell;
             }
@@ -101,7 +101,7 @@ namespace TheRuleOfSilvester.Core
                                 .Select(x => x.Type).ToArray();
 
                     var cell = (MapCell)Activator.CreateInstance(possibleCells[random.Next(0, possibleCells.Length)], map, true);
-                    cell.Position = new Point(tempX, tempY);
+                    cell.Position = new Position(tempX, tempY);
 
                     mapCells[tempX, tempY] = cell;
                     //localMapCells.Add(cell);
@@ -112,11 +112,11 @@ namespace TheRuleOfSilvester.Core
             foreach (var cell in mapCells)
                 localMapCells.Add(cell);
 
-            Parallel.ForEach(localMapCells, ourCell => (ourCell as MapCell).NormalizeLayering(localMapCells));
+            //Parallel.ForEach(localMapCells, ourCell => (ourCell as MapCell).NormalizeLayering(localMapCells));
 
             map.Cells = localMapCells.OfType<Cell>().ToList();
             //Default coin stack
-            map.Cells.Add(new CoinStack(map) { Position = new Point(5 * random.Next(1, map.Width - 2) - 3, 3 * random.Next(1, map.Height - 2) - 2) });
+            map.Cells.Add(new CoinStack(map) { Position = new Position(5 * random.Next(1, map.Width - 2) - 3, 3 * random.Next(1, map.Height - 2) - 2) });
 
             return map;
         }

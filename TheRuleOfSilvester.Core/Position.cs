@@ -1,0 +1,59 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
+
+namespace TheRuleOfSilvester.Core
+{
+    public class Position
+    {
+        public Position(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+        public Position(int both)
+        {
+            X = both;
+            Y = both;
+        }
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if(obj is Position pos)
+                return X == pos.X && Y == pos.Y;
+
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode() 
+            => base.GetHashCode(); //Only to prevent warnings
+
+        public static bool operator ==(Position positionA, Position positionB)
+        {
+            if(positionA is null && positionB is null)
+                return true;
+            else if(positionA is null ^ positionB is null)
+                return false;
+
+            return positionA.Equals(positionB);
+        }
+        public static bool operator !=(Position positionA, Position positionB)
+            => !(positionA == positionB);
+
+        public static Position operator +(Position positionA, Position positionB)
+        {
+            positionA.X += positionB.X;
+            positionA.Y += positionB.Y;
+            return positionA;
+        }
+        public static Position operator +(Position position, Size size)
+        {
+            position.X += size.Width;
+            position.Y += size.Height;
+            return position;
+        }
+    }
+}

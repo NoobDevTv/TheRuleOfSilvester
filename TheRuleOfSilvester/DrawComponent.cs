@@ -15,11 +15,11 @@ namespace TheRuleOfSilvester
         public const int INFO_WIDTH = 23;
         public const int INVENTORY_HEIGHT = 8;
 
-        public int CurrentWidth => Console.WindowWidth - INFO_WIDTH;
-        public int CurrentHeight => Console.WindowHeight - INVENTORY_HEIGHT;
-
+        public int CurrentWidth { get; set; }
+        public int CurrentHeight { get; set; }
+        
         private bool chunkChange;
-        private Point oldChunkPos;
+        private Position oldChunkPos;
         private int oldWidth = 0;
         private int oldHeight = 0;
         private BaseItemCell[] oldPlayerInventory;
@@ -29,26 +29,36 @@ namespace TheRuleOfSilvester
         {
             oldWidth = 0;
             oldHeight = 0;
+            CurrentWidth=0;
+            CurrentHeight=0;
             chunks = new ChunkCollection();
             chunkChange = false;
-            oldChunkPos = new Point(0, 0);
+            oldChunkPos = new Position(0, 0);
         }
 
         public void Draw(Map map)
         {
-            if (oldWidth != CurrentWidth || oldHeight != CurrentHeight)
+            if (oldWidth != Console.WindowWidth || oldHeight != Console.WindowHeight)
+            {
+                CurrentWidth = Console.WindowWidth - INFO_WIDTH;
+                CurrentHeight = Console.WindowHeight - INVENTORY_HEIGHT;
+
                 RecalculateChunks(map);
+
+                oldWidth = Console.WindowWidth;
+                oldHeight = Console.WindowHeight;
+            }
             Console.CursorVisible = false;
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
             var localPlayer = map.Players.FirstOrDefault(x => x.IsLocal);
 
-            var chunkPosX = (localPlayer.Position.X - 1) / (CurrentWidth-8);
+            var chunkPosX = (localPlayer.Position.X - 1) / (CurrentWidth - 8);
             var chunkPosY = (localPlayer.Position.Y - 1) / CurrentHeight;
 
             if (oldChunkPos.X != chunkPosX || oldChunkPos.Y != chunkPosY)
             {
                 chunkChange = true;
-                oldChunkPos = new Point(chunkPosX, chunkPosY);
+                oldChunkPos = new Position(chunkPosX, chunkPosY);
             }
 
             if (chunkChange)
@@ -59,7 +69,7 @@ namespace TheRuleOfSilvester
             try
             {
                 DrawCells(map.Players, chunks[chunkPosX, chunkPosY]);
-                DrawCells(map.TextCells);
+                DrawTextCells(map.TextCells);
                 DrawPlayerInfo(localPlayer);
                 DrawItemInventory(localPlayer);
                 DrawCellInventory(localPlayer.CellInventory);
@@ -73,7 +83,7 @@ namespace TheRuleOfSilvester
 
 
 
-        public void DrawCells<T>(List<T> cells) where T : Cell
+        public void DrawTextCells(List<TextCell> cells)
         {
             foreach (var cell in cells.ToArray())
             {
@@ -81,11 +91,11 @@ namespace TheRuleOfSilvester
                 {
                     Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
 
-                    for (int l = 0; l < cell.Lines.GetLength(0); l++)
+                    for (int l = 0; l < cell.Width; l++)
                     {
-                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
+                        for (int h = 0; h < cell.Height; h++)
                         {
-                            Console.SetCursorPosition((cell.Position.X * cell.Width) + l, (cell.Position.Y * cell.Height) + h);
+                            Console.SetCursorPosition((cell.Position.X * cell.Width) + l, CurrentHeight + h);
 
                             if (cell.Layer[l, h] != null)
                                 Console.Write(BaseElementToChar(cell.Layer[l, h]));
@@ -107,12 +117,13 @@ namespace TheRuleOfSilvester
                 if (cell.Invalid || chunkChange)
                 {
                     Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
-
+                    if (cell is MapCell mapCell)
+                        mapCell.NormalizeLayering();
                     for (int w = 0; w < cell.Lines.GetLength(0); w++)
                     {
                         for (int h = 0; h < cell.Lines.GetLength(1); h++)
                         {
-                            Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth-8)) + w, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
+                            Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
 
                             if (cell.Layer[w, h] != null)
                                 Console.Write(BaseElementToChar(cell.Layer[w, h]));
@@ -129,15 +140,13 @@ namespace TheRuleOfSilvester
 
         private void RecalculateChunks(Map map)
         {
-            oldWidth = CurrentWidth;
-            oldHeight = CurrentHeight;
 
             chunks.Clear();
 
             var referenceCell = map.Cells.First();
             for (int w = 0; w < Math.Ceiling(map.Width * referenceCell.Width / (float)CurrentWidth); w++)
                 for (int h = 0; h < Math.Ceiling(map.Height * referenceCell.Height / (float)CurrentHeight); h++)
-                    chunks.Add(new Chunk(map.Cells, CurrentWidth - 8, CurrentHeight, new Point(w, h)));
+                    chunks.Add(new Chunk(map.Cells, CurrentWidth - 8, CurrentHeight, new Position(w, h)));
 
             chunkChange = true;
         }

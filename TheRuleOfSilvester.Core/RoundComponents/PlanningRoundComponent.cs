@@ -75,7 +75,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             switch (move.ActionType)
             {
                 case ActionType.Moved:
-                    player.MoveGeneral(new Point(player.Position.X - move.Point.X, player.Position.Y - move.Point.Y));
+                    player.MoveGeneral(new Position(player.Position.X - move.Point.X, player.Position.Y - move.Point.Y));
                     map
                         .Cells
                         .Where(c => typeof(BaseItemCell).IsAssignableFrom(c.GetType()))
@@ -90,7 +90,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
                     var mapCell = map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1) as MapCell;
 
                     //TODO Reduce duplicated code
-                    player.CellInventory.ForEach(x => { x.Position = new Point(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
+                    player.CellInventory.ForEach(x => { x.Position = new Position(x.Position.X + 2, x.Position.Y); x.Invalid = true; });
                     player.CellInventory.Add(mapCell, 0);
                     break;
                 case ActionType.CollectedItem:
@@ -162,17 +162,17 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             if (e.PropertyName != nameof(Player.Position))
                 return;
 
-            var newPos = (Point)e.NewValue;
-            var oldPos = (Point)e.OldValue;
+            var newPos = (Position)e.NewValue;
+            var oldPos = (Position)e.OldValue;
 
             if (propertyChangedRelevant)
             {
                 PlayerAction action;
 
                 if (sender is Player senderPlayer)
-                    action = new PlayerAction(senderPlayer, ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
+                    action = new PlayerAction(senderPlayer, ActionType.Moved, new Position(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
                 else
-                    action = new PlayerAction(player, ActionType.Moved, new Point(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
+                    action = new PlayerAction(player, ActionType.Moved, new Position(newPos.X - oldPos.X, newPos.Y - oldPos.Y));
 
                 action.Order = NextOrder;
                 actions.Push(action);
