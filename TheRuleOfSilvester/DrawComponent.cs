@@ -50,7 +50,7 @@ namespace TheRuleOfSilvester
             }
             Console.CursorVisible = false;
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
-            var localPlayer = map.Players.FirstOrDefault(x => x.IsLocal);
+            var localPlayer = map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
 
             var chunkPosX = (localPlayer.Position.X - 1) / (CurrentWidth - 8);
             var chunkPosY = (localPlayer.Position.Y - 1) / CurrentHeight;
@@ -119,9 +119,9 @@ namespace TheRuleOfSilvester
                     Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
                     if (cell is MapCell mapCell)
                         mapCell.NormalizeLayering();
-                    for (int w = 0; w < cell.Lines.GetLength(0); w++)
+                    for (int w = 0; w < cell.Width; w++)
                     {
-                        for (int h = 0; h < cell.Lines.GetLength(1); h++)
+                        for (int h = 0; h < cell.Height; h++)
                         {
                             Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
 
@@ -199,13 +199,16 @@ namespace TheRuleOfSilvester
         private void DrawCellInventory(Inventory<MapCell> cellInventory)
         {
             var cellsToRefresh = cellInventory.Where(cell => cell.Invalid || chunkChange).ToArray();
+            
             for (int i = 0; i < cellsToRefresh.Length; i++)
             {
                 var cell = cellsToRefresh[i];
+                if (cell is MapCell mapCell)
+                    mapCell.NormalizeLayering();
                 Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
-                for (int l = 0; l < cell.Lines.GetLength(0); l++)
+                for (int l = 0; l < cell.Width; l++)
                 {
-                    for (int h = 0; h < cell.Lines.GetLength(1); h++)
+                    for (int h = 0; h < cell.Height; h++)
                     {
                         Console.SetCursorPosition(l + (i * 10), CurrentHeight + 4 + h);
 

@@ -19,14 +19,14 @@ namespace TheRuleOfSilvester.Core
         //╔╦╗╚╩╝═║╠╬╣
         public List<Cell> Cells { get; set; }
         public List<TextCell> TextCells { get; set; }
-        public List<Player> Players { get; set; }
+        public List<PlayerCell> Players { get; set; }
         public int Height { get; set; }
         public int Width { get; set; }
         public BasicMapGenerator MapGenerator { get; private set; }
 
         public Map(int width, int height, BasicMapGenerator mapGenerator)
         {
-            Players = new List<Player>();
+            Players = new List<PlayerCell>();
             MapGenerator = mapGenerator;
             Height = height;
             Width = width;
@@ -69,9 +69,8 @@ namespace TheRuleOfSilvester.Core
                             || c.Position.X == cell.Position.X + 1 && c.Position.Y == cell.Position.Y)
                             .Select(c => (MapCell)c)
                             .ForEach(c => c.NormalizeLayering());
+            
 
-            (cell as MapCell).NormalizeLayering();
-            (mapCell as MapCell).NormalizeLayering();
 
             return mapCell;
         }

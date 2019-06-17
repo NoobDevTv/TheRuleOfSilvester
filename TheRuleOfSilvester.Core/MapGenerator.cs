@@ -39,10 +39,10 @@ namespace TheRuleOfSilvester.Core
                 ((MapCell)Activator.CreateInstance(t, map, true)).ConnectionPoint
             }).ToList();
 
-            var topCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Up) > 0)).Select(x => x.Type).ToList();
-            var downCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Down) > 0)).Select(x => x.Type).ToList();
-            var leftCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Left) > 0)).Select(x => x.Type).ToList();
-            var rightCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Right) > 0)).Select(x => x.Type).ToList();
+            var topCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Up) > 0)).Select(c => c.Type).ToList();
+            var downCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Down) > 0)).Select(c => c.Type).ToList();
+            var leftCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Left) > 0)).Select(c => c.Type).ToList();
+            var rightCells = localCellTypes.Where(ct => !((ct.ConnectionPoint & ConnectionPoint.Right) > 0)).Select(c => c.Type).ToList();
 
             mapCells[0, 0] = new CornerRightDown(map, false) { Position = new Position(0, 0) };
             mapCells[x-1, 0] = new CornerLeftDown(map, false) { Position = new Position(x, 0) };
@@ -98,7 +98,7 @@ namespace TheRuleOfSilvester.Core
                                             && (nDownCell ? (((cellType.ConnectionPoint & ConnectionPoint.Down) > 0) ? true : false) : true)
                                             && (nLeftCell ? (((cellType.ConnectionPoint & ConnectionPoint.Left) > 0) ? true : false) : true)
                                             && (nRightCell ? (((cellType.ConnectionPoint & ConnectionPoint.Right) > 0) ? true : false) : true))
-                                .Select(x => x.Type).ToArray();
+                                .Select(c => c.Type).ToArray();
 
                     var cell = (MapCell)Activator.CreateInstance(possibleCells[random.Next(0, possibleCells.Length)], map, true);
                     cell.Position = new Position(tempX, tempY);

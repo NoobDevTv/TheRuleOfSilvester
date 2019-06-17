@@ -7,7 +7,7 @@ using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
-    class GhostPlayer : Cell
+    class GhostPlayer : PlayerCell
     {
         public Cell SelectedCell => Map.GetTileAbsolutePos(Position);
 
@@ -17,8 +17,9 @@ namespace TheRuleOfSilvester.Core
         private int moveSizeY;
         private TextCell text;
 
-        public GhostPlayer(Map map, Player original) : base(map)
+        public GhostPlayer(Map map, Player original) : base(1, 1, map)
         {
+            Map = map;
             Lines = new BaseElement[1, 1];
             player = original;
             Color = Color.Green;
@@ -30,7 +31,7 @@ namespace TheRuleOfSilvester.Core
 
             Lines[0, 0] = original.Avatar;
             Position = player.Position;
-            map.Cells.Add(this);
+            map.Players.Add(this);
             map.TextCells.Add(text);
         }
 
@@ -66,7 +67,7 @@ namespace TheRuleOfSilvester.Core
             MoveGeneral(new Position(Position.X + moveSizeX, Position.Y));
         }
 
-        private void MoveGeneral(Position move)
+        public override void MoveGeneral(Position move)
         {
             var cell = Map.Cells.FirstOrDefault(x =>
             x.Position.X * x.Width < Position.X && (x.Position.X * x.Width + x.Width) > Position.X
@@ -81,9 +82,11 @@ namespace TheRuleOfSilvester.Core
             if (disposed)
                 return;
 
+            Map.Players.Remove(this);
+
             var cell = Map.GetTileAbsolutePos(Position);
             cell.Invalid = true;
-            Map.Cells.Remove(this);
+
             text.MakeBlank();
             text.PropertyChanged += (s, e) =>
             {

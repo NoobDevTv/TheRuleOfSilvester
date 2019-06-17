@@ -97,7 +97,30 @@ namespace TheRuleOfSilvester.Core
             var slot = items.FirstOrDefault(i => i.Item == item && !i.IsDeleted);
 
             if (slot != null)
+            {
+                slot.Item = null;
                 returnValue = slot.IsDeleted = true;
+            }
+
+            semaphoreSlim.Release();
+
+            return returnValue;
+        }
+
+        public bool RemoveAt(int pos)
+        {
+            bool returnValue = false;
+            semaphoreSlim.Wait();
+            var slot = items.FirstOrDefault(x => x.Slot == pos);
+
+            if (slot.IsDeleted)
+                return false;
+
+            if (slot != null)
+            {
+                slot.Item = null;
+                returnValue = slot.IsDeleted = true;
+            }
 
             semaphoreSlim.Release();
 

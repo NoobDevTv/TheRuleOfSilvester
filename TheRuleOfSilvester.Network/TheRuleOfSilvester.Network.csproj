@@ -1,15 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Version>0.1.0</Version>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Buffers">
-      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Buffers.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

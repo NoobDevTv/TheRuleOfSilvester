@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TheRuleOfSilvester.Core.Extensions
 {
@@ -11,8 +12,9 @@ namespace TheRuleOfSilvester.Core.Extensions
             foreach (var item in enumerable)
             {
                 action(item);
-                yield return item;
             }
+
+            return enumerable;
         }
     }
 }
