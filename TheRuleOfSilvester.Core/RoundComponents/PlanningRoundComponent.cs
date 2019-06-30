@@ -56,7 +56,11 @@ namespace TheRuleOfSilvester.Core.RoundComponents
         {
             Desubscribe();
 
-            game.MultiplayerComponent?.TransmitActions(actions, player);
+            if (game.IsMutliplayer)
+                game.MultiplayerComponent?.TransmitActions(actions, player);
+            else
+                game.CurrentUpdateSets = new List<PlayerAction>(actions.OrderBy(a => a.Order));
+
             currentOrder = 1;
             int z = actions.Count;
             for (int i = 0; i < z; i++)

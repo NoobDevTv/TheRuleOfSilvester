@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TheRuleOfSilvester.Core.Interfaces
 {
-    public interface IInputCompoment
+    public interface IInputCompoment : IDisposable
     {
         ConcurrentQueue<InputAction> InputActions { get; }
 

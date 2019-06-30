@@ -22,20 +22,20 @@ namespace TheRuleOfSilvester.Core
 
         public override bool Equals(object obj)
         {
-            if(obj is Position pos)
+            if (obj is Position pos)
                 return X == pos.X && Y == pos.Y;
 
             return base.Equals(obj);
         }
 
-        public override int GetHashCode() 
+        public override int GetHashCode()
             => base.GetHashCode(); //Only to prevent warnings
 
         public static bool operator ==(Position positionA, Position positionB)
         {
-            if(positionA is null && positionB is null)
+            if (positionA is null && positionB is null)
                 return true;
-            else if(positionA is null ^ positionB is null)
+            else if (positionA is null ^ positionB is null)
                 return false;
 
             return positionA.Equals(positionB);
@@ -43,17 +43,16 @@ namespace TheRuleOfSilvester.Core
         public static bool operator !=(Position positionA, Position positionB)
             => !(positionA == positionB);
 
-        public static Position operator +(Position positionA, Position positionB)
-        {
-            positionA.X += positionB.X;
-            positionA.Y += positionB.Y;
-            return positionA;
-        }
+        public static Position operator +(Position positionA, Position positionB) 
+            => new Position(positionA.X + positionB.X, positionA.Y + positionB.Y);
+
         public static Position operator +(Position position, Size size)
-        {
-            position.X += size.Width;
-            position.Y += size.Height;
-            return position;
-        }
+            => new Position(position.X + size.Width, position.Y + size.Height);
+
+        public static Position operator -(Position positionA, Position positionB) 
+            => new Position(positionA.X - positionB.X, positionA.Y - positionB.Y);
+
+        public static Position operator -(Position position, Size size) 
+            => new Position(position.X - size.Width, position.Y - size.Height);
     }
 }

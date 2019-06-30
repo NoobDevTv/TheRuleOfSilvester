@@ -15,9 +15,9 @@ namespace TheRuleOfSilvester
         public ConcurrentQueue<InputAction> InputActions { get; private set; }
 
         public bool Active { get; set; }
-        
-        private Thread inputThread;
-        private bool running;
+
+        private Task inputTask;
+        private CancellationTokenSource source;
 
         public InputComponent()
         {
@@ -27,26 +27,31 @@ namespace TheRuleOfSilvester
 
         internal void Start()
         {
-            running = true;
-            inputThread = new Thread(InternalListen)
-            {
-                IsBackground = true,
-                Name = "Input Thread"
-            };
+            source = new CancellationTokenSource();
 
-            inputThread.Start();
+            inputTask = new Task(async () => await InternalListen(source.Token), TaskCreationOptions.LongRunning);
+
+            inputTask.Start(TaskScheduler.Default);
         }
 
         internal void Stop()
         {
-            running = false;
+            source?.Cancel();
+            source?.Dispose();
+            source = null;
+
+            inputTask?.Dispose();
+            inputTask = null;
         }
 
-        private void InternalListen()
+        private Task InternalListen(CancellationToken token)
         {
-            while (running)
+            while (!token.IsCancellationRequested)
             {
-                var lastKey = Console.ReadKey(true).Key;
+                ConsoleKey lastKey = Console.ReadKey(true).Key;
+
+                if (lastKey == ConsoleKey.Escape)
+                    InputActions.Enqueue(new InputAction(InputActionType.EndGame));
 
                 if (!Active)
                     continue;
@@ -79,14 +84,22 @@ namespace TheRuleOfSilvester
                     case ConsoleKey.D1:
                         InputActions.Enqueue(new InputAction(InputActionType.RoundActionButton));
                         break;
-
-                    case ConsoleKey.Escape:
-                        break;
                     default:
                         break;
                 }
             }
+
+            return Task.CompletedTask;
         }
 
+        public void Dispose()
+        {
+            source?.Cancel();
+
+            source?.Dispose();
+
+            source = null;
+            inputTask = null;
+        }
     }
 }

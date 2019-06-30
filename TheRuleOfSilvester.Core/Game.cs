@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using TheRuleOfSilvester.Core.Cells;
 using TheRuleOfSilvester.Core.Interfaces;
 using TheRuleOfSilvester.Core.Roles;
@@ -23,31 +24,30 @@ namespace TheRuleOfSilvester.Core
 
         public Map Map { get; private set; }
 
-        public bool IsRunning { get; private set; }
         public bool IsMutliplayer { get; private set; }
 
         internal InputAction InputAction { get; private set; }
         public List<Player> Winners { get; internal set; }
 
-        private int ups;
-        private Thread gameThread;
+        private Task gameTask;
+        private CancellationTokenSource tokenSource;
         private Player player;
         private readonly ManualResetEventSlim manualResetEvent;
 
-        public Game() 
+        public Game()
             => manualResetEvent = new ManualResetEventSlim(false);
 
-        public void Run(int frame, int ups, bool multiplayer, string playername = "")
+        public void Run(int frame, bool multiplayer, string playername = "")
         {
             IsMutliplayer = multiplayer;
 
-            if (multiplayer) { 
+            if (multiplayer)
+            {
                 MultiplayerComponent.Connect();
                 MultiplayerComponent.Wait();
             }
 
             Frames = frame;
-            this.ups = ups;
 
             if (multiplayer)
             {
@@ -75,26 +75,26 @@ namespace TheRuleOfSilvester.Core
 
             if (RoundComponent == null)
                 RoundComponent = new DefaultRoundManagerComponent(Map);
-
-            IsRunning = true;
-
-            gameThread = new Thread(Loop)
-            {
-                Name = "gameThread"
-            };
-
-            gameThread.Start();
+            
+            tokenSource = new CancellationTokenSource();
+            
+            gameTask = new Task(async () => await Loop(tokenSource.Token), TaskCreationOptions.LongRunning);
+            gameTask.Start(TaskScheduler.Default);
         }
-        public void Run(int frame, int ups) 
-            => Run(frame, ups, false);
+        public void Run(int frame)
+            => Run(frame, false);
 
         public void Stop()
         {
             if (IsMutliplayer)
                 MultiplayerComponent.Disconnect();
 
-            if (gameThread.IsAlive)
-                IsRunning = false;
+            tokenSource?.Cancel();
+            tokenSource?.Dispose();
+            tokenSource = null;
+
+            gameTask?.Dispose();
+            gameTask = null;
 
             CurrentGameStatus = GameStatus.Stopped;
         }
@@ -109,6 +109,17 @@ namespace TheRuleOfSilvester.Core
 
         public void Wait()
             => manualResetEvent.Wait();
+
+        public void Dispose()
+        {
+            tokenSource?.Cancel();
+
+            tokenSource?.Dispose();
+            gameTask?.Dispose();
+
+            tokenSource = null;
+            gameTask = null;
+        }
 
         private void BeforeUpdate()
         {
@@ -125,6 +136,9 @@ namespace TheRuleOfSilvester.Core
 
         private void SystemUpdate()
         {
+            if (InputAction?.Type == InputActionType.EndGame)
+                Stop();
+
             if (IsMutliplayer)
                 MultiplayerComponent.Update(this);
 
@@ -142,10 +156,19 @@ namespace TheRuleOfSilvester.Core
 
         private void UiUpdate()
         {
-            if (CurrentGameStatus == GameStatus.Running)
-                DrawComponent.Draw(Map);
-            else 
-                DrawComponent.DrawTextCells(new List<TextCell> { new TextCell("NOT Running", Map) });
+            switch (CurrentGameStatus)
+            {
+                case GameStatus.Running:
+                    DrawComponent.Draw(Map);
+                    break;
+                case GameStatus.Paused:
+                case GameStatus.Waiting:
+                    DrawComponent.DrawTextCells(new List<TextCell> { new TextCell("NOT Running", Map) });
+                    break;
+                case GameStatus.Stopped:
+                default:
+                    return;
+            }
         }
 
         private void AfterUpdate()
@@ -154,17 +177,14 @@ namespace TheRuleOfSilvester.Core
             InputAction = null;
         }
 
-        public void Dispose() =>
-            //Stop();
+        
 
-            gameThread = null;
-
-        private void Loop()
+        private async Task Loop(CancellationToken token)
         {
-            while (IsRunning)
+            while (!token.IsCancellationRequested)
             {
                 Update();
-                Thread.Sleep(1000 / Frames);
+                await Task.Delay(1000 / Frames, token);
             }
 
             manualResetEvent.Set();

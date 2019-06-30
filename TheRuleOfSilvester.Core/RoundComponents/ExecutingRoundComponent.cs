@@ -47,7 +47,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
             {
                 case ActionType.Moved:
                     localUpdatePlayer.MoveGeneralRelative(action.Point);
-                    game.Map.Players./*Where(p => p.Position == action.Point).ToList().*/ForEach(x => x.Invalid = true);
+                    game.Map.Players.ForEach(x => x.Invalid = true);
                     break;
                 case ActionType.ChangedMapCell:
                     var inventoryCell = localUpdatePlayer.CellInventory.First(x => x.Position.X == 1);

@@ -17,7 +17,7 @@ namespace TheRuleOfSilvester
 
         public int CurrentWidth { get; set; }
         public int CurrentHeight { get; set; }
-        
+
         private bool chunkChange;
         private Position oldChunkPos;
         private int oldWidth = 0;
@@ -29,8 +29,8 @@ namespace TheRuleOfSilvester
         {
             oldWidth = 0;
             oldHeight = 0;
-            CurrentWidth=0;
-            CurrentHeight=0;
+            CurrentWidth = 0;
+            CurrentHeight = 0;
             chunks = new ChunkCollection();
             chunkChange = false;
             oldChunkPos = new Position(0, 0);
@@ -85,26 +85,32 @@ namespace TheRuleOfSilvester
 
         public void DrawTextCells(List<TextCell> cells)
         {
-            foreach (var cell in cells.ToArray())
+            int offset;
+            foreach (var cellGroup in cells.GroupBy(x => x?.Position?.X))
             {
-                if (cell.Invalid || chunkChange)
+                offset = 1;
+                foreach (var cell in cellGroup)
                 {
-                    Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
-
-                    for (int l = 0; l < cell.Width; l++)
+                    if (cell.Invalid || chunkChange)
                     {
-                        for (int h = 0; h < cell.Height; h++)
+                        Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
+
+                        for (int l = 0; l < cell.Width; l++)
                         {
-                            Console.SetCursorPosition((cell.Position.X * cell.Width) + l, CurrentHeight + h);
+                            for (int h = 0; h < cell.Height; h++)
+                            {
+                                Console.SetCursorPosition((cell.Position.X * cell.Width) + l, CurrentHeight + h + offset);
 
-                            if (cell.Layer[l, h] != null)
-                                Console.Write(BaseElementToChar(cell.Layer[l, h]));
-                            else
-                                Console.Write(BaseElementToChar(cell.Lines[l, h]));
+                                if (cell.Layer[l, h] != null)
+                                    Console.Write(BaseElementToChar(cell.Layer[l, h]));
+                                else
+                                    Console.Write(BaseElementToChar(cell.Lines[l, h]));
 
-                            cell.Invalid = false;
+                                cell.Invalid = false;
+                            }
                         }
                     }
+                    offset += cell.Height;
                 }
             }
 
@@ -112,7 +118,7 @@ namespace TheRuleOfSilvester
 
         private void DrawCells<T>(List<T> cells, Chunk chunk) where T : Cell
         {
-            foreach (var cell in chunk.Cells.Concat(cells))
+            foreach (var cell in chunk?.Cells?.Concat(cells))
             {
                 if (cell.Invalid || chunkChange)
                 {
@@ -141,9 +147,9 @@ namespace TheRuleOfSilvester
         private void RecalculateChunks(Map map)
         {
 
-            chunks.Clear();
+            chunks?.Clear();
 
-            var referenceCell = map.Cells.First();
+            var referenceCell = map?.Cells?.First();
             for (int w = 0; w < Math.Ceiling(map.Width * referenceCell.Width / (float)CurrentWidth); w++)
                 for (int h = 0; h < Math.Ceiling(map.Height * referenceCell.Height / (float)CurrentHeight); h++)
                     chunks.Add(new Chunk(map.Cells, CurrentWidth - 8, CurrentHeight, new Position(w, h)));
@@ -199,7 +205,7 @@ namespace TheRuleOfSilvester
         private void DrawCellInventory(Inventory<MapCell> cellInventory)
         {
             var cellsToRefresh = cellInventory.Where(cell => cell.Invalid || chunkChange).ToArray();
-            
+
             for (int i = 0; i < cellsToRefresh.Length; i++)
             {
                 var cell = cellsToRefresh[i];

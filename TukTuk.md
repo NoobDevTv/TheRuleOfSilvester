@@ -3,7 +3,7 @@
 * ~~Update aller Clients mit Server Action???~~
 * ~~UndoLastMovement(Game game = null): Reduce duplicated code~~
 * ~~Server sollte Player Inventar generieren~~
-* Items implementieren
+* ~~Items implementieren~~
 * Timer implementieren
 
 # Spiele ideen

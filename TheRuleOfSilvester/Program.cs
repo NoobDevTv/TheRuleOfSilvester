@@ -46,6 +46,8 @@ namespace TheRuleOfSilvester
                     menuItem.Action();
                 }
 
+                inputComponent.Dispose();
+
             } while (Running);
         }
 
@@ -108,7 +110,7 @@ namespace TheRuleOfSilvester
                 game.DrawComponent = new DrawComponent();
                 game.InputCompoment = inputComponent;
                 game.MultiplayerComponent = multiplayerComponent;
-                game.Run(60, 60, isMultiplayer, playerName);
+                game.Run(60, isMultiplayer, playerName);
                 inputComponent.Start();
 
                 Console.CancelKeyPress += (s, e) => game.Stop();
@@ -117,7 +119,7 @@ namespace TheRuleOfSilvester
                 Console.Clear();
                 inputComponent.Stop();
 
-                if (game.Winners.Count > 0)
+                if (game.Winners?.Count > 0)
                 {
                     Console.WriteLine("The winners are: ");
                     Console.WriteLine();

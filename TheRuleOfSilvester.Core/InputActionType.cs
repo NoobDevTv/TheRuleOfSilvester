@@ -8,6 +8,7 @@
         Right,
         StartAction,
         RoundButton,
-        RoundActionButton
+        RoundActionButton,
+        EndGame
     }
 }

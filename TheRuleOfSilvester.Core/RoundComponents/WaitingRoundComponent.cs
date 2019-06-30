@@ -23,7 +23,7 @@ namespace TheRuleOfSilvester.Core.RoundComponents
 
         public void Update(Game game)
         {
-            if (game.MultiplayerComponent == null)
+            if (!game.IsMutliplayer)
             {
                 RoundEnd = true;
                 return;
