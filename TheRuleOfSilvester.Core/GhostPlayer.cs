@@ -7,7 +7,7 @@ using TheRuleOfSilvester.Core.Cells;
 
 namespace TheRuleOfSilvester.Core
 {
-    class GhostPlayer : PlayerCell
+    public class GhostPlayer : PlayerCell
     {
         public Cell SelectedCell => Map.GetTileAbsolutePos(Position);
 

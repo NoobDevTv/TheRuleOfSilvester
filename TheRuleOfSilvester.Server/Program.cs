@@ -13,17 +13,21 @@ namespace TheRuleOfSilvester.Server
 
         static void Main(string[] args)
         {
-            var mResetEvent = new ManualResetEvent(false);
+            using var mResetEvent = new ManualResetEvent(false);
             manager = new DefaultCommandManager<CommandName, CommandArgs, byte[]>(typeof(Program).Namespace + ".Commands");
 
             using (server = new Network.Server())
             {
+                var x = GetIntFromUser("Map Width", 10, 400);
+                var y = GetIntFromUser("Map Height", 10, 400);
+
+                GameManager.GenerateMap(x, y);
+
                 server.Start(IPAddress.Any, 4400);
                 Console.CancelKeyPress += (s, e) => mResetEvent.Reset();
 
                 server.OnCommandReceived += (s, e) =>
                 {
-
                     var connectedClient = (ConnectedClient)e.Client;
                     NetworkPlayer player = null;
 
@@ -48,6 +52,24 @@ namespace TheRuleOfSilvester.Server
                 mResetEvent.WaitOne();
                 GameManager.StopGame();
             }
+        }
+
+        private static int GetIntFromUser(string title, int min = 0, int max = int.MaxValue)
+        {
+            string raw;
+            int value;
+            do
+            {
+                Console.Clear();
+                Console.Write($"{title} (Leave Empty for default): ");
+                raw = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(raw))
+                    return 0;
+
+            } while (!int.TryParse(raw, out value) || value < min || value > max);
+
+            return value;
         }
 
         private static void ServerOnClientConnected(object sender, ConnectedClient e)

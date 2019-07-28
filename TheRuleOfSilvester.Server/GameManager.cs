@@ -22,12 +22,11 @@ namespace TheRuleOfSilvester.Server
         private static readonly Executor executor;
 
         private static SemaphoreSlim winnersSemaphore;
+        
         private static List<Player> listOfWinners;
 
         static GameManager()
         {
-            Map = GenerateMap();
-
             listOfWinners = new List<Player>();
             winnersSemaphore = new SemaphoreSlim(1, 1);
 
@@ -36,6 +35,9 @@ namespace TheRuleOfSilvester.Server
             Players = new Dictionary<int, NetworkPlayer>();
             roles = RoleManager.GetAllRolesRandomized();
         }
+
+        internal static void GenerateMap(int x, int y) 
+            => Map = new MapGenerator().Generate(x, y);
 
         internal static List<Player> GetWinners()
         {
@@ -94,10 +96,7 @@ namespace TheRuleOfSilvester.Server
 
             CheckAllPlayersAsync();
         }
-
-        private static Map GenerateMap()
-            => new MapGenerator().Generate(20, 10);
-
+        
         private static void CheckAllPlayersAsync()
         {
             Task.Run(() =>
@@ -128,9 +127,7 @@ namespace TheRuleOfSilvester.Server
                 }
             });
         }
-
-
-
+               
         private static void Execute()
         {
             executor.Execute(Map);

@@ -7,6 +7,9 @@ namespace TheRuleOfSilvester.Core
 {
     public class Position
     {
+        public int X { get; set; }
+        public int Y { get; set; }
+
         public Position(int x, int y)
         {
             X = x;
@@ -16,9 +19,7 @@ namespace TheRuleOfSilvester.Core
         {
             X = both;
             Y = both;
-        }
-        public int X { get; set; }
-        public int Y { get; set; }
+        }   
 
         public override bool Equals(object obj)
         {

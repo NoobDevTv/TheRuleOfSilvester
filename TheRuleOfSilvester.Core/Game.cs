@@ -37,7 +37,8 @@ namespace TheRuleOfSilvester.Core
         public Game()
             => manualResetEvent = new ManualResetEventSlim(false);
 
-        public void Run(int frame, bool multiplayer, string playername = "")
+        public void Run(int frame, bool multiplayer, 
+            string playername = "", int x = 100, int y = 100)
         {
             IsMutliplayer = multiplayer;
 
@@ -60,7 +61,7 @@ namespace TheRuleOfSilvester.Core
             else
             {
                 var generator = new MapGenerator();
-                Map = generator.Generate(300, 300);
+                Map = generator.Generate(x, y);
 
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {
@@ -116,9 +117,12 @@ namespace TheRuleOfSilvester.Core
 
             tokenSource?.Dispose();
             gameTask?.Dispose();
+            player?.Dispose();
+            manualResetEvent?.Dispose();
 
             tokenSource = null;
             gameTask = null;
+            player = null;
         }
 
         private void BeforeUpdate()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using TheRuleOfSilvester.Core;
@@ -50,10 +51,21 @@ namespace TheRuleOfSilvester
             }
             Console.CursorVisible = false;
             //TODO: Unschön, Spieler weiß wer er ist, vlt. anders schöner?
-            var localPlayer = map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
 
-            var chunkPosX = (localPlayer.Position.X - 1) / (CurrentWidth - 8);
-            var chunkPosY = (localPlayer.Position.Y - 1) / CurrentHeight;
+            var localGhostPlayer = map.Players.OfType<GhostPlayer>().FirstOrDefault(x => x.IsLocal);
+            var localPlayer = map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
+            int chunkPosX = 0;
+            int chunkPosY = 0;
+            if (localGhostPlayer != null)
+            {
+                chunkPosX = (localGhostPlayer.Position.X - 1) / (CurrentWidth - 8);
+                chunkPosY = (localGhostPlayer.Position.Y - 1) / CurrentHeight;
+            }
+            else
+            {
+                chunkPosX = (localPlayer.Position.X - 1) / (CurrentWidth - 8);
+                chunkPosY = (localPlayer.Position.Y - 1) / CurrentHeight;
+            }
 
             if (oldChunkPos.X != chunkPosX || oldChunkPos.Y != chunkPosY)
             {
@@ -74,7 +86,7 @@ namespace TheRuleOfSilvester
                 DrawItemInventory(localPlayer);
                 DrawCellInventory(localPlayer.CellInventory);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
             }
             chunkChange = false;
@@ -123,13 +135,23 @@ namespace TheRuleOfSilvester
                 if (cell.Invalid || chunkChange)
                 {
                     Console.ForegroundColor = Enum.TryParse(cell.Color.Name, out ConsoleColor color) ? color : ConsoleColor.White;
+
                     if (cell is MapCell mapCell)
                         mapCell.NormalizeLayering();
+
                     for (int w = 0; w < cell.Width; w++)
                     {
                         for (int h = 0; h < cell.Height; h++)
                         {
+                            if (cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w < 0 || cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h < 0)
+                                continue;
+
                             Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
+
+                            Debug.WriteLine($"Absolut X: {cell.AbsolutPosition.X}, Chunk: {(chunk.ChunkPosition.X * (CurrentWidth - 8))}, W: {w}");
+                            Debug.WriteLine($"Result X: {cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w}");
+                            Debug.WriteLine($"Absolut Y: {cell.AbsolutPosition.X}, Chunk: {(chunk.ChunkPosition.Y * CurrentHeight)}, H: {h}");
+                            Debug.WriteLine($"Result Y: {cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h}");
 
                             if (cell.Layer[w, h] != null)
                                 Console.Write(BaseElementToChar(cell.Layer[w, h]));
