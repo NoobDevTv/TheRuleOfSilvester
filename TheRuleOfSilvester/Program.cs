@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester
 {

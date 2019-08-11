@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
-using TheRuleOfSilvester.Core.Interfaces;
-using TheRuleOfSilvester.Core.Roles;
 using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Runtime;
+using TheRuleOfSilvester.Runtime.Roles;
 
 namespace TheRuleOfSilvester.Server
 {

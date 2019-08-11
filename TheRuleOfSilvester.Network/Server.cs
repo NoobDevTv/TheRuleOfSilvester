@@ -5,33 +5,33 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Network
 {
-    public class Server : IObserver<Package>, IDisposable
+    public class Server : IDisposable
     {
         public event EventHandler<ConnectedClient> OnClientConnected;
-        public event EventHandler<Package> OnCommandReceived;
 
         public int ClientAmount => connectedClients.Count;
 
         private Socket socket;
-        private List<ConnectedClient> connectedClients;
-        private readonly object lockObj;
-        private readonly HashSet<IDisposable> subscriptions;
-        private readonly SemaphoreSlim semaphore;
+        private readonly Dictionary<ConnectedClient, GameSession> connectedClients;
+        private readonly SemaphoreExtended semaphore;
+        private readonly HashSet<ServerSession> sessions;
 
         public Server()
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            lockObj = new object();
-            semaphore = new SemaphoreSlim(1,1);
-            subscriptions = new HashSet<IDisposable>();
+            connectedClients = new Dictionary<ConnectedClient, GameSession>();
+            semaphore = new SemaphoreExtended(1, 1);
+            sessions = new HashSet<ServerSession>();
         }
 
         public void Start(IPAddress address, int port)
         {
-            connectedClients = new List<ConnectedClient>();
+            sessions.Add(new LobbySession());
+
             socket.Bind(new IPEndPoint(address, port));
             socket.Listen(1024);
             socket.BeginAccept(OnClientAccepted, null);
@@ -48,8 +48,8 @@ namespace TheRuleOfSilvester.Network
         {
             foreach (var client in connectedClients.ToArray())
             {
-                client.Disconnect();
-                connectedClients.Remove(client);
+                client.Key.Disconnect();
+                connectedClients.Remove(client.Key);
             }
 
             socket.Disconnect(true);
@@ -58,9 +58,12 @@ namespace TheRuleOfSilvester.Network
         public void Dispose()
         {
             Stop();
+
             connectedClients.Clear();
-            connectedClients = null;
+
             socket.Dispose();
+            semaphore.Dispose();
+
             socket = null;
         }
 
@@ -70,29 +73,21 @@ namespace TheRuleOfSilvester.Network
             tmpSocket.NoDelay = true;
 
             var client = new ConnectedClient(tmpSocket);
-            
+
             OnClientConnected?.Invoke(this, client);
 
-            lock (lockObj)
-                connectedClients.Add(client);
-
-            semaphore.Wait();
-            subscriptions.Add(client.Subscribe(this));
-            semaphore.Release();
+            using (semaphore.Wait())
+            {
+                sessions
+                    .OfType<LobbySession>()
+                    .First()
+                    .ConnectedClients
+                    .Add(client);
+            }
 
             client.Start();
             client.Send(new byte[] { 1 }, 1);
             socket.BeginAccept(OnClientAccepted, null);
         }
-
-        public void OnCompleted()
-        {
-        }
-
-        public void OnError(Exception error) 
-            => throw error;
-
-        public void OnNext(Package value) 
-            => OnCommandReceived?.Invoke(this, value);
     }
 }

@@ -32,6 +32,9 @@ namespace TheRuleOfSilvester.Core
         public override int GetHashCode()
             => base.GetHashCode(); //Only to prevent warnings
 
+        public override string ToString() 
+            => $"{X} / {Y}";
+
         public static bool operator ==(Position positionA, Position positionB)
         {
             if (positionA is null && positionB is null)

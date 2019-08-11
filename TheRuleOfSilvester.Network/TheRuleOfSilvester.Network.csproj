@@ -5,4 +5,8 @@
     <Version>0.1.0</Version>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TheRuleOfSilvester.Core\TheRuleOfSilvester.Core.csproj" />
+  </ItemGroup>
 </Project>

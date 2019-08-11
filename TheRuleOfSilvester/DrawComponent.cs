@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using TheRuleOfSilvester.Core;
-using TheRuleOfSilvester.Core.Cells;
-using TheRuleOfSilvester.Core.Interfaces;
-using TheRuleOfSilvester.Core.Items;
-using TheRuleOfSilvester.Core.Roles;
+using TheRuleOfSilvester.Runtime;
+using TheRuleOfSilvester.Runtime.Cells;
+using TheRuleOfSilvester.Runtime.Interfaces;
+using TheRuleOfSilvester.Runtime.Items;
+using TheRuleOfSilvester.Runtime.Roles;
 
 namespace TheRuleOfSilvester
 {
@@ -147,11 +148,6 @@ namespace TheRuleOfSilvester
                                 continue;
 
                             Console.SetCursorPosition(cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w, cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h);
-
-                            Debug.WriteLine($"Absolut X: {cell.AbsolutPosition.X}, Chunk: {(chunk.ChunkPosition.X * (CurrentWidth - 8))}, W: {w}");
-                            Debug.WriteLine($"Result X: {cell.AbsolutPosition.X - (chunk.ChunkPosition.X * (CurrentWidth - 8)) + w}");
-                            Debug.WriteLine($"Absolut Y: {cell.AbsolutPosition.X}, Chunk: {(chunk.ChunkPosition.Y * CurrentHeight)}, H: {h}");
-                            Debug.WriteLine($"Result Y: {cell.AbsolutPosition.Y - (chunk.ChunkPosition.Y * CurrentHeight) + h}");
 
                             if (cell.Layer[w, h] != null)
                                 Console.Write(BaseElementToChar(cell.Layer[w, h]));

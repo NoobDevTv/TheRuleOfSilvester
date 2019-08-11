@@ -4,7 +4,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
-using TheRuleOfSilvester.Core.Cells;
+using TheRuleOfSilvester.Runtime;
+using TheRuleOfSilvester.Runtime.Cells;
 
 namespace TheRuleOfSilvester.Server
 {

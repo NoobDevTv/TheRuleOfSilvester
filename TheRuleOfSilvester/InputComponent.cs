@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
-using TheRuleOfSilvester.Core.Interfaces;
+using TheRuleOfSilvester.Runtime;
+using TheRuleOfSilvester.Runtime.Interfaces;
 
 namespace TheRuleOfSilvester
 {

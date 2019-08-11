@@ -18,7 +18,7 @@ namespace TheRuleOfSilvester.Core
         {
         }
 
-        internal void SetInvalid()
+        public void SetInvalid()
         {
             Valid = false;
         }

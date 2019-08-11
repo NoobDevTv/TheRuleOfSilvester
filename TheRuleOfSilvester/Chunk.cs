@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester
 {
@@ -18,6 +19,7 @@ namespace TheRuleOfSilvester
         public void FillCells(IEnumerable<Cell> cells, int chunkWidth, int chunkHeight, Position chunkPoint)
         {
             ChunkPosition = chunkPoint;
+
 
             Cells = cells.Where(x =>
                 x.AbsolutPosition.X / (chunkWidth) >= chunkPoint.X
