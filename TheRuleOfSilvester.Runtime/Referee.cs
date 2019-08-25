@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime
 {
     public class Referee
     {
-        public IEnumerable<Player> GetWinners(IEnumerable<Player> players)
+        public IEnumerable<IPlayer> GetWinners(IEnumerable<IPlayer> players)
         {
             foreach (var player in players)
             {

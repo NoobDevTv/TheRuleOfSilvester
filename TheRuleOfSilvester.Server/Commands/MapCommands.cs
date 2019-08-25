@@ -9,24 +9,37 @@ using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
-    public partial class MapCommands
+    public class MapCommands : CommandObserver
     {
-        [Command((short)CommandName.GetMap)]
-        public static byte[] GetMap(CommandArgs args) => SerializeHelper.Serialize(GameManager.Map);
-        
-        [Command((short)CommandName.GetPlayers)]
-        public static byte[] GetPlayers(CommandArgs args)
-            => SerializeHelper.SerializeList(GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId).ToList());
 
-        [Command((short)CommandName.UpdatePlayer)]
-        public static byte[] UpdatePlayer(CommandArgs args)
+        public override object OnNext(CommandNotification value) => value.CommandName switch
+        {
+            CommandName.GetMap => GetMap(value.Arguments),
+            CommandName.GetPlayers => GetPlayers(value.Arguments),
+            CommandName.UpdatePlayer => UpdatePlayer(value.Arguments),
+
+            _ => default,
+        };
+
+        public static Map GetMap(CommandArgs args)
+            => GameManager.Map;
+
+        public static IEnumerable<PlayerCell> GetPlayers(CommandArgs args)
+            => GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId);
+
+        public static short UpdatePlayer(CommandArgs args)
         {
             //if(!args.HavePlayer)
             //    return BitConverter.GetBytes((short)CommandNames.UpdatePlayer);
 
             var newPlayer = SerializeHelper.Deserialize<Player>(args.Data);
-            args.NetworkPlayer.Player.Position = newPlayer.Position;
-            return BitConverter.GetBytes((short)CommandName.UpdatePlayer);
+
+            if (args.NetworkPlayer.Player is Cell player)
+                player.Position = newPlayer.Position;
+            else
+                throw new NotSupportedException();
+
+            return (short)CommandName.UpdatePlayer;
         }
 
     }

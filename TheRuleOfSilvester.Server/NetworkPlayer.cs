@@ -10,8 +10,7 @@ namespace TheRuleOfSilvester.Server
 {
     public class NetworkPlayer
     {
-        public Player Player { get; set; }
-        public ConnectedClient Client { get; internal set; }
+        public IPlayer Player { get; set; }
         public RoundMode RoundMode
         {
             get => roundMode;
@@ -42,7 +41,7 @@ namespace TheRuleOfSilvester.Server
 
         private readonly int maxRoundMode;
 
-        public NetworkPlayer(Player player)
+        public NetworkPlayer(IPlayer player)
         {
             Player = player;
             maxRoundMode = Enum.GetValues(typeof(RoundMode)).Cast<int>().Max() + 1;

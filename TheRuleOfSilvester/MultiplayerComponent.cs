@@ -87,12 +87,13 @@ namespace TheRuleOfSilvester
             return BitConverter.ToBoolean(data, 0);
         }
 
-        public void OnNext(Package package)
+        public object OnNext(Package package)
         {
             if (waitingDic.TryGetValue(package.Id, out Awaiter awaiter))
             {
                 awaiter.SetResult(package.Data);
                 waitingDic.Remove(package.Id);
+                return awaiter;
             }
             else
             {

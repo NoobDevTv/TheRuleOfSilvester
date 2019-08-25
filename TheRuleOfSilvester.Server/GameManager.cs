@@ -21,14 +21,14 @@ namespace TheRuleOfSilvester.Server
         private static readonly ActionCache actionCache;
         private static readonly Executor executor;
 
-        private static SemaphoreSlim winnersSemaphore;
+        private static readonly SemaphoreExtended winnersSemaphore;
         
-        private static List<Player> listOfWinners;
+        private static readonly List<IPlayer> listOfWinners;
 
         static GameManager()
         {
-            listOfWinners = new List<Player>();
-            winnersSemaphore = new SemaphoreSlim(1, 1);
+            listOfWinners = new List<IPlayer>();
+            winnersSemaphore = new SemaphoreExtended(1, 1);
 
             actionCache = new ActionCache();
             executor = new Executor(actionCache);
@@ -39,16 +39,16 @@ namespace TheRuleOfSilvester.Server
         internal static void GenerateMap(int x, int y) 
             => Map = new MapGenerator().Generate(x, y);
 
-        internal static List<Player> GetWinners()
+        internal static List<IPlayer> GetWinners()
         {
-            var tmpPlayer = new List<Player>();
-            winnersSemaphore.Wait();
-            tmpPlayer.AddRange(listOfWinners);
-            winnersSemaphore.Release();
+            var tmpPlayer = new List<IPlayer>();
+            using (winnersSemaphore.Wait())
+                tmpPlayer.AddRange(listOfWinners);
+
             return tmpPlayer;
         }
 
-        internal static void AddRoundActions(Player player, List<PlayerAction> playerActions)
+        internal static void AddRoundActions(IPlayer player, List<PlayerAction> playerActions)
         {
             playerActions.ForEach(a => a.Player = player);
             actionCache.AddRange(playerActions);
@@ -66,10 +66,7 @@ namespace TheRuleOfSilvester.Server
                 Name = playername, 
                 Position = new Position(7, 4),
             };
-            Players.Add(tmpId, new NetworkPlayer(player)
-            {
-                Client = client
-            });
+            Players.Add(tmpId, new NetworkPlayer(player));
             Map.Players.Add(player);
             player.Id = tmpId;
             client.PlayerId = tmpId;
@@ -121,9 +118,8 @@ namespace TheRuleOfSilvester.Server
 
                     tmpPlayers.ForEach(p => p.CurrentServerStatus = ServerStatus.Ended);
 
-                    winnersSemaphore.Wait();
-                    listOfWinners.AddRange(winners);
-                    winnersSemaphore.Release();
+                    using (winnersSemaphore.Wait())
+                        listOfWinners.AddRange(winners);
                 }
             });
         }

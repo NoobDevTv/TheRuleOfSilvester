@@ -36,7 +36,7 @@ namespace TheRuleOfSilvester.Core
             return new SemaphoreLock(this);
         }
 
-        public void Release()
+        private void Release()
         {
             semaphore.Release();
         }

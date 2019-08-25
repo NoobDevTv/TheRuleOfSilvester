@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using TheRuleOfSilvester.Runtime.Items;
+using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime.Conditions
 {
@@ -10,9 +11,12 @@ namespace TheRuleOfSilvester.Runtime.Conditions
     {
         public Type ItemType { get; set; } 
 
-        public bool Match(Player player)
+        public bool Match(IPlayer player)
         {
-            return player.ItemInventory.Any(i => ItemType.IsAssignableFrom(i?.GetType()));
+            if(player is PlayerCell cell)
+                return cell.ItemInventory.Any(i => ItemType.IsAssignableFrom(i?.GetType()));
+
+            return false;
         }
     }
 }

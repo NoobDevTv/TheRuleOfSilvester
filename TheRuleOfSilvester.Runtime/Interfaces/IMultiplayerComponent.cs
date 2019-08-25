@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Runtime.Interfaces
 {
-    public interface IMultiplayerComponent : IUpdateable, IObserver<Package>
+    public interface IMultiplayerComponent : IUpdateable, INotificationObserver<Package>
     {
         Client Client { get; }
         int Port { get; }

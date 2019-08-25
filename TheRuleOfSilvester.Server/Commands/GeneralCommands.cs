@@ -2,30 +2,37 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
-    public static partial class GeneralCommands
+    public sealed class GeneralCommands : CommandObserver
     {
-        [Command((short)CommandName.NewPlayer)]
-        public static byte[] NewPlayer(CommandArgs args)
+        public override object OnNext(CommandNotification value) => value.CommandName switch
+        {
+            CommandName.NewPlayer => NewPlayer(value.Arguments),
+            CommandName.GetStatus => GetStatus(value.Arguments),
+            CommandName.GetWinners => GetWinners(value.Arguments),
+
+            _ => default,
+        };
+
+        public static Player NewPlayer(CommandArgs args)
         {
             var playerName = Encoding.UTF8.GetString(args.Data);
 
             Console.WriteLine($"{playerName} has a joint game");
 
-            return SerializeHelper.Serialize(GameManager.GetNewPlayer(args.Client, playerName));
+            return GameManager.GetNewPlayer(args.Client, playerName);
         }
 
-        [Command((short)CommandName.GetStatus)]
-        public static byte[] GetStatus(CommandArgs args) 
-            => new byte[] { (byte)args.NetworkPlayer.CurrentServerStatus };
+        public static byte GetStatus(CommandArgs args) 
+            => (byte)args.NetworkPlayer.CurrentServerStatus;
 
-        [Command((short)CommandName.GetWinners)]
-        public static byte[] GetWinners(CommandArgs args)
-            => SerializeHelper.SerializeList(GameManager.GetWinners());
+        public static List<IPlayer> GetWinners(CommandArgs args)
+            => GameManager.GetWinners();
     }
 }

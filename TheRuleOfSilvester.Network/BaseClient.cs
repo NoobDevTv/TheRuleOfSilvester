@@ -6,11 +6,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TheRuleOfSilvester.Network.Observation;
+using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Network
 {
-    public abstract class BaseClient : IObservable<Package>
+    public abstract class BaseClient : INotificationObservable<Package>
     {
         protected readonly Socket Socket;
         protected readonly SocketAsyncEventArgs ReceiveArgs;
@@ -24,14 +25,14 @@ namespace TheRuleOfSilvester.Network
         private readonly (byte[] data, int len)[] sendQueue;
         private readonly object sendLock;
 
-        private readonly HashSet<IObserver<Package>> observers;
-        private readonly SemaphoreSlim semaphoreSlim;
+        private readonly HashSet<INotificationObserver<Package>> observers;
+        private readonly SemaphoreExtended semaphoreSlim;
 
         protected BaseClient(Socket socket)
         {
 
-            semaphoreSlim = new SemaphoreSlim(1, 1);
-            observers = new HashSet<IObserver<Package>>();
+            semaphoreSlim = new SemaphoreExtended(1, 1);
+            observers = new HashSet<INotificationObserver<Package>>();
 
             sendQueue = new (byte[] data, int len)[256];
             sendLock = new object();
@@ -63,7 +64,7 @@ namespace TheRuleOfSilvester.Network
         {
             Socket.Disconnect(false);
         }
-        
+
         public void Send(byte[] data, int len)
         {
             lock (sendLock)
@@ -84,7 +85,7 @@ namespace TheRuleOfSilvester.Network
         public void Send(Package package)
         {
             Send(package.ToByteArray(), package.Data.Length + Package.HEADER_SIZE);
-        }       
+        }
 
         protected virtual int ProcessInternal(byte[] receiveArgsBuffer, int receiveArgsCount, int offset)
         {
@@ -93,13 +94,12 @@ namespace TheRuleOfSilvester.Network
             var package = Package.FromByteArray(data);
             package.Client = this;
 
-            semaphoreSlim.Wait();
+            using (semaphoreSlim.Wait())
+            {
+                foreach (var observer in observers)
+                    observer.OnNext(package);
+            }
 
-            foreach (var observer in observers)
-                observer.OnNext(package);
-
-            semaphoreSlim.Release();  
-            
             return receiveArgsCount;
         }
 
@@ -177,12 +177,17 @@ namespace TheRuleOfSilvester.Network
             } while (!Socket.ReceiveAsync(e));
         }
 
-        public IDisposable Subscribe(IObserver<Package> observer)
+        public IDisposable Subscribe(INotificationObserver<Package> observer)
         {
-            semaphoreSlim.Wait();
-            observers.Add(observer);
-            semaphoreSlim.Release();
-            return new Subscription(observer, this);
+            using (semaphoreSlim.Wait())
+                observers.Add(observer);
+
+            return new Subscription<Package>(observer, this);
+        }
+
+        public void OnDispose(INotificationObserver<Package> observer)
+        {
+            observers.Remove(observer);
         }
     }
 }

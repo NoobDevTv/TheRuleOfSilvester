@@ -11,25 +11,31 @@ using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
-    public partial class RoundCommands
+    public partial class RoundCommands : CommandObserver
     {
-        [Command((short)CommandName.TransmitActions)]
-        public static byte[] TransmitActions(CommandArgs args)
+        public override object OnNext(CommandNotification value) => value.CommandName switch
+        {
+            CommandName.TransmitActions => TransmitActions(value.Arguments),
+            CommandName.EndRound => EndRound(value.Arguments),
+            CommandName.Wait => Wait(value.Arguments),
+
+            _ => default,
+        };
+
+        public static short TransmitActions(CommandArgs args)
         {
             var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
             GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
 
-            return BitConverter.GetBytes((short)CommandName.TransmitActions);
+            return (short)CommandName.TransmitActions;
         }
 
-        [Command((short)CommandName.EndRound)]
-        public static byte[] EndRound(CommandArgs args)
+        public static short EndRound(CommandArgs args)
         {
             GameManager.EndRound(args.NetworkPlayer);
-            return BitConverter.GetBytes((short)CommandName.EndRound);
+            return (short)CommandName.EndRound;
         }
 
-        [Command((short)CommandName.Wait)]
         public static byte[] Wait(CommandArgs args)
         {
             return BitConverter

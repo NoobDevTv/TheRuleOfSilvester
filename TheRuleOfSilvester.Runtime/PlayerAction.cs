@@ -8,9 +8,9 @@ using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime
 {
-    public class PlayerAction : IByteSerializable
+    public class PlayerAction : IByteSerializable, IPlayerAction
     {
-        public Player Player { get; set; }
+        public IPlayer Player { get; set; }
 
         public uint Order { get; set; }
 
@@ -22,7 +22,7 @@ namespace TheRuleOfSilvester.Runtime
 
         }
 
-        public PlayerAction(Player player, ActionType moveType, Position point) : this()
+        public PlayerAction(IPlayer player, ActionType moveType, Position point) : this()
         {
             Player = player;
             ActionType = moveType;
@@ -47,7 +47,7 @@ namespace TheRuleOfSilvester.Runtime
             binaryWriter.Write(Order);
         }
 
-        public override string ToString() 
+        public override string ToString()
             => ActionType.ToString() + " | " + Point.ToString();
     }
 }

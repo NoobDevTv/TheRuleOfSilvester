@@ -13,7 +13,7 @@ using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime
 {
-    public class Player : PlayerCell
+    public class Player : PlayerCell, IPlayer
     {
         public string Name
         {
@@ -27,7 +27,7 @@ namespace TheRuleOfSilvester.Runtime
         }
         public char Avatar { get; private set; }
 
-        public BaseRole Role { get; private set; }
+        public IBaseRole Role { get; private set; }
 
         public event EventHandler<Cell> PlayerChangedCell;
 
@@ -65,13 +65,7 @@ namespace TheRuleOfSilvester.Runtime
 
             SetAvatar(role.Avatar);
         }
-
-        public void SetMap(Map map)
-        {
-            if (Map == null)
-                Map = map;
-        }
-
+        
         public void SetAvatar(char avatar)
         {
             Avatar = avatar;

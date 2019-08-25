@@ -6,8 +6,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Network;
 
-namespace TheRuleOfSilvester.Network
+namespace TheRuleOfSilvester.Server
 {
     public class Server : IDisposable
     {
@@ -16,21 +17,21 @@ namespace TheRuleOfSilvester.Network
         public int ClientAmount => connectedClients.Count;
 
         private Socket socket;
-        private readonly Dictionary<ConnectedClient, GameSession> connectedClients;
+        private readonly Dictionary<ConnectedClient, GameServerSession> connectedClients;
         private readonly SemaphoreExtended semaphore;
         private readonly HashSet<ServerSession> sessions;
 
         public Server()
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            connectedClients = new Dictionary<ConnectedClient, GameSession>();
+            connectedClients = new Dictionary<ConnectedClient, GameServerSession>();
             semaphore = new SemaphoreExtended(1, 1);
             sessions = new HashSet<ServerSession>();
         }
 
         public void Start(IPAddress address, int port)
         {
-            sessions.Add(new LobbySession());
+            sessions.Add(new LobbyServerSession());
 
             socket.Bind(new IPEndPoint(address, port));
             socket.Listen(1024);
@@ -79,10 +80,9 @@ namespace TheRuleOfSilvester.Network
             using (semaphore.Wait())
             {
                 sessions
-                    .OfType<LobbySession>()
+                    .OfType<LobbyServerSession>()
                     .First()
-                    .ConnectedClients
-                    .Add(client);
+                    .AddClient(client);
             }
 
             client.Start();

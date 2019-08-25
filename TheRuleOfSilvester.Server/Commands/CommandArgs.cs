@@ -11,7 +11,7 @@ namespace TheRuleOfSilvester.Server
         public byte[] Data { get; set; }
         public ConnectedClient Client { get; }
 
-        public bool HavePlayer => NetworkPlayer != null;
+        public bool HasPlayer => NetworkPlayer != null;
 
         public CommandArgs(NetworkPlayer player, ConnectedClient client, byte[] data)
         {

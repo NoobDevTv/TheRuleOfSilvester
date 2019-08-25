@@ -11,6 +11,7 @@ using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Runtime.Items;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Core;
+using System.Collections;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -92,7 +93,7 @@ namespace TheRuleOfSilvester.Runtime
             }
         }
 
-        public static byte[] SerializeList<T>(ICollection<T> list) where T : IByteSerializable
+        public static byte[] SerializeList<T>(IEnumerable<T> list) where T : IByteSerializable
         {
             if (list == null)
                 return new byte[0];
@@ -101,14 +102,23 @@ namespace TheRuleOfSilvester.Runtime
             {
                 using (var binaryWriter = new BinaryWriter(memoryStream))
                 {
-                    binaryWriter.Write(list.Count);
+                    binaryWriter.Write(list.Count());
 
-                    foreach (var obj in list.ToList())
+                    foreach (var obj in list)
                         obj.Serialize(binaryWriter);
                 }
 
                 return memoryStream.ToArray();
             }
+        }
+
+        public static byte[] SerializeList(IEnumerable list)
+        {
+            if (list == null)
+                return new byte[0];
+
+            var castedEnumerable = list.Cast<IByteSerializable>();
+            return SerializeList(castedEnumerable);            
         }
     }
 }

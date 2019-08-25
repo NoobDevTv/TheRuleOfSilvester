@@ -8,7 +8,7 @@ using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime.Roles
 {
-    public abstract class BaseRole : IByteSerializable
+    public abstract class BaseRole : IByteSerializable, IBaseRole
     {
         public string Name { get; private set; }
 
