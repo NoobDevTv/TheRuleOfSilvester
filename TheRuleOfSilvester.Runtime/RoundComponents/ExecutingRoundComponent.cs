@@ -42,7 +42,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
 
             PlayerAction action = CurrentUpdateSets.Dequeue();
 
-            var localUpdatePlayer = game.Map.Players.First(p => p == action.Player);
+            var localUpdatePlayer = game.Map.Players.First(p => p == action.Player as PlayerCell);
 
             switch (action.ActionType)
             {

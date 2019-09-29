@@ -15,6 +15,9 @@ namespace TheRuleOfSilvester.Network
         EndRound,
         Wait,
         GetStatus,
-        GetWinners
+        GetWinners,
+        RegisterPlayer,
+        GetSessions,
+        JoinSession,
     }
 }

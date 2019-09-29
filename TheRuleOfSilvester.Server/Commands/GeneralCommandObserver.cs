@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
-    public sealed class GeneralCommands : CommandObserver
+    public sealed class GeneralCommandObserver : CommandObserver
     {
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
@@ -34,5 +35,6 @@ namespace TheRuleOfSilvester.Server.Commands
 
         public static List<IPlayer> GetWinners(CommandArgs args)
             => GameManager.GetWinners();
+
     }
 }

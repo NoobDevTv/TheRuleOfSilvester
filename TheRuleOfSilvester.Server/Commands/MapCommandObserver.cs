@@ -9,7 +9,7 @@ using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
-    public class MapCommands : CommandObserver
+    public class MapCommandObserver : CommandObserver
     {
 
         public override object OnNext(CommandNotification value) => value.CommandName switch

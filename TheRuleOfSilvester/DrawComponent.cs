@@ -87,7 +87,7 @@ namespace TheRuleOfSilvester
                 DrawItemInventory(localPlayer);
                 DrawCellInventory(localPlayer.CellInventory);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             chunkChange = false;
@@ -175,7 +175,7 @@ namespace TheRuleOfSilvester
             chunkChange = true;
         }
 
-        private void DrawPlayerHealth(BaseRole role)
+        private void DrawPlayerHealth(IBaseRole role)
         {
             string s = "";
 

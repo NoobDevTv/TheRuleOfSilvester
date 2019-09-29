@@ -5,8 +5,9 @@ using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Server
 {
-    public abstract class CommandObserver : INotificationObserver<CommandNotification>
-    {
+    public abstract class CommandObserver : INotificationObserver<CommandNotification>, IDisposable
+    {        
+        private IDisposable subscription;
         public virtual void OnCompleted()
         {
         }
@@ -18,6 +19,16 @@ namespace TheRuleOfSilvester.Server
         public virtual object OnNext(CommandNotification value)
         {
             return default;
+        }
+
+        public virtual void Dispose()
+        {
+            subscription?.Dispose();
+        }
+
+        public void Register(INotificationObservable<CommandNotification> observable)
+        {
+            subscription = observable.Subscribe(this);
         }
     }
 }

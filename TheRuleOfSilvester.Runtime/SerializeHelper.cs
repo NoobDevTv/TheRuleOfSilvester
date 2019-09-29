@@ -24,7 +24,7 @@ namespace TheRuleOfSilvester.Runtime
         {
             mapCells = Assembly.GetExecutingAssembly()
                  .GetTypes()
-                 .Where(c => (typeof(MapCell).IsAssignableFrom(c) || typeof(BaseItemCell).IsAssignableFrom(c)) 
+                 .Where(c => (typeof(MapCell).IsAssignableFrom(c) || typeof(BaseItemCell).IsAssignableFrom(c))
                                 && c.GetCustomAttribute<GuidAttribute>() != null)
                  .ToDictionary(c => c.GetCustomAttribute<GuidAttribute>().Value,
                                c => c);
@@ -69,7 +69,7 @@ namespace TheRuleOfSilvester.Runtime
 
             return tmpList;
         }
-        
+
         public static Cell DeserializeMapCell(BinaryReader binaryReader)
         {
             var key = new Guid(binaryReader.ReadBytes(16)).ToString().ToUpper();
@@ -118,7 +118,93 @@ namespace TheRuleOfSilvester.Runtime
                 return new byte[0];
 
             var castedEnumerable = list.Cast<IByteSerializable>();
-            return SerializeList(castedEnumerable);            
+            return SerializeList(castedEnumerable);
         }
+
+        public static byte[] SerializeEnum(Enum e)
+        {
+            var underlyingType = Enum.GetUnderlyingType(e.GetType());
+            var value = Convert.ChangeType(e, underlyingType);
+            return GetBytes(value);
+        }
+
+        public static T DeserializeEnum<T>(byte[] e) where T : Enum
+        {
+            var underlyingType = Enum.GetUnderlyingType(typeof(T));
+
+            var method = typeof(SerializeHelper)
+                            .GetMethod(nameof(ToValue), BindingFlags.Static)
+                            .MakeGenericMethod(underlyingType);
+
+            var value = method.Invoke(null, new object[] { e });
+            return (T)Enum.ToObject(typeof(T), value);
+        }
+
+        public static byte[] GetBytes<T>(T val) => val switch
+        {
+            byte[] b => b,
+            byte b => new byte[] { b },
+            int p => BitConverter.GetBytes(p),
+            uint p => BitConverter.GetBytes(p),
+            short p => BitConverter.GetBytes(p),
+            ushort p => BitConverter.GetBytes(p),
+            long p => BitConverter.GetBytes(p),
+            ulong p => BitConverter.GetBytes(p),
+            float p => BitConverter.GetBytes(p),
+            bool p => BitConverter.GetBytes(p),
+            double p => BitConverter.GetBytes(p),
+            char p => BitConverter.GetBytes(p),
+            string s => Encoding.UTF8.GetBytes(s),
+            Enum e => SerializeEnum(e),
+            IByteSerializable s => Serialize(s),
+            IEnumerable enu => SerializeList(enu),
+            _ => throw new NotSupportedException(),
+        };
+
+        public static T ToValue<T>(byte[] value)
+        {
+            return typeof(T).Name switch
+            {
+                "Byte[]" => (T)(object)value,
+                nameof(Byte) => (T)(object)value[0],
+                nameof(Int32) => (T)(object)BitConverter.ToInt32(value),
+                nameof(UInt32) => (T)(object)BitConverter.ToUInt32(value),
+                nameof(Int16) => (T)(object)BitConverter.ToInt16(value),
+                nameof(UInt16) => (T)(object)BitConverter.ToUInt16(value),
+                nameof(Int64) => (T)(object)BitConverter.ToInt64(value),
+                nameof(UInt64) => (T)(object)BitConverter.ToUInt64(value),
+                nameof(Single) => (T)(object)BitConverter.ToSingle(value),
+                nameof(Boolean) => (T)(object)BitConverter.ToBoolean(value),
+                nameof(Double) => (T)(object)BitConverter.ToDouble(value),
+                nameof(Char) => (T)(object)BitConverter.ToChar(value),
+                nameof(String) => (T)(object)Encoding.UTF8.GetString(value),
+                _ => (T)DefaulDeserialisation()
+            };
+
+            object DefaulDeserialisation()
+            {
+                var type = typeof(T);
+                if (typeof(Enum).IsAssignableFrom(type))
+                    return InvokeGenericMethod(nameof(DeserializeEnum), type);
+
+                if (typeof(IByteSerializable).IsAssignableFrom(type))
+                    return InvokeGenericMethod(nameof(Deserialize), type);
+
+                if (typeof(IEnumerable).IsAssignableFrom(type))
+                    return InvokeGenericMethod(nameof(DeserializeToList), type.GenericTypeArguments);
+
+                throw new NotSupportedException();
+
+                object InvokeGenericMethod(string methodName, params Type[] targetType)
+                {
+                    var method = typeof(SerializeHelper)
+                        .GetMethod(methodName, BindingFlags.Static)
+                        .MakeGenericMethod(targetType);
+
+                    return method.Invoke(null, new object[] { value });
+                }
+            }
+        }
+
     }
 }

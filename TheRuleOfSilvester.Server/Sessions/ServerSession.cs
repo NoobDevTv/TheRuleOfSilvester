@@ -18,25 +18,27 @@ namespace TheRuleOfSilvester.Server
 
         private readonly List<ConnectedClient> connectedClients;
         private readonly Dictionary<ConnectedClient, IDisposable> connectedSubscriptions;
+        private readonly List<CommandObserver> disposables;
 
         public ServerSession()
         {
             connectedClients = new List<ConnectedClient>();
             SubscribedCommands = new List<INotificationObserver<CommandNotification>>();
             connectedSubscriptions = new Dictionary<ConnectedClient, IDisposable>();
+            disposables = new List<CommandObserver>();
             RegisterCommands();
         }
 
         public void AddClient(ConnectedClient client)
         {
             connectedClients.Add(client);
-            connectedSubscriptions.Add(client, client.Subscribe(this));
+            connectedSubscriptions.Add(client, client.Subscribe(this));            
         }
 
         public void RemoveClient(ConnectedClient client)
         {
             connectedClients.Remove(client);
-            var subscription = connectedSubscriptions[client];
+            IDisposable subscription = connectedSubscriptions[client];
             subscription.Dispose();
             connectedSubscriptions.Remove(client);
         }
@@ -66,7 +68,7 @@ namespace TheRuleOfSilvester.Server
             return default;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             connectedClients.ForEach(c => c.Disconnect());
             connectedSubscriptions.Values.ForEach(s => s.Dispose());
@@ -81,61 +83,33 @@ namespace TheRuleOfSilvester.Server
             return new Subscription<CommandNotification>(observer, this);
         }
 
-        public void OnDispose(INotificationObserver<CommandNotification> observer)
-        {
-            SubscribedCommands.Remove(observer);
-        }
+        public void OnDispose(INotificationObserver<CommandNotification> observer) 
+            => SubscribedCommands.Remove(observer);
 
         protected byte[] Dispatch(CommandNotification notification)
         {
-            foreach (var command in SubscribedCommands)
+            foreach (INotificationObserver<CommandNotification> command in SubscribedCommands)
             {
-                var returnValue = command.OnNext(notification);
+                var Value = command.OnNext(notification);
 
-                if (returnValue is null)
+                if (Value is null)
                     continue;
 
-                switch (returnValue)
-                {
-                    case byte[] byteArray:
-                        return byteArray;
-                    case byte b:
-                        return new[] { b };
-                    case IByteSerializable serializable:
-                        return SerializeHelper.Serialize(serializable);
-                    case int p:
-                        return BitConverter.GetBytes(p);
-                    case uint p:
-                        return BitConverter.GetBytes(p);
-                    case short p:
-                        return BitConverter.GetBytes(p);
-                    case ushort p:
-                        return BitConverter.GetBytes(p);
-                    case long p:
-                        return BitConverter.GetBytes(p);
-                    case ulong p:
-                        return BitConverter.GetBytes(p);
-                    case float p:
-                        return BitConverter.GetBytes(p);
-                    case bool p:
-                        return BitConverter.GetBytes(p);
-                    case double p:
-                        return BitConverter.GetBytes(p);
-                    case char p:
-                        return BitConverter.GetBytes(p);
-                    case string s:
-                        return Encoding.UTF8.GetBytes(s);
-                    default:
-                        if (returnValue is IEnumerable enumerable)
-                            return SerializeHelper.SerializeList(enumerable);
-
-                        throw new InvalidCastException();
-                }
+                return SerializeHelper.GetBytes(Value);
             }
 
             throw new NotSupportedException();
         }
 
+        
+
         protected abstract void RegisterCommands();
+
+        protected void RegisterCommand<T>() where T : CommandObserver
+        {
+            var instance = Activator.CreateInstance<T>() as CommandObserver;
+            disposables.Add(instance);
+            instance.Register(this);
+        }
     }
 }

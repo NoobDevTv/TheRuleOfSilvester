@@ -11,7 +11,7 @@ using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
-    public partial class RoundCommands : CommandObserver
+    public partial class RoundCommandObserver : CommandObserver
     {
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {

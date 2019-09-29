@@ -29,7 +29,10 @@ namespace TheRuleOfSilvester.Server
             {
                 foreach (var action in actions)
                 {
-                    var player = action.Player;
+                    var player = action.Player as Player;
+
+                    if (player == null)
+                        continue;
 
                     switch (action.ActionType)
                     {
