@@ -8,6 +8,7 @@ using TheRuleOfSilvester.Runtime.Cells;
 using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Runtime.Roles;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Network;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -53,6 +54,17 @@ namespace TheRuleOfSilvester.Runtime
 
             if (multiplayer)
             {
+
+                MultiplayerComponent.CreateGame();
+                List<GameSession> sessions = MultiplayerComponent.GetGameSessions();
+
+                Console.Clear();
+
+                foreach (var item in sessions)
+                {
+                    //TODO Implement Session UI
+                }
+
                 Map = MultiplayerComponent.GetMap();
                 player = MultiplayerComponent.ConnectPlayer(playername);
                 player.Map = Map;

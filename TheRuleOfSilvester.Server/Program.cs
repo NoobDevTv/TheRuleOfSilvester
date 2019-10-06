@@ -18,10 +18,10 @@ namespace TheRuleOfSilvester.Server
 
             using (server = new Server())
             {
-                var x = GetIntFromUser("Map Width", 10, 400);
-                var y = GetIntFromUser("Map Height", 10, 400);
+                //var x = GetIntFromUser("Map Width", 10, 400);
+                //var y = GetIntFromUser("Map Height", 10, 400);
 
-                GameManager.GenerateMap(x, y);
+                //GameManager.GenerateMap(x, y);
 
                 server.Start(IPAddress.Any, 4400);
                 Console.CancelKeyPress += (s, e) => mResetEvent.Reset();
@@ -36,9 +36,9 @@ namespace TheRuleOfSilvester.Server
                 } while (command.ToLower() != "!start");
 
                 Console.WriteLine("Game started.");
-                GameManager.StartGame();
+                //GameManager.StartGame();
                 mResetEvent.WaitOne();
-                GameManager.StopGame();
+                //GameManager.StopGame();
             }
         }
 

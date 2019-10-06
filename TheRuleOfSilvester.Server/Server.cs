@@ -17,21 +17,21 @@ namespace TheRuleOfSilvester.Server
         public int ClientAmount => connectedClients.Count;
 
         private Socket socket;
-        private readonly Dictionary<ConnectedClient, GameServerSession> connectedClients;
+        private readonly List<ConnectedClient> connectedClients;
         private readonly SemaphoreExtended semaphore;
         private readonly HashSet<ServerSession> sessions;
 
         public Server()
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            connectedClients = new Dictionary<ConnectedClient, GameServerSession>();
+            connectedClients = new List<ConnectedClient>();
             semaphore = new SemaphoreExtended(1, 1);
             sessions = new HashSet<ServerSession>();
         }
 
         public void Start(IPAddress address, int port)
         {
-            sessions.Add(new LobbyServerSession());
+            sessions.Add(new LobbyServerSession(new GameManager()));
 
             socket.Bind(new IPEndPoint(address, port));
             socket.Listen(1024);
@@ -49,8 +49,8 @@ namespace TheRuleOfSilvester.Server
         {
             foreach (var client in connectedClients.ToArray())
             {
-                client.Key.Disconnect();
-                connectedClients.Remove(client.Key);
+                client.Disconnect();
+                connectedClients.Remove(client);
             }
 
             socket.Disconnect(true);
@@ -74,6 +74,7 @@ namespace TheRuleOfSilvester.Server
             tmpSocket.NoDelay = true;
 
             var client = new ConnectedClient(tmpSocket);
+            connectedClients.Add(client);
 
             OnClientConnected?.Invoke(this, client);
 

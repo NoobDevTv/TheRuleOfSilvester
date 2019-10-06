@@ -34,5 +34,7 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
         bool GetUpdateSet(out ICollection<PlayerAction> updateSet);
 
         ServerStatus GetServerStatus();
+        List<GameSession> GetGameSessions();
+        GameSession CreateGame();
     }
 }

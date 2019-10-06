@@ -61,6 +61,12 @@ namespace TheRuleOfSilvester
         public Map GetMap()
             => SerializeHelper.Deserialize<Map>(AwaitableSend(CommandName.GetMap));
 
+        public GameSession CreateGame()
+            => SerializeHelper.Deserialize< GameSession>(AwaitableSend(CommandName.NewGame));
+
+        public List<GameSession> GetGameSessions()
+            => SerializeHelper.DeserializeToList<GameSession>(AwaitableSend(CommandName.GetSessions)).ToList();
+
         public Player ConnectPlayer(string playername)
             => SerializeHelper.Deserialize<Player>(AwaitableSend(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
 

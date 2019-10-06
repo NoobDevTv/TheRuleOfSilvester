@@ -66,7 +66,8 @@ namespace TheRuleOfSilvester.Server
         internal void AddRange(IEnumerable<PlayerAction> playerActions)
         {
             foreach (var action in playerActions)
-                TryAdd(action.Player.Id, action);
+                if (action.Player is PlayerCell pc)
+                    TryAdd(pc.Id, action);
         }
 
         public IEnumerator<List<PlayerAction>> GetEnumerator()

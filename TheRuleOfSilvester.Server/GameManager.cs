@@ -13,19 +13,19 @@ using TheRuleOfSilvester.Runtime.Roles;
 
 namespace TheRuleOfSilvester.Server
 {
-    internal static class GameManager
+    public class GameManager
     {
-        public static Map Map { get; private set; }
-        public static Dictionary<int, NetworkPlayer> Players { get; private set; }
-        private static readonly Queue<BaseRole> roles;
-        private static readonly ActionCache actionCache;
-        private static readonly Executor executor;
+        public Map Map { get; private set; }
+        public Dictionary<int, NetworkPlayer> Players { get; private set; }
+        private readonly Queue<BaseRole> roles;
+        private ActionCache actionCache;
+        private Executor executor;
 
-        private static readonly SemaphoreExtended winnersSemaphore;
+        private readonly SemaphoreExtended winnersSemaphore;
         
-        private static readonly List<IPlayer> listOfWinners;
+        private readonly List<IPlayer> listOfWinners;
 
-        static GameManager()
+        public GameManager()
         {
             listOfWinners = new List<IPlayer>();
             winnersSemaphore = new SemaphoreExtended(1, 1);
@@ -33,13 +33,13 @@ namespace TheRuleOfSilvester.Server
             actionCache = new ActionCache();
             executor = new Executor(actionCache);
             Players = new Dictionary<int, NetworkPlayer>();
-            roles = RoleManager.GetAllRolesRandomized();
+            roles = new Queue<BaseRole>();// RoleManager.GetAllRolesRandomized();
         }
 
-        internal static void GenerateMap(int x, int y) 
+        internal void GenerateMap(int x, int y) 
             => Map = new MapGenerator().Generate(x, y);
 
-        internal static List<IPlayer> GetWinners()
+        internal List<IPlayer> GetWinners()
         {
             var tmpPlayer = new List<IPlayer>();
             using (winnersSemaphore.Wait())
@@ -48,13 +48,13 @@ namespace TheRuleOfSilvester.Server
             return tmpPlayer;
         }
 
-        internal static void AddRoundActions(IPlayer player, List<PlayerAction> playerActions)
+        internal void AddRoundActions(IPlayer player, List<PlayerAction> playerActions)
         {
             playerActions.ForEach(a => a.Player = player);
             actionCache.AddRange(playerActions);
         }
 
-        internal static Player GetNewPlayer(ConnectedClient client, string playername)
+        internal Player GetNewPlayer(ConnectedClient client, string playername)
         {
             int tmpId = Players.Count + 1;
 
@@ -73,18 +73,28 @@ namespace TheRuleOfSilvester.Server
             return player;
         }
 
-        internal static void StopGame()
+        internal void StopGame()
         {
-
+            listOfWinners.Clear();
+            Players?.Clear();
+            roles?.Clear();
+            foreach (var actions in actionCache)
+            {
+                actions.Clear();
+            }
         }
+    
 
-        internal static void StartGame()
+        internal void StartGame()
         {
+            foreach (var role in RoleManager.GetAllRolesRandomized())
+                roles.Enqueue(role);
+
             foreach (var player in Players)
                 player.Value.CurrentServerStatus = ServerStatus.Started;
         }
 
-        internal static void EndRound(NetworkPlayer player)
+        internal void EndRound(NetworkPlayer player)
         {
             player.RoundMode++;
 
@@ -94,7 +104,7 @@ namespace TheRuleOfSilvester.Server
             CheckAllPlayersAsync();
         }
         
-        private static void CheckAllPlayersAsync()
+        private void CheckAllPlayersAsync()
         {
             Task.Run(() =>
             {
@@ -124,7 +134,7 @@ namespace TheRuleOfSilvester.Server
             });
         }
                
-        private static void Execute()
+        private void Execute()
         {
             executor.Execute(Map);
 
@@ -134,6 +144,5 @@ namespace TheRuleOfSilvester.Server
                 player.RoundMode++;
             }
         }
-
     }
 }

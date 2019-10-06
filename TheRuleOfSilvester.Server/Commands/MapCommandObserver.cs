@@ -14,20 +14,20 @@ namespace TheRuleOfSilvester.Server.Commands
 
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
-            CommandName.GetMap => GetMap(value.Arguments),
-            CommandName.GetPlayers => GetPlayers(value.Arguments),
-            CommandName.UpdatePlayer => UpdatePlayer(value.Arguments),
+            CommandName.GetMap => (object)GetMap(value.Arguments),
+            CommandName.GetPlayers => (object)GetPlayers(value.Arguments),
+            CommandName.UpdatePlayer => (object)UpdatePlayer(value.Arguments),
 
             _ => default,
         };
 
-        public static Map GetMap(CommandArgs args)
+        public Map GetMap(CommandArgs args)
             => GameManager.Map;
 
-        public static IEnumerable<PlayerCell> GetPlayers(CommandArgs args)
+        public IEnumerable<PlayerCell> GetPlayers(CommandArgs args)
             => GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId);
 
-        public static short UpdatePlayer(CommandArgs args)
+        public short UpdatePlayer(CommandArgs args)
         {
             //if(!args.HavePlayer)
             //    return BitConverter.GetBytes((short)CommandNames.UpdatePlayer);

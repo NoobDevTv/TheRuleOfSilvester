@@ -15,14 +15,14 @@ namespace TheRuleOfSilvester.Server.Commands
     {
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
-            CommandName.TransmitActions => TransmitActions(value.Arguments),
-            CommandName.EndRound => EndRound(value.Arguments),
-            CommandName.Wait => Wait(value.Arguments),
+            CommandName.TransmitActions => (object)TransmitActions(value.Arguments),
+            CommandName.EndRound => (object)EndRound(value.Arguments),
+            CommandName.Wait => (object)Wait(value.Arguments),
 
             _ => default,
         };
 
-        public static short TransmitActions(CommandArgs args)
+        public short TransmitActions(CommandArgs args)
         {
             var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
             GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
@@ -30,13 +30,13 @@ namespace TheRuleOfSilvester.Server.Commands
             return (short)CommandName.TransmitActions;
         }
 
-        public static short EndRound(CommandArgs args)
+        public short EndRound(CommandArgs args)
         {
             GameManager.EndRound(args.NetworkPlayer);
             return (short)CommandName.EndRound;
         }
 
-        public static byte[] Wait(CommandArgs args)
+        public byte[] Wait(CommandArgs args)
         {
             return BitConverter
                  .GetBytes(args.NetworkPlayer.RoundMode == RoundMode.Executing)

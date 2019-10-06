@@ -19,20 +19,23 @@ namespace TheRuleOfSilvester.Server
         private readonly List<ConnectedClient> connectedClients;
         private readonly Dictionary<ConnectedClient, IDisposable> connectedSubscriptions;
         private readonly List<CommandObserver> disposables;
+        private readonly GameManager gameManager;
 
-        public ServerSession()
+        public ServerSession(GameManager gameManager)
         {
             connectedClients = new List<ConnectedClient>();
             SubscribedCommands = new List<INotificationObserver<CommandNotification>>();
             connectedSubscriptions = new Dictionary<ConnectedClient, IDisposable>();
             disposables = new List<CommandObserver>();
+            this.gameManager = gameManager;
             RegisterCommands();
         }
 
         public void AddClient(ConnectedClient client)
         {
             connectedClients.Add(client);
-            connectedSubscriptions.Add(client, client.Subscribe(this));            
+            if (!connectedSubscriptions.ContainsKey(client))
+                connectedSubscriptions.Add(client, client.Subscribe(this));
         }
 
         public void RemoveClient(ConnectedClient client)
@@ -56,7 +59,7 @@ namespace TheRuleOfSilvester.Server
             NetworkPlayer player = null;
 
             if (connectedClient.Registered)
-                GameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
+                gameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
 
             value.Data = Dispatch(new CommandNotification()
             {
@@ -83,7 +86,7 @@ namespace TheRuleOfSilvester.Server
             return new Subscription<CommandNotification>(observer, this);
         }
 
-        public void OnDispose(INotificationObserver<CommandNotification> observer) 
+        public void OnDispose(INotificationObserver<CommandNotification> observer)
             => SubscribedCommands.Remove(observer);
 
         protected byte[] Dispatch(CommandNotification notification)
@@ -101,7 +104,7 @@ namespace TheRuleOfSilvester.Server
             throw new NotSupportedException();
         }
 
-        
+
 
         protected abstract void RegisterCommands();
 
@@ -109,7 +112,7 @@ namespace TheRuleOfSilvester.Server
         {
             var instance = Activator.CreateInstance<T>() as CommandObserver;
             disposables.Add(instance);
-            instance.Register(this);
+            instance.Register(this, gameManager);
         }
     }
 }

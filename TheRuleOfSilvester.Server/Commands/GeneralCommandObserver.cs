@@ -14,14 +14,14 @@ namespace TheRuleOfSilvester.Server.Commands
     {
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
-            CommandName.NewPlayer => NewPlayer(value.Arguments),
-            CommandName.GetStatus => GetStatus(value.Arguments),
-            CommandName.GetWinners => GetWinners(value.Arguments),
+            CommandName.NewPlayer => (object)NewPlayer(value.Arguments),
+            CommandName.GetStatus => (object)GetStatus(value.Arguments),
+            CommandName.GetWinners => (object)GetWinners(value.Arguments),
 
             _ => default,
         };
 
-        public static Player NewPlayer(CommandArgs args)
+        public Player NewPlayer(CommandArgs args)
         {
             var playerName = Encoding.UTF8.GetString(args.Data);
 
@@ -30,10 +30,10 @@ namespace TheRuleOfSilvester.Server.Commands
             return GameManager.GetNewPlayer(args.Client, playerName);
         }
 
-        public static byte GetStatus(CommandArgs args) 
+        public byte GetStatus(CommandArgs args) 
             => (byte)args.NetworkPlayer.CurrentServerStatus;
 
-        public static List<IPlayer> GetWinners(CommandArgs args)
+        public List<IPlayer> GetWinners(CommandArgs args)
             => GameManager.GetWinners();
 
     }
