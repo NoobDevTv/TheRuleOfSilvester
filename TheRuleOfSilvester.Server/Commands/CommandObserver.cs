@@ -6,9 +6,8 @@ using TheRuleOfSilvester.Core.Observation;
 namespace TheRuleOfSilvester.Server
 {
     public abstract class CommandObserver : INotificationObserver<CommandNotification>, IDisposable
-    {        
-        protected GameManager GameManager;
-        protected INotificationObservable<CommandNotification> Observable;
+    {
+        protected ServerSession ServerSession;
 
         private IDisposable subscription;
 
@@ -30,11 +29,12 @@ namespace TheRuleOfSilvester.Server
             subscription?.Dispose();
         }
 
-        public void Register(INotificationObservable<CommandNotification> observable, GameManager gameManager)
+        public void Register(INotificationObservable<CommandNotification> observable)
         {
             subscription = observable.Subscribe(this);
-            Observable = observable;
-            GameManager = gameManager;
+
+            if (observable is ServerSession serverSession)
+                ServerSession = serverSession;
         }
     }
 }

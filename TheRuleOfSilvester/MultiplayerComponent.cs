@@ -6,6 +6,7 @@ using TheRuleOfSilvester.Runtime;
 using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Network.Info;
 
 namespace TheRuleOfSilvester
 {
@@ -61,11 +62,11 @@ namespace TheRuleOfSilvester
         public Map GetMap()
             => SerializeHelper.Deserialize<Map>(AwaitableSend(CommandName.GetMap));
 
-        public GameSession CreateGame()
-            => SerializeHelper.Deserialize< GameSession>(AwaitableSend(CommandName.NewGame));
+        public GameServerSessionInfo CreateGame()
+            => SerializeHelper.Deserialize<GameServerSessionInfo>(AwaitableSend(CommandName.NewGame));
 
-        public List<GameSession> GetGameSessions()
-            => SerializeHelper.DeserializeToList<GameSession>(AwaitableSend(CommandName.GetSessions)).ToList();
+        public List<GameServerSessionInfo> GetGameSessions()
+            => SerializeHelper.DeserializeToList<GameServerSessionInfo>(AwaitableSend(CommandName.GetSessions)).ToList();
 
         public Player ConnectPlayer(string playername)
             => SerializeHelper.Deserialize<Player>(AwaitableSend(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
@@ -97,7 +98,7 @@ namespace TheRuleOfSilvester
         {
             if (waitingDic.TryGetValue(package.Id, out Awaiter awaiter))
             {
-                awaiter.SetResult(package.Data);
+                awaiter.SetResult(package.Data, package.Command >= 0);
                 waitingDic.Remove(package.Id);
                 return awaiter;
             }

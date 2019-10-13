@@ -6,6 +6,8 @@ namespace TheRuleOfSilvester.Network
 {
     public enum CommandName : short
     {
+        Error = -1, 
+
         GetMap,
         GetMovableTiles,
         NewPlayer,

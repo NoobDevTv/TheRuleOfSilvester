@@ -2,25 +2,29 @@
 using System.Collections.Generic;
 using System.Text;
 using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Network.Sessions;
 using TheRuleOfSilvester.Server.Commands;
 
 namespace TheRuleOfSilvester.Server
 {
-    public sealed class GameServerSession : ServerSession
+    public sealed class GameServerSession : ServerSession, IGameServerSession
     {
-        public GameSession Session{ get; set; }
+        public int MaxPlayers => throw new NotImplementedException();
+        public string Name => throw new NotImplementedException();
+        public int CurrentPlayers => throw new NotImplementedException();
 
+        private readonly GameManager gameManager;
 
-        public GameServerSession(GameManager gameManager) : base(gameManager)
+        public GameServerSession() : base()
         {
-            Session = new GameSession();
+            gameManager = new GameManager();
         }
 
         protected override void RegisterCommands()
         {
-            RegisterCommand<GeneralCommandObserver>();
-            RegisterCommand<MapCommandObserver>();
-            RegisterCommand<RoundCommandObserver>();        
+            RegisterCommand<GeneralCommandObserver>(gameManager);
+            RegisterCommand<MapCommandObserver>(gameManager);
+            RegisterCommand<RoundCommandObserver>(gameManager);        
         }
     }
 }

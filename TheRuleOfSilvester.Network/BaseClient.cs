@@ -94,9 +94,9 @@ namespace TheRuleOfSilvester.Network
             var package = Package.FromByteArray(data);
             package.Client = this;
 
-            //using (semaphoreSlim.Wait())
+            using (semaphoreSlim.Wait())
             {
-                foreach (var observer in observers.ToList()) //TODO Unschön
+                foreach (var observer in observers)
                     observer.OnNext(package);
             }
 

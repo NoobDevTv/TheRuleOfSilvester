@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Network;
-
+using TheRuleOfSilvester.Network.Info;
+using TheRuleOfSilvester.Network.Sessions;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
     public sealed class LobbyCommandObserver : CommandObserver
     {
+        private readonly SessionProvider sessionProvider;
+
+        public LobbyCommandObserver(SessionProvider sessionProvider)
+        {
+            this.sessionProvider = sessionProvider;
+        }
+
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
             CommandName.RegisterPlayer => RegisterPlayer(value.Arguments),
@@ -19,14 +27,8 @@ namespace TheRuleOfSilvester.Server.Commands
         };
         private object NewGame(CommandArgs arguments)
         {
-            var gameServerSession = new GameServerSession(new GameManager());
-
-            gameServerSession.Session.Name = "TestGame";
-            gameServerSession.AddClient(arguments.Client);
-            gameServerSession.Session.CurrentPlayers = gameServerSession.ConnectedClients.Count;
-            (Observable as LobbyServerSession).GameSessions.Add(gameServerSession);
-
-            return gameServerSession.Session;
+            sessionProvider.Add(new GameServerSession());
+            return true;
         }
 
         private object RegisterPlayer(CommandArgs arguments)
@@ -36,13 +38,21 @@ namespace TheRuleOfSilvester.Server.Commands
 
         private object GetSessions(CommandArgs arguments)
         {
-            return (Observable as LobbyServerSession).GameSessions.Select(x=>x.Session);
+            return sessionProvider
+                .OfType<IGameServerSession>()
+                .Select(s => new GameServerSessionInfo(s));
         }
 
-        private object JoinSession(CommandArgs arguments)
+        private bool JoinSession(CommandArgs arguments)
         {
-            return new NotImplementedException();
+            var sessionId = Convert.ToInt32(arguments.Data);
 
+            if (!sessionProvider.Contains(sessionId))
+                return false;
+
+            sessionProvider.EnqueueSessionChange(sessionId, arguments.Client, ServerSession);
+
+            return true;
         }
     }
 }

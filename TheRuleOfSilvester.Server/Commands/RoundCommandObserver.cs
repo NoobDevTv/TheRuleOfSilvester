@@ -13,11 +13,18 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public partial class RoundCommandObserver : CommandObserver
     {
+        private readonly GameManager gameManager;
+
+        public RoundCommandObserver(GameManager gameManager)
+        {
+            this.gameManager = gameManager;
+        }
+
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
-            CommandName.TransmitActions => (object)TransmitActions(value.Arguments),
-            CommandName.EndRound => (object)EndRound(value.Arguments),
-            CommandName.Wait => (object)Wait(value.Arguments),
+            CommandName.TransmitActions => TransmitActions(value.Arguments),
+            CommandName.EndRound => EndRound(value.Arguments),
+            CommandName.Wait => Wait(value.Arguments),
 
             _ => default,
         };
@@ -25,14 +32,14 @@ namespace TheRuleOfSilvester.Server.Commands
         public short TransmitActions(CommandArgs args)
         {
             var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
-            GameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
+            gameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
 
             return (short)CommandName.TransmitActions;
         }
 
         public short EndRound(CommandArgs args)
         {
-            GameManager.EndRound(args.NetworkPlayer);
+            gameManager.EndRound(args.NetworkPlayer);
             return (short)CommandName.EndRound;
         }
 

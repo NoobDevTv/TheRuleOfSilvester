@@ -6,36 +6,35 @@ using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Extensions;
 using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Network.Sessions;
 using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server
 {
     public abstract class ServerSession : INotificationObserver<Package>,
-        INotificationObservable<CommandNotification>, IDisposable
+        INotificationObservable<CommandNotification>, IDisposable, IServerSession
     {
+        public int Id { get; set; }
         public IReadOnlyCollection<ConnectedClient> ConnectedClients => connectedClients;
         public List<INotificationObserver<CommandNotification>> SubscribedCommands { get; }
 
         private readonly List<ConnectedClient> connectedClients;
         private readonly Dictionary<ConnectedClient, IDisposable> connectedSubscriptions;
         private readonly List<CommandObserver> disposables;
-        private readonly GameManager gameManager;
 
-        public ServerSession(GameManager gameManager)
+        public ServerSession()
         {
             connectedClients = new List<ConnectedClient>();
             SubscribedCommands = new List<INotificationObserver<CommandNotification>>();
             connectedSubscriptions = new Dictionary<ConnectedClient, IDisposable>();
             disposables = new List<CommandObserver>();
-            this.gameManager = gameManager;
             RegisterCommands();
         }
 
         public void AddClient(ConnectedClient client)
         {
             connectedClients.Add(client);
-            if (!connectedSubscriptions.ContainsKey(client))
-                connectedSubscriptions.Add(client, client.Subscribe(this));
+            connectedSubscriptions.Add(client, client.Subscribe(this));
         }
 
         public void RemoveClient(ConnectedClient client)
@@ -61,12 +60,23 @@ namespace TheRuleOfSilvester.Server
             if (connectedClient.Registered)
                 gameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
 
-            value.Data = Dispatch(new CommandNotification()
+            var notification = new CommandNotification()
             {
                 CommandName = value.CommandName,
                 Arguments = new CommandArgs(player, connectedClient, value.Data)
-            });
-            value.Client.Send(value);
+            };
+
+            if (TryDispatch(notification, out var data))
+            {
+                value.Data = data;
+                value.Client.Send(value);
+            }
+            else
+            {
+                value.Command = (short)CommandName.Error;
+                value.Data = Encoding.UTF8.GetBytes("Command not found");
+                value.Client.Send(value);
+            }
 
             return default;
         }
@@ -89,30 +99,30 @@ namespace TheRuleOfSilvester.Server
         public void OnDispose(INotificationObserver<CommandNotification> observer)
             => SubscribedCommands.Remove(observer);
 
-        protected byte[] Dispatch(CommandNotification notification)
+        protected bool TryDispatch(CommandNotification notification, out byte[] data)
         {
             foreach (INotificationObserver<CommandNotification> command in SubscribedCommands)
             {
-                var Value = command.OnNext(notification);
+                var value = command.OnNext(notification);
 
-                if (Value is null)
+                if (value is null)
                     continue;
 
-                return SerializeHelper.GetBytes(Value);
+                data = SerializeHelper.GetBytes(value);
+                return true;
             }
 
-            throw new NotSupportedException();
+            data = Array.Empty<byte>();
+            return false;
         }
-
-
 
         protected abstract void RegisterCommands();
 
-        protected void RegisterCommand<T>() where T : CommandObserver
+        protected void RegisterCommand<T>(params object[] args) where T : CommandObserver
         {
-            var instance = Activator.CreateInstance<T>() as CommandObserver;
+            var instance = Activator.CreateInstance(typeof(T), args) as CommandObserver;
             disposables.Add(instance);
-            instance.Register(this, gameManager);
+            instance.Register(this);
         }
     }
 }

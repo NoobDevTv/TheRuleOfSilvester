@@ -11,21 +11,27 @@ namespace TheRuleOfSilvester.Server.Commands
 {
     public class MapCommandObserver : CommandObserver
     {
+        private readonly GameManager gameManager;
+
+        public MapCommandObserver(GameManager gameManager)
+        {
+            this.gameManager = gameManager;
+        }
 
         public override object OnNext(CommandNotification value) => value.CommandName switch
         {
-            CommandName.GetMap => (object)GetMap(value.Arguments),
-            CommandName.GetPlayers => (object)GetPlayers(value.Arguments),
-            CommandName.UpdatePlayer => (object)UpdatePlayer(value.Arguments),
+            CommandName.GetMap => GetMap(value.Arguments),
+            CommandName.GetPlayers => GetPlayers(value.Arguments),
+            CommandName.UpdatePlayer => UpdatePlayer(value.Arguments),
 
             _ => default,
         };
 
         public Map GetMap(CommandArgs args)
-            => GameManager.Map;
+            => gameManager.Map;
 
         public IEnumerable<PlayerCell> GetPlayers(CommandArgs args)
-            => GameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId);
+            => gameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId);
 
         public short UpdatePlayer(CommandArgs args)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Network.Info;
 
 namespace TheRuleOfSilvester.Runtime.Interfaces
 {
@@ -34,7 +35,7 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
         bool GetUpdateSet(out ICollection<PlayerAction> updateSet);
 
         ServerStatus GetServerStatus();
-        List<GameSession> GetGameSessions();
-        GameSession CreateGame();
+        List<GameServerSessionInfo> GetGameSessions();
+        GameServerSessionInfo CreateGame();
     }
 }
