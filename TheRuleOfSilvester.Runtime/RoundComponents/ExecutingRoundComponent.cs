@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             game.MultiplayerComponent?.EndRound();
             if (game.MultiplayerComponent.CurrentServerStatus == Network.ServerStatus.Ended)
             {
-                game.Winners = game.MultiplayerComponent.GetWinners();                
+                game.Winners = game.MultiplayerComponent.GetWinners().ToList();                
                 game.Stop();
             }
         }

@@ -14,10 +14,12 @@ namespace TheRuleOfSilvester.Server.Commands
     public partial class RoundCommandObserver : CommandObserver
     {
         private readonly GameManager gameManager;
+        private readonly PlayerService playerService;
 
-        public RoundCommandObserver(GameManager gameManager)
+        public RoundCommandObserver(GameManager gameManager, PlayerService playerService)
         {
             this.gameManager = gameManager;
+            this.playerService = playerService;
         }
 
         public override object OnNext(CommandNotification value) => value.CommandName switch
@@ -31,23 +33,32 @@ namespace TheRuleOfSilvester.Server.Commands
 
         public short TransmitActions(CommandArgs args)
         {
+            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
+                throw new NotSupportedException();
+
             var playerActions = SerializeHelper.DeserializeToList<PlayerAction>(args.Data.ToArray()).ToList();
-            gameManager.AddRoundActions(args.NetworkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
+            gameManager.AddRoundActions(networkPlayer.Player, playerActions.OrderBy(a => a.Order).ToList());
 
             return (short)CommandName.TransmitActions;
         }
 
         public short EndRound(CommandArgs args)
         {
-            gameManager.EndRound(args.NetworkPlayer);
+            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
+                throw new NotSupportedException();
+
+            gameManager.EndRound(networkPlayer);
             return (short)CommandName.EndRound;
         }
 
         public byte[] Wait(CommandArgs args)
         {
+            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
+                throw new NotSupportedException();
+
             return BitConverter
-                 .GetBytes(args.NetworkPlayer.RoundMode == RoundMode.Executing)
-                 .Concat(SerializeHelper.SerializeList(args.NetworkPlayer.UpdateSets ?? new List<PlayerAction>()))
+                 .GetBytes(networkPlayer.RoundMode == RoundMode.Executing)
+                 .Concat(SerializeHelper.SerializeList(networkPlayer.UpdateSets ?? new List<PlayerAction>()))
                  .ToArray();
         }
     }

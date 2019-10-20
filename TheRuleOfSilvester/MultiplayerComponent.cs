@@ -7,6 +7,7 @@ using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network.Info;
+using TheRuleOfSilvester.Core.Extensions;
 
 namespace TheRuleOfSilvester
 {
@@ -36,7 +37,7 @@ namespace TheRuleOfSilvester
 
         public void Wait()
           => Client.Wait();
-        
+
         public void Update(Game game)
         {
             //TODO: Implement waiting screen
@@ -57,28 +58,81 @@ namespace TheRuleOfSilvester
         }
 
         public ServerStatus GetServerStatus()
-            => (ServerStatus)AwaitableSend(CommandName.GetStatus)[0];
+        {
+            if (TryAwaitableSend(CommandName.GetStatus, out var data))
+                return (ServerStatus)data[0];
+
+            return ServerStatus.Error;
+        }
 
         public Map GetMap()
-            => SerializeHelper.Deserialize<Map>(AwaitableSend(CommandName.GetMap));
+        {
+            if (TryAwaitableSend(CommandName.GetMap, out var data))
+            {
+                return SerializeHelper.Deserialize<Map>(data);
+            }
+
+            return null;
+        }
 
         public GameServerSessionInfo CreateGame()
-            => SerializeHelper.Deserialize<GameServerSessionInfo>(AwaitableSend(CommandName.NewGame));
+        {
+            if (TryAwaitableSend(CommandName.NewGame, out var data))
+                return SerializeHelper.Deserialize<GameServerSessionInfo>(data);
 
-        public List<GameServerSessionInfo> GetGameSessions()
-            => SerializeHelper.DeserializeToList<GameServerSessionInfo>(AwaitableSend(CommandName.GetSessions)).ToList();
+            return new GameServerSessionInfo();
+        }
 
-        public Player ConnectPlayer(string playername)
-            => SerializeHelper.Deserialize<Player>(AwaitableSend(CommandName.NewPlayer, Encoding.UTF8.GetBytes(playername)));
+        public IEnumerable<GameServerSessionInfo> GetGameSessions()
+        {
+            if (TryAwaitableSend(CommandName.GetSessions, out var data))
+                return SerializeHelper.DeserializeToList<GameServerSessionInfo>(data);
 
-        public List<Player> GetPlayers()
-            => SerializeHelper.DeserializeToList<Player>(AwaitableSend(CommandName.GetPlayers)).ToList();
+            return Enumerable.Empty<GameServerSessionInfo>();
+        }
 
-        public List<Player> GetWinners()
-            => SerializeHelper.DeserializeToList<Player>(AwaitableSend(CommandName.GetWinners)).ToList();
+        public bool JoinSession(GameServerSessionInfo serverSessionInfo)
+        {
+            if (TryAwaitableSend(CommandName.JoinSession, out var data, BitConverter.GetBytes(serverSessionInfo.Id)))
+                return BitConverter.ToBoolean(data);
+
+            return false;
+        }
+
+        public bool ConnectPlayer(string playername)
+        {
+            if (TryAwaitableSend(CommandName.RegisterPlayer, out var data, Encoding.UTF8.GetBytes(playername)))
+                return BitConverter.ToBoolean(data);
+
+            return false;
+        }
+
+        public IEnumerable<Player> GetPlayers()
+        {
+            if (TryAwaitableSend(CommandName.GetPlayers, out var data))
+                return SerializeHelper.DeserializeToList<Player>(data);
+
+            return Enumerable.Empty<Player>();
+        }
+
+        public IEnumerable<Player> GetWinners()
+        {
+            if (TryAwaitableSend(CommandName.GetWinners, out var data))
+                return SerializeHelper.DeserializeToList<Player>(data);
+
+            return Enumerable.Empty<Player>();
+        }
 
         public void UpdatePlayer(Player player)
             => Send(CommandName.UpdatePlayer, SerializeHelper.Serialize(player));
+
+        public Player GetPlayer()
+        {
+            if (TryAwaitableSend(CommandName.NewPlayer, out var data))
+                return SerializeHelper.Deserialize<Player>(data);
+
+            return null;
+        }
 
         public void TransmitActions(Stack<PlayerAction> actions, Player player)
             => Send(CommandName.TransmitActions,
@@ -89,9 +143,13 @@ namespace TheRuleOfSilvester
 
         public bool GetUpdateSet(out ICollection<PlayerAction> updateSet)
         {
-            var data = AwaitableSend(CommandName.Wait);
-            updateSet = SerializeHelper.DeserializeToList<PlayerAction>(data.Skip(sizeof(bool)).ToArray());
-            return BitConverter.ToBoolean(data, 0);
+            if (TryAwaitableSend(CommandName.Wait, out var data))
+            {
+                updateSet = SerializeHelper.DeserializeToList<PlayerAction>(data.Skip(sizeof(bool)).ToArray());
+                return BitConverter.ToBoolean(data, 0);
+            }
+            updateSet = new List<PlayerAction>();
+            return false;
         }
 
         public object OnNext(Package package)
@@ -129,11 +187,12 @@ namespace TheRuleOfSilvester
             return awaiter;
         }
 
-        private byte[] AwaitableSend(CommandName command, params byte[] data)
+        private bool TryAwaitableSend(CommandName command, out byte[] result, params byte[] data)
         {
             var awaiter = Send(command, data);
             awaiter.WaitOn();
-            return awaiter.Data;
+            result = awaiter.Data;
+            return awaiter.Successfull;
         }
     }
 }

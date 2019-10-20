@@ -10,13 +10,10 @@ namespace TheRuleOfSilvester.Network
 {
     public class ConnectedClient : BaseClient
     {
-        public int PlayerId { get; set; }
-
-        public bool Registered => PlayerId > 0;        
+        public string Player { get; set; }
 
         public ConnectedClient(Socket socket) : base(socket)
         {
-            PlayerId = -1;
-        }       
+        }        
     }
 }

@@ -34,6 +34,7 @@ namespace TheRuleOfSilvester.Server
         private ServerStatus currentServerStatus;
 
         public List<PlayerAction> UpdateSets { get; internal set; }
+        public string PlayerName { get; }
 
         public event EventHandler<RoundMode> OnRoundModeChange;
 
@@ -41,9 +42,9 @@ namespace TheRuleOfSilvester.Server
 
         private readonly int maxRoundMode;
 
-        public NetworkPlayer(IPlayer player)
+        public NetworkPlayer(string playerName)
         {
-            Player = player;
+            PlayerName = playerName;
             maxRoundMode = Enum.GetValues(typeof(RoundMode)).Cast<int>().Max() + 1;
             UpdateSets = new List<PlayerAction>();
             CurrentServerStatus = ServerStatus.Waiting;

@@ -12,10 +12,12 @@ namespace TheRuleOfSilvester.Server.Commands
     public class MapCommandObserver : CommandObserver
     {
         private readonly GameManager gameManager;
+        private readonly PlayerService playerService;
 
-        public MapCommandObserver(GameManager gameManager)
+        public MapCommandObserver(GameManager gameManager, PlayerService playerService)
         {
             this.gameManager = gameManager;
+            this.playerService = playerService;
         }
 
         public override object OnNext(CommandNotification value) => value.CommandName switch
@@ -31,19 +33,22 @@ namespace TheRuleOfSilvester.Server.Commands
             => gameManager.Map;
 
         public IEnumerable<PlayerCell> GetPlayers(CommandArgs args)
-            => gameManager.Map.Players.Where(p => p.Id != args.Client.PlayerId);
+        {
+            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
+                throw new NotSupportedException();
+            
+            return gameManager.Map.Players.Where(p => p != (PlayerCell)networkPlayer.Player);
+        }
 
         public short UpdatePlayer(CommandArgs args)
         {
-            //if(!args.HavePlayer)
-            //    return BitConverter.GetBytes((short)CommandNames.UpdatePlayer);
-
             var newPlayer = SerializeHelper.Deserialize<Player>(args.Data);
 
-            if (args.NetworkPlayer.Player is Cell player)
-                player.Position = newPlayer.Position;
-            else
+            if(!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
                 throw new NotSupportedException();
+
+            if (networkPlayer.Player is Cell player)
+                player.Position = newPlayer.Position;                
 
             return (short)CommandName.UpdatePlayer;
         }

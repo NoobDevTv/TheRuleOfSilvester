@@ -7,16 +7,18 @@ namespace TheRuleOfSilvester.Server
 {
     public sealed class LobbyServerSession : ServerSession
     {
-        private SessionProvider sessionProvider;
+        private readonly SessionProvider sessionProvider;
+        private readonly PlayerService playerService;
 
-        public LobbyServerSession(SessionProvider sessionProvider) : base()
+        public LobbyServerSession(SessionProvider sessionProvider, PlayerService playerService) : base()
         {
             this.sessionProvider = sessionProvider;
+            this.playerService = playerService;
         }
 
         protected override void RegisterCommands()
         {
-            RegisterCommand<LobbyCommandObserver>(sessionProvider);
+            RegisterCommand<LobbyCommandObserver>(sessionProvider, playerService);
         }
     }
 }

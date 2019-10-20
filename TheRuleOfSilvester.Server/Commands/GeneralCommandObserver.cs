@@ -13,10 +13,12 @@ namespace TheRuleOfSilvester.Server.Commands
     public sealed class GeneralCommandObserver : CommandObserver
     {
         private readonly GameManager gameManager;
+        private readonly PlayerService playerService;
 
-        public GeneralCommandObserver(GameManager gameManager)
+        public GeneralCommandObserver(GameManager gameManager, PlayerService playerService)
         {
             this.gameManager = gameManager;
+            this.playerService = playerService;
         }
 
         public override object OnNext(CommandNotification value) => value.CommandName switch
@@ -30,15 +32,21 @@ namespace TheRuleOfSilvester.Server.Commands
 
         public Player NewPlayer(CommandArgs args)
         {
-            var playerName = Encoding.UTF8.GetString(args.Data);
+            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var player))
+                return null;
+            
+            Console.WriteLine($"{player.PlayerName} has a joint game");
 
-            Console.WriteLine($"{playerName} has a joint game");
-
-            return gameManager.GetNewPlayer(args.Client, playerName);
+            return gameManager.AddPlayer(player);
         }
 
-        public byte GetStatus(CommandArgs args) 
-            => (byte)args.NetworkPlayer.CurrentServerStatus;
+        public ServerStatus GetStatus(CommandArgs args)
+        {
+            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var player))
+                return 0;
+
+            return player.CurrentServerStatus;
+        }
 
         public List<IPlayer> GetWinners(CommandArgs args)
             => gameManager.GetWinners();

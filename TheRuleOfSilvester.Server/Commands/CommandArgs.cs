@@ -7,15 +7,11 @@ namespace TheRuleOfSilvester.Server
 {
     public class CommandArgs
     {
-        public NetworkPlayer NetworkPlayer { get; set; }
         public byte[] Data { get; set; }
         public ConnectedClient Client { get; }
-
-        public bool HasPlayer => NetworkPlayer != null;
-
-        public CommandArgs(NetworkPlayer player, ConnectedClient client, byte[] data)
+        
+        public CommandArgs(ConnectedClient client, byte[] data)
         {
-            NetworkPlayer = player;
             Data = data;
             Client = client;
         }

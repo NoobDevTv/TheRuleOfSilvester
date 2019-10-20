@@ -127,7 +127,7 @@ namespace TheRuleOfSilvester.Server
             public Enumerator(ServerSession[] sessions)
             {
                 this.sessions = sessions;
-                index = 0;
+                index = -1;
             }
 
             public ServerSession Current => sessions[index];
@@ -147,7 +147,7 @@ namespace TheRuleOfSilvester.Server
 
             public void Reset()
             {
-                index = 0;
+                index = -1;
             }
             
             public void Dispose()

@@ -20,6 +20,7 @@ namespace TheRuleOfSilvester.Server
         private readonly List<ConnectedClient> connectedClients;
         private readonly SemaphoreExtended semaphore;
         private readonly SessionProvider sessionProvider;
+        private readonly PlayerService playerService;
 
         public Server()
         {
@@ -27,11 +28,12 @@ namespace TheRuleOfSilvester.Server
             connectedClients = new List<ConnectedClient>();
             semaphore = new SemaphoreExtended(1, 1);
             sessionProvider = new SessionProvider();
+            playerService = new PlayerService();
         }
 
         public void Start(IPAddress address, int port)
         {
-            sessionProvider.Add(new LobbyServerSession(sessionProvider));
+            sessionProvider.Add(new LobbyServerSession(sessionProvider, playerService));
 
             socket.Bind(new IPEndPoint(address, port));
             socket.Listen(1024);

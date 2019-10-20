@@ -22,11 +22,11 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
 
         Map GetMap();
 
-        Player ConnectPlayer(string playername);
+        bool ConnectPlayer(string playername);
 
-        List<Player> GetPlayers();
+        IEnumerable<Player> GetPlayers();
 
-        List<Player> GetWinners();
+        IEnumerable<Player> GetWinners();
 
         void TransmitActions(Stack<PlayerAction> actions, Player player);
 
@@ -35,7 +35,9 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
         bool GetUpdateSet(out ICollection<PlayerAction> updateSet);
 
         ServerStatus GetServerStatus();
-        List<GameServerSessionInfo> GetGameSessions();
+        IEnumerable<GameServerSessionInfo> GetGameSessions();
+        bool JoinSession(GameServerSessionInfo serverSessionInfo);
+        Player GetPlayer();
         GameServerSessionInfo CreateGame();
     }
 }

@@ -11,10 +11,12 @@ namespace TheRuleOfSilvester.Server.Commands
     public sealed class LobbyCommandObserver : CommandObserver
     {
         private readonly SessionProvider sessionProvider;
+        private readonly PlayerService playerService;
 
-        public LobbyCommandObserver(SessionProvider sessionProvider)
+        public LobbyCommandObserver(SessionProvider sessionProvider, PlayerService playerService)
         {
             this.sessionProvider = sessionProvider;
+            this.playerService = playerService;
         }
 
         public override object OnNext(CommandNotification value) => value.CommandName switch
@@ -25,15 +27,20 @@ namespace TheRuleOfSilvester.Server.Commands
             CommandName.NewGame => NewGame(value.Arguments),
             _ => default,
         };
+
         private object NewGame(CommandArgs arguments)
         {
-            sessionProvider.Add(new GameServerSession());
-            return true;
+            var session = new GameServerSession(playerService);
+            sessionProvider.Add(session);
+            return new GameServerSessionInfo(session);
         }
 
         private object RegisterPlayer(CommandArgs arguments)
         {
-            throw new NotImplementedException();
+            var playerName = Encoding.UTF8.GetString(arguments.Data);
+            Console.WriteLine($"{playerName} has a joint in the Lobby");
+            
+            return playerService.TryAddPlayer(arguments.Client, playerName);
         }
 
         private object GetSessions(CommandArgs arguments)
@@ -45,7 +52,7 @@ namespace TheRuleOfSilvester.Server.Commands
 
         private bool JoinSession(CommandArgs arguments)
         {
-            var sessionId = Convert.ToInt32(arguments.Data);
+            var sessionId = BitConverter.ToInt32(arguments.Data);
 
             if (!sessionProvider.Contains(sessionId))
                 return false;

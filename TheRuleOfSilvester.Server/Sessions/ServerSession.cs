@@ -22,17 +22,25 @@ namespace TheRuleOfSilvester.Server
         private readonly Dictionary<ConnectedClient, IDisposable> connectedSubscriptions;
         private readonly List<CommandObserver> disposables;
 
+        private bool registered;
+
         public ServerSession()
         {
+            registered = false;
             connectedClients = new List<ConnectedClient>();
             SubscribedCommands = new List<INotificationObserver<CommandNotification>>();
             connectedSubscriptions = new Dictionary<ConnectedClient, IDisposable>();
             disposables = new List<CommandObserver>();
-            RegisterCommands();
         }
 
         public void AddClient(ConnectedClient client)
         {
+            if (!registered)
+            {
+                RegisterCommands();
+                registered = true;
+            }
+
             connectedClients.Add(client);
             connectedSubscriptions.Add(client, client.Subscribe(this));
         }
@@ -54,16 +62,10 @@ namespace TheRuleOfSilvester.Server
 
         public object OnNext(Package value)
         {
-            var connectedClient = (ConnectedClient)value.Client;
-            NetworkPlayer player = null;
-
-            if (connectedClient.Registered)
-                gameManager.Players.TryGetValue(connectedClient.PlayerId, out player);
-
             var notification = new CommandNotification()
             {
                 CommandName = value.CommandName,
-                Arguments = new CommandArgs(player, connectedClient, value.Data)
+                Arguments = new CommandArgs((ConnectedClient)value.Client, value.Data)
             };
 
             if (TryDispatch(notification, out var data))
@@ -74,7 +76,10 @@ namespace TheRuleOfSilvester.Server
             else
             {
                 value.Command = (short)CommandName.Error;
-                value.Data = Encoding.UTF8.GetBytes("Command not found");
+
+                if(data == null)
+                    value.Data = Encoding.UTF8.GetBytes("Command not found");
+                
                 value.Client.Send(value);
             }
 
@@ -101,9 +106,19 @@ namespace TheRuleOfSilvester.Server
 
         protected bool TryDispatch(CommandNotification notification, out byte[] data)
         {
+            object value;
+
             foreach (INotificationObserver<CommandNotification> command in SubscribedCommands)
             {
-                var value = command.OnNext(notification);
+                try
+                {
+                    value = command.OnNext(notification);
+                }
+                catch (Exception ex)
+                {
+                    data = Encoding.UTF8.GetBytes(ex.Message);
+                    return false;
+                }
 
                 if (value is null)
                     continue;
@@ -112,7 +127,7 @@ namespace TheRuleOfSilvester.Server
                 return true;
             }
 
-            data = Array.Empty<byte>();
+            data = null;
             return false;
         }
 

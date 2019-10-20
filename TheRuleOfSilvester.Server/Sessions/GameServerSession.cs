@@ -9,22 +9,24 @@ namespace TheRuleOfSilvester.Server
 {
     public sealed class GameServerSession : ServerSession, IGameServerSession
     {
-        public int MaxPlayers => throw new NotImplementedException();
-        public string Name => throw new NotImplementedException();
-        public int CurrentPlayers => throw new NotImplementedException();
+        public int MaxPlayers => 4;
+        public string Name => "";
+        public int CurrentPlayers => gameManager.Players.Count;
 
         private readonly GameManager gameManager;
+        private readonly PlayerService playerService;
 
-        public GameServerSession() : base()
+        public GameServerSession(PlayerService playerService) : base()
         {
             gameManager = new GameManager();
+            this.playerService = playerService;
         }
 
         protected override void RegisterCommands()
         {
-            RegisterCommand<GeneralCommandObserver>(gameManager);
-            RegisterCommand<MapCommandObserver>(gameManager);
-            RegisterCommand<RoundCommandObserver>(gameManager);        
+            RegisterCommand<GeneralCommandObserver>(gameManager, playerService);
+            RegisterCommand<MapCommandObserver>(gameManager, playerService);
+            RegisterCommand<RoundCommandObserver>(gameManager, playerService);        
         }
     }
 }

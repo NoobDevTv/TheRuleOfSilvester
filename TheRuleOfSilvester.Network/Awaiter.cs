@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace TheRuleOfSilvester.Network
 {
-    public class Awaiter
+    public class Awaiter : IDisposable
     {
         public int PackageId { get; set; }
         public byte[] Data { get; set; }
@@ -27,6 +27,13 @@ namespace TheRuleOfSilvester.Network
             Successfull = successfull;
             Data = data;
             resetEventSlim.Set();
+        }
+
+        public void Dispose()
+        {
+            resetEventSlim.Dispose();
+            Data = null;
+            Successfull = false;
         }
     }
 }
