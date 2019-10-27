@@ -10,6 +10,8 @@ using TheRuleOfSilvester.Runtime.Roles;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network;
 using System.Linq;
+using System.Reactive.Linq;
+using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -55,6 +57,7 @@ namespace TheRuleOfSilvester.Runtime
 
             if (multiplayer)
             {
+                //bye bye synchronous
                 if (!MultiplayerComponent.ConnectPlayer(playername))
                 {
                     //TODO: Error handling
@@ -62,7 +65,7 @@ namespace TheRuleOfSilvester.Runtime
 
                 MultiplayerComponent.CreateGame(); //HACK: Debugging
                 var sessions = MultiplayerComponent.GetGameSessions();
-                
+
                 foreach (var item in sessions)
                 {
                     //TODO Implement Session UI
@@ -76,19 +79,15 @@ namespace TheRuleOfSilvester.Runtime
                     //TODO: Error handling
                 }
 
-                do
-                {
-                    player = MultiplayerComponent.GetPlayer();
-                } while (player == null);
-
-                do
-                {
-                    Map = MultiplayerComponent.GetMap();
-                } while (Map == null);
-                       
-                player.Map = Map;
-                player.IsLocal = true;
-                player.Color = Color.Red;
+                MultiplayerComponent
+                    .GetNotifications()
+                    .Where(n => n.Type == NotificationType.MapNotification)
+                    .Select(n => n.Deserialize(SerializeHelper.Deserialize<Map>))
+                    .Subscribe(m =>
+                    {
+                        Map = m;
+                        m.SubscribePlayerNotifications(MultiplayerComponent.GetNotifications());
+                    });
             }
             else
             {
@@ -97,14 +96,12 @@ namespace TheRuleOfSilvester.Runtime
 
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {
-                    Color = Color.Red,
                     Position = new Position(7, 4)
                 };
                 CurrentGameStatus = GameStatus.Running;
+
+                Map.AddPlayer(player);
             }
-
-
-            Map.Players.Add(player);
 
             if (RoundComponent == null)
                 RoundComponent = new DefaultRoundManagerComponent(Map);
@@ -125,6 +122,7 @@ namespace TheRuleOfSilvester.Runtime
 
             gameTask.Start(TaskScheduler.Default);
         }
+
         public void Run(int frame)
             => Run(frame, false);
 
@@ -197,7 +195,7 @@ namespace TheRuleOfSilvester.Runtime
 
         private void GameUpdate()
         {
-            player.Update(this);
+            player?.Update(this);
             RoundComponent.Update(this);
         }
 
@@ -223,8 +221,6 @@ namespace TheRuleOfSilvester.Runtime
             InputAction?.SetInvalid();
             InputAction = null;
         }
-
-
 
         private async Task Loop(CancellationToken token)
         {

@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Reactive" Version="4.2.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TheRuleOfSilvester.Runtime\TheRuleOfSilvester.Runtime.csproj" />
     <ProjectReference Include="..\TheRuleOfSilvester.Network\TheRuleOfSilvester.Network.csproj" />
   </ItemGroup>

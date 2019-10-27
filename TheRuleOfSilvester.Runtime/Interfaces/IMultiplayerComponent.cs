@@ -39,5 +39,6 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
         bool JoinSession(GameServerSessionInfo serverSessionInfo);
         Player GetPlayer();
         GameServerSessionInfo CreateGame();
+        IObservable<Notification> GetNotifications();
     }
 }

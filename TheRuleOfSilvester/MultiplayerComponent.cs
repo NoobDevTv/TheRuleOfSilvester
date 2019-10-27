@@ -8,6 +8,9 @@ using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network.Info;
 using TheRuleOfSilvester.Core.Extensions;
+using System.Collections.Concurrent;
+using System.Reactive.Linq;
+using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester
 {
@@ -20,14 +23,18 @@ namespace TheRuleOfSilvester
         public ServerStatus CurrentServerStatus { get; set; }
 
         private IDisposable subscription;
-        private readonly Dictionary<int, Awaiter> waitingDic;
+        private readonly ConcurrentDictionary<int, Awaiter> waitingDic;
 
         public MultiplayerComponent()
         {
-            waitingDic = new Dictionary<int, Awaiter>();
+            waitingDic = new ConcurrentDictionary<int, Awaiter>();
             Client = new Client();
             subscription = Client.Subscribe(this);
         }
+
+        public IObservable<Notification> GetNotifications() => Client
+            .ReceivedPackages
+            .Select(p => new Notification(p.Data, NotificationType.None)); //TODO: Get Notification type from message
 
         public void Connect()
             => Client.Connect(Host, Port);
@@ -48,8 +55,9 @@ namespace TheRuleOfSilvester
                 case ServerStatus.Started:
                     game.CurrentGameStatus = GameStatus.Running;
                     var players = GetPlayers();
-                    players.ForEach(x => x.Map = game.Map);
-                    game.Map.Players.AddRange(players);
+                    players
+                        .ForEach(x => x.Map = game.Map)
+                        .ForEach(p => game.Map.AddPlayer(p));
                     break;
                 default:
                     break;
@@ -154,10 +162,9 @@ namespace TheRuleOfSilvester
 
         public object OnNext(Package package)
         {
-            if (waitingDic.TryGetValue(package.Id, out Awaiter awaiter))
+            if (waitingDic.TryRemove(package.Id, out Awaiter awaiter))
             {
                 awaiter.SetResult(package.Data, package.Command >= 0);
-                waitingDic.Remove(package.Id);
                 return awaiter;
             }
             else

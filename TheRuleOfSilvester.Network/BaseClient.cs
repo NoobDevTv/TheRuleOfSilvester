@@ -94,13 +94,18 @@ namespace TheRuleOfSilvester.Network
             var package = Package.FromByteArray(data);
             package.Client = this;
 
+            CallOnNext(package);
+
+            return receiveArgsCount;
+        }
+
+        protected virtual void CallOnNext(Package package)
+        {
             using (semaphoreSlim.Wait())
             {
                 foreach (var observer in observers)
                     observer.OnNext(package);
             }
-
-            return receiveArgsCount;
         }
 
         private void SendInternal(byte[] data, int len)

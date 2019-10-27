@@ -38,12 +38,10 @@ namespace TheRuleOfSilvester.Server
             actionCache = new ActionCache();
             executor = new Executor(actionCache);
             Players = new HashSet<NetworkPlayer>();
-            roles = new Queue<BaseRole>();// RoleManager.GetAllRolesRandomized();
+            roles = RoleManager.GetAllRolesRandomized();
+            Map = new MapGenerator().Generate(20, 10);
         }
-
-        internal void GenerateMap(int x, int y) 
-            => Map = new MapGenerator().Generate(x, y);
-
+        
         internal List<IPlayer> GetWinners()
         {
             var tmpPlayer = new List<IPlayer>();

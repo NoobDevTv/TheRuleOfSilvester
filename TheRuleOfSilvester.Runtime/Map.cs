@@ -12,6 +12,8 @@ using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Runtime.Items;
 using TheRuleOfSilvester.Core.Extensions;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Observation;
+using System.Reactive.Linq;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -71,7 +73,7 @@ namespace TheRuleOfSilvester.Runtime
                             || c.Position.X == cell.Position.X + 1 && c.Position.Y == cell.Position.Y)
                             .Select(c => (MapCell)c)
                             .ForEach(c => c.NormalizeLayering());
-            
+
 
 
             return mapCell;
@@ -116,6 +118,20 @@ namespace TheRuleOfSilvester.Runtime
                 ourCell.NormalizeLayering();
         }
 
+        public IDisposable SubscribePlayerNotifications(IObservable<Notification> notifications) => notifications
+            .Where(n => n.Type == NotificationType.PlayerNotification)
+            .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>))
+            .Subscribe(AddPlayer);
 
+        public void AddPlayer(IPlayer player)
+        {
+            var tmpPlayer = player as Player;
+
+            if (tmpPlayer.IsLocal)
+                tmpPlayer.Color = Color.Red;
+
+            tmpPlayer.Map = this;
+            Players.Add(tmpPlayer);
+        }
     }
 }
