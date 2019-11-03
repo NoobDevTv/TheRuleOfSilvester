@@ -6,5 +6,6 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
 {
     public interface IWaitingComponent : IUpdateable
     {
+        IDisposable SubscribeGameStatus(Game game);
     }
 }

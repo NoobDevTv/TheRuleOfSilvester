@@ -1,40 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Runtime.RoundComponents
 {
     class WaitingRoundComponent : IRoundComponent
     {
+
         public RoundMode Round => RoundMode.Waiting;
 
         public bool RoundEnd { get; set; }
 
+        private IDisposable subscription;
+
         public void Start(Game game)
         {
             game.InputCompoment.Active = false;
+            subscription = game.MultiplayerComponent
+                  .GetNotifications()
+                  .Where(x => x.Type == NotificationType.PlayerAction)
+                  .Subscribe(x =>
+                  {
+                      game.CurrentUpdateSets = x
+                          .Deserialize(SerializeHelper.DeserializeToList<PlayerAction>)
+                          .OrderBy(x => x.Order)
+                          .ToObservable();
+                      RoundEnd = true;
+                  });
         }
 
         public void Stop(Game game)
         {
-            //game.MultiplayerComponent?.EndRound();
+            subscription?.Dispose();
         }
 
         public void Update(Game game)
         {
-            if (!game.IsMutliplayer)
-            {
-                RoundEnd = true;
+            if (game.IsMutliplayer)
                 return;
-            }
 
-            if (game.MultiplayerComponent.GetUpdateSet(out ICollection<PlayerAction> updateSet))
-            {
-                game.CurrentUpdateSets = updateSet.OrderBy(a => a.Order).ToList();
-                RoundEnd = true;
-            };
+            RoundEnd = true;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Text;
 using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Core;
+using System.Reactive.Linq;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -12,25 +13,26 @@ namespace TheRuleOfSilvester.Runtime
 
         public void Update(Game game)
         {
+        }
+
+        public IDisposable SubscribeGameStatus(Game game)
+        {
             if (game.IsMutliplayer)
             {
-                WaitForServer(game);
+               return WaitForServer(game.MultiplayerComponent.CurrentServerStatus)
+                        .Subscribe(g => game.CurrentGameStatus = g);
             }
             else
             {
-                return; //TODO: Is there a Singleplayer waiting logic??????
+                return null; //TODO: Is there a Singleplayer waiting logic??????
             }
-
         }
 
-        private void WaitForServer(Game game)
-        {
-            var status = game.MultiplayerComponent.CurrentServerStatus;
-
-            if (status == ServerStatus.Waiting)
-                game.CurrentGameStatus = GameStatus.Waiting;
-            else if (status == ServerStatus.Started)
-                game.CurrentGameStatus = GameStatus.Running;
-        }
+        private IObservable<GameStatus> WaitForServer(IObservable<ServerStatus> serverStatus) => serverStatus
+                .Select(s => s switch
+                {
+                    ServerStatus.Waiting => GameStatus.Waiting,
+                    ServerStatus.Started => GameStatus.Running
+                });
     }
 }

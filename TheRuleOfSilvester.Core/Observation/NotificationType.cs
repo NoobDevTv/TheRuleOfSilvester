@@ -3,7 +3,11 @@
     public enum NotificationType
     {
         None,
-        PlayerNotification,
-        MapNotification
+        Empty,
+        Player,
+        Map,
+        ServerStatus,
+        Winner,
+        PlayerAction
     }
 }

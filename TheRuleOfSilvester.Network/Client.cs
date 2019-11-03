@@ -44,6 +44,9 @@ namespace TheRuleOfSilvester.Network
                 throw new Exception("Connection Error");
         }
 
+        public IDisposable SendPackages(IObservable<Package> packages)
+            => packages.Subscribe(Send);
+
         protected override void CallOnNext(Package package) 
             => packageSubject.OnNext(package);
 

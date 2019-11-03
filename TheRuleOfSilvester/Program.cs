@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Runtime;
@@ -141,13 +143,17 @@ namespace TheRuleOfSilvester
                 Console.Clear();
                 inputComponent.Stop();
 
-                if (game.Winners?.Count > 0)
-                {
-                    Console.WriteLine("The winners are: ");
-                    Console.WriteLine();
-                    foreach (var winner in game.Winners)
-                        Console.WriteLine(winner.Name);
-                }
+                game
+                    .Winners
+                    .FirstAsync()
+                    .Subscribe(s => Console.WriteLine("The winners are: "));
+
+                game
+                    .Winners
+                    .Subscribe(p =>
+                    {
+                        Console.WriteLine(p.Name);
+                    });
 
                 Console.WriteLine();
                 Console.WriteLine("Please press any key");

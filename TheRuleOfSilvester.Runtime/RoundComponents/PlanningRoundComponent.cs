@@ -7,6 +7,11 @@ using System.Text;
 using TheRuleOfSilvester.Runtime.Cells;
 using TheRuleOfSilvester.Runtime.Items;
 using TheRuleOfSilvester.Core;
+using System.Reactive.Subjects;
+using System.Reactive.Linq;
+using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Core.Observation;
+using System.Reactive.Disposables;
 
 namespace TheRuleOfSilvester.Runtime.RoundComponents
 {
@@ -23,12 +28,17 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         private Player player;
 
         private Stack<PlayerAction> actions;
-
         private bool propertyChangedRelevant = true;
+        private readonly Subject<IEnumerable<PlayerAction>> playerActions;
+        private readonly CompositeDisposable disposables;
+        private readonly Subject<bool> endRound;
 
         public PlanningRoundComponent()
         {
             currentOrder = 1;
+            playerActions = new Subject<IEnumerable<PlayerAction>>();
+            endRound = new Subject<bool>();
+            disposables = new CompositeDisposable();
         }
 
         public void Update(Game game)
@@ -50,6 +60,16 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             game.InputCompoment.Active = true;
             player = game.Map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
             actions = new Stack<PlayerAction>(player.Role.ActionsPoints);
+
+           disposables.Add(game.MultiplayerComponent?.SendPackages(
+                playerActions
+                    .Select(SerializeHelper.SerializeList)
+                    .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerAction)))));
+
+            disposables.Add(game
+                        .MultiplayerComponent
+                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty))));
+
             Subscribe();
         }
 
@@ -58,16 +78,15 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             Desubscribe();
 
             if (game.IsMutliplayer)
-                game.MultiplayerComponent?.TransmitActions(actions, player);
-            else
-                game.CurrentUpdateSets = new List<PlayerAction>(actions.OrderBy(a => a.Order));
+                playerActions.OnNext(actions);
 
             currentOrder = 1;
             int z = actions.Count;
             for (int i = 0; i < z; i++)
                 UndoLastMovement(game.Map);
 
-            game.MultiplayerComponent?.EndRound();
+            endRound.OnNext(true);
+            disposables.Dispose();
         }
 
         public void UndoLastMovement(Map map)

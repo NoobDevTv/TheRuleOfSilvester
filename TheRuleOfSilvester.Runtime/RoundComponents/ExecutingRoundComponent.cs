@@ -3,6 +3,12 @@ using System.Drawing;
 using System.Linq;
 using TheRuleOfSilvester.Runtime.Cells;
 using TheRuleOfSilvester.Core;
+using System.Reactive.Linq;
+using System;
+using TheRuleOfSilvester.Network;
+using System.Reactive.Disposables;
+using System.Reactive.Subjects;
+using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Runtime.RoundComponents
 {
@@ -11,37 +17,39 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         public RoundMode Round => RoundMode.Executing;
 
         public bool RoundEnd { get; set; }
-        public Queue<PlayerAction> CurrentUpdateSets { get; private set; }
 
         private int updateCount;
+        private Game game;
+        private readonly CompositeDisposable disposables;
+        private readonly Subject<bool> endRound;
+
+        public ExecutingRoundComponent()
+        {
+            disposables = new CompositeDisposable();
+            endRound = new Subject<bool>();
+        }
 
         public void Start(Game game)
         {
-            CurrentUpdateSets = new Queue<PlayerAction>(game.CurrentUpdateSets);
+            this.game = game;
+            disposables.Add(game.CurrentUpdateSets
+                .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true));
+
+            disposables.Add(game.MultiplayerComponent
+                .CurrentServerStatus
+                .Where(s => s == ServerStatus.Ended)
+                .Subscribe(s =>
+                {
+                    game.Stop();
+                }));
+
+            disposables.Add(game
+                        .MultiplayerComponent
+                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty))));
         }
 
-        public void Stop(Game game)
+        private void ExecuteAction(PlayerAction action)
         {
-            game.MultiplayerComponent?.EndRound();
-            if (game.MultiplayerComponent.CurrentServerStatus == Network.ServerStatus.Ended)
-            {
-                game.Winners = game.MultiplayerComponent.GetWinners().ToList();                
-                game.Stop();
-            }
-        }
-
-        public void Update(Game game)
-        {
-            updateCount++;
-
-            if (game.Frames / 2 != updateCount)
-                return;
-
-            if (CurrentUpdateSets.Count < 1)
-                return;
-
-            PlayerAction action = CurrentUpdateSets.Dequeue();
-
             var localUpdatePlayer = game.Map.Players.First(p => p == action.Player as PlayerCell);
 
             switch (action.ActionType)
@@ -67,11 +75,21 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                 default:
                     break;
             }
-
             updateCount = 0;
+        }
 
-            if (CurrentUpdateSets.Count == 0)
-                RoundEnd = true;
+        public void Stop(Game game)
+        {
+            endRound.OnNext(true);
+            disposables.Dispose();
+        }
+
+        public void Update(Game game)
+        {
+            updateCount++;
+
+            if (game.Frames / 2 != updateCount)
+                return;
         }
     }
 }

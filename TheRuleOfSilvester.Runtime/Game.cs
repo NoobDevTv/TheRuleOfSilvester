@@ -12,12 +12,13 @@ using TheRuleOfSilvester.Network;
 using System.Linq;
 using System.Reactive.Linq;
 using TheRuleOfSilvester.Core.Observation;
+using TheRuleOfSilvester.Core.Extensions;
 
 namespace TheRuleOfSilvester.Runtime
 {
     public class Game : IDisposable, IGameStatus
     {
-        public ICollection<PlayerAction> CurrentUpdateSets { get; internal set; }
+        public IObservable<PlayerAction> CurrentUpdateSets { get; internal set; }
         public IDrawComponent DrawComponent { get; set; }
         public IInputCompoment InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }
@@ -32,7 +33,8 @@ namespace TheRuleOfSilvester.Runtime
         public bool IsMutliplayer { get; private set; }
 
         internal InputAction InputAction { get; private set; }
-        public List<Player> Winners { get; internal set; }
+        public IObservable<Player> Winners { get; private set; }
+            
 
         private Task gameTask;
         private CancellationTokenSource tokenSource;
@@ -58,36 +60,49 @@ namespace TheRuleOfSilvester.Runtime
             if (multiplayer)
             {
                 //bye bye synchronous
-                if (!MultiplayerComponent.ConnectPlayer(playername))
-                {
-                    //TODO: Error handling
-                }
+                //if (!MultiplayerComponent.ConnectPlayer(playername))
+                //{
+                //    //TODO: Error handling
+                //}
 
-                MultiplayerComponent.CreateGame(); //HACK: Debugging
-                var sessions = MultiplayerComponent.GetGameSessions();
+                //MultiplayerComponent.CreateGame(); //HACK: Debugging
+                //var sessions = MultiplayerComponent.GetGameSessions();
 
-                foreach (var item in sessions)
-                {
-                    //TODO Implement Session UI
-                }
+                //foreach (var item in sessions)
+                //{
+                //    //TODO Implement Session UI
+                //}
 
                 //HACK: Debugging
-                var gameSession = sessions.FirstOrDefault();
+                //var gameSession = sessions.FirstOrDefault();
 
-                if (!MultiplayerComponent.JoinSession(gameSession))
-                {
-                    //TODO: Error handling
-                }
+                //if (!MultiplayerComponent.JoinSession(gameSession))
+                //{
+                //    //TODO: Error handling
+                //}
 
                 MultiplayerComponent
                     .GetNotifications()
-                    .Where(n => n.Type == NotificationType.MapNotification)
+                    .Where(n => n.Type == NotificationType.Map)
                     .Select(n => n.Deserialize(SerializeHelper.Deserialize<Map>))
                     .Subscribe(m =>
                     {
                         Map = m;
                         m.SubscribePlayerNotifications(MultiplayerComponent.GetNotifications());
                     });
+
+                MultiplayerComponent
+                      .CurrentServerStatus
+                      .Where(s => s == ServerStatus.Started)
+                      .Subscribe(s =>
+                      {
+                          CurrentGameStatus = GameStatus.Running;
+                      });
+
+                Winners = MultiplayerComponent
+                    .GetNotifications()
+                    .Where(n => n.Type == NotificationType.Winner)
+                    .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>));
             }
             else
             {
@@ -96,6 +111,7 @@ namespace TheRuleOfSilvester.Runtime
 
                 player = new Player(Map, RoleManager.GetRandomRole())
                 {
+                    IsLocal = true,
                     Position = new Position(7, 4)
                 };
                 CurrentGameStatus = GameStatus.Running;
@@ -103,6 +119,7 @@ namespace TheRuleOfSilvester.Runtime
                 Map.AddPlayer(player);
             }
 
+            WaitingComponent?.SubscribeGameStatus(this);
             if (RoundComponent == null)
                 RoundComponent = new DefaultRoundManagerComponent(Map);
 
@@ -183,12 +200,7 @@ namespace TheRuleOfSilvester.Runtime
         {
             if (InputAction?.Type == InputActionType.EndGame)
                 Stop();
-
-            if (IsMutliplayer)
-                MultiplayerComponent.Update(this);
-
-            WaitingComponent?.Update(this);
-
+                        
             if (CurrentGameStatus == GameStatus.Running)
                 GameUpdate();
         }
