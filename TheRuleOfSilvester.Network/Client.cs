@@ -13,14 +13,9 @@ namespace TheRuleOfSilvester.Network
 {
     public class Client : BaseClient
     {
-        public IObservable<Package> ReceivedPackages => packageSubject;
-
-        private readonly Subject<Package> packageSubject;
-
         public Client() :
             base(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-        {
-            packageSubject = new Subject<Package>();
+        {            
         }
         
         public void Connect(string host, int port)
@@ -43,12 +38,6 @@ namespace TheRuleOfSilvester.Network
             if (buffer[0] == 0)
                 throw new Exception("Connection Error");
         }
-
-        public IDisposable SendPackages(IObservable<Package> packages)
-            => packages.Subscribe(Send);
-
-        protected override void CallOnNext(Package package) 
-            => packageSubject.OnNext(package);
 
         private void OnConnected(IAsyncResult ar)
         {

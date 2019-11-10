@@ -35,6 +35,12 @@ namespace TheRuleOfSilvester.Server
 
         public bool IsReadOnly => false;
 
+        public IDisposable NewClients(IObservable<ConnectedClient> clients) 
+            => this
+                .OfType<LobbyServerSession>()
+                .First()
+                .NewClients(clients);
+
         public void Add(ServerSession item)
         {
             using (semaphore.Wait())

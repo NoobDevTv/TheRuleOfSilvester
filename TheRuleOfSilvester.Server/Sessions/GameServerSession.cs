@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Network.Sessions;
@@ -22,11 +24,19 @@ namespace TheRuleOfSilvester.Server
             this.playerService = playerService;
         }
 
-        protected override void RegisterCommands()
+        protected override IDisposable RegisterCommands(IObservable<CommandNotification> commands, 
+            out IObservable<CommandNotification> notifications)
         {
-            RegisterCommand<GeneralCommandObserver>(gameManager, playerService);
-            RegisterCommand<MapCommandObserver>(gameManager, playerService);
-            RegisterCommand<RoundCommandObserver>(gameManager, playerService);        
+            var disposables = new CompositeDisposable
+            {
+                RegisterCommand<GeneralCommandObserver>(commands, out var generalNotifications, gameManager, playerService),
+                RegisterCommand<MapCommandObserver>(commands, out var mapNotifications, gameManager, playerService),
+                RegisterCommand<RoundCommandObserver>(commands, out var roundNotifications, gameManager, playerService)
+            };
+
+            notifications = Observable.Merge(generalNotifications, mapNotifications, roundNotifications);
+
+            return disposables;
         }
     }
 }

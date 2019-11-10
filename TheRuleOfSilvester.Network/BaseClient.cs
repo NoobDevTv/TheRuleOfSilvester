@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +12,10 @@ using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Network
 {
-    public abstract class BaseClient : INotificationObservable<Package>
+    public abstract class BaseClient
     {
+        public IObservable<Package> ReceivedPackages => packageSubject;
+
         protected readonly Socket Socket;
         protected readonly SocketAsyncEventArgs ReceiveArgs;
 
@@ -24,16 +27,13 @@ namespace TheRuleOfSilvester.Network
 
         private readonly (byte[] data, int len)[] sendQueue;
         private readonly object sendLock;
-
-        private readonly HashSet<INotificationObserver<Package>> observers;
-        private readonly SemaphoreExtended semaphoreSlim;
+        
+        private readonly Subject<Package> packageSubject;
 
         protected BaseClient(Socket socket)
         {
-
-            semaphoreSlim = new SemaphoreExtended(1, 1);
-            observers = new HashSet<INotificationObserver<Package>>();
-
+            packageSubject = new Subject<Package>();
+            
             sendQueue = new (byte[] data, int len)[256];
             sendLock = new object();
 
@@ -101,11 +101,7 @@ namespace TheRuleOfSilvester.Network
 
         protected virtual void CallOnNext(Package package)
         {
-            using (semaphoreSlim.Wait())
-            {
-                foreach (var observer in observers)
-                    observer.OnNext(package);
-            }
+            packageSubject.OnNext(package);
         }
 
         private void SendInternal(byte[] data, int len)
@@ -182,17 +178,8 @@ namespace TheRuleOfSilvester.Network
             } while (!Socket.ReceiveAsync(e));
         }
 
-        public IDisposable Subscribe(INotificationObserver<Package> observer)
-        {
-            using (semaphoreSlim.Wait())
-                observers.Add(observer);
 
-            return new Subscription<Package>(observer, this);
-        }
-
-        public void OnDispose(INotificationObserver<Package> observer)
-        {
-            observers.Remove(observer);
-        }
+        public IDisposable SendPackages(IObservable<Package> packages)
+            => packages.Subscribe(Send);
     }
 }

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Extensions;
@@ -11,81 +14,52 @@ using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server
 {
-    public abstract class ServerSession : INotificationObserver<Package>,
-        INotificationObservable<CommandNotification>, IDisposable, IServerSession
+    public abstract class ServerSession : IDisposable, IServerSession
     {
         public int Id { get; set; }
         public IReadOnlyCollection<ConnectedClient> ConnectedClients => connectedClients;
-        public List<INotificationObserver<CommandNotification>> SubscribedCommands { get; }
 
         private readonly List<ConnectedClient> connectedClients;
-        private readonly Dictionary<ConnectedClient, IDisposable> connectedSubscriptions;
+        private readonly ConcurrentDictionary<ConnectedClient, IDisposable> connectedSubscriptions;
         private readonly List<CommandObserver> disposables;
-
-        private bool registered;
 
         public ServerSession()
         {
-            registered = false;
             connectedClients = new List<ConnectedClient>();
-            SubscribedCommands = new List<INotificationObserver<CommandNotification>>();
-            connectedSubscriptions = new Dictionary<ConnectedClient, IDisposable>();
+            connectedSubscriptions = new ConcurrentDictionary<ConnectedClient, IDisposable>();
             disposables = new List<CommandObserver>();
         }
 
+        public IDisposable NewClients(IObservable<ConnectedClient> clients)
+            => clients.Subscribe(AddClient);
+
         public void AddClient(ConnectedClient client)
         {
-            if (!registered)
+            var disposables = new CompositeDisposable
             {
-                RegisterCommands();
-                registered = true;
-            }
+                RegisterCommands(client.ReceivedPackages
+                                       .Select(p => new CommandNotification()
+                                       {
+                                           CommandName = p.CommandName,
+                                           Client = p.Client,
+                                           Notification = new Notification(p.Data, NotificationType.None)
+                                       }),
+                                 out var notifciations),
 
-            connectedClients.Add(client);
-            connectedSubscriptions.Add(client, client.Subscribe(this));
+                client.SendPackages(notifciations
+                                    .Where(n => n.Client == client)
+                                    .Select(n => new Package(n.CommandName, n.Notification.Serialize())))
+            };
+
+            connectedSubscriptions.TryAdd(client, disposables);
         }
 
         public void RemoveClient(ConnectedClient client)
         {
-            connectedClients.Remove(client);
-            IDisposable subscription = connectedSubscriptions[client];
-            subscription.Dispose();
-            connectedSubscriptions.Remove(client);
+            if (connectedSubscriptions.TryRemove(client, out var subscription))
+                subscription.Dispose();
         }
-
-        public void OnCompleted()
-        {
-        }
-
-        public void OnError(Exception error)
-            => throw error;
-
-        public object OnNext(Package value)
-        {
-            var notification = new CommandNotification()
-            {
-                CommandName = value.CommandName,
-                Arguments = new CommandArgs((ConnectedClient)value.Client, value.Data)
-            };
-
-            if (TryDispatch(notification, out var data))
-            {
-                value.Data = data;
-                value.Client.Send(value);
-            }
-            else
-            {
-                value.Command = (short)CommandName.Error;
-
-                if(data == null)
-                    value.Data = Encoding.UTF8.GetBytes("Command not found");
-                
-                value.Client.Send(value);
-            }
-
-            return default;
-        }
-
+        
         public virtual void Dispose()
         {
             connectedClients.ForEach(c => c.Disconnect());
@@ -94,50 +68,23 @@ namespace TheRuleOfSilvester.Server
             connectedClients.Clear();
             connectedSubscriptions.Clear();
         }
+        
+        protected abstract IDisposable RegisterCommands(
+            IObservable<CommandNotification> commandsout, 
+            out IObservable<CommandNotification> notifications);
 
-        public IDisposable Subscribe(INotificationObserver<CommandNotification> observer)
-        {
-            SubscribedCommands.Add(observer);
-            return new Subscription<CommandNotification>(observer, this);
-        }
-
-        public void OnDispose(INotificationObserver<CommandNotification> observer)
-            => SubscribedCommands.Remove(observer);
-
-        protected bool TryDispatch(CommandNotification notification, out byte[] data)
-        {
-            object value;
-
-            foreach (INotificationObserver<CommandNotification> command in SubscribedCommands)
-            {
-                try
-                {
-                    value = command.OnNext(notification);
-                }
-                catch (Exception ex)
-                {
-                    data = Encoding.UTF8.GetBytes(ex.Message);
-                    return false;
-                }
-
-                if (value is null)
-                    continue;
-
-                data = SerializeHelper.GetBytes(value);
-                return true;
-            }
-
-            data = null;
-            return false;
-        }
-
-        protected abstract void RegisterCommands();
-
-        protected void RegisterCommand<T>(params object[] args) where T : CommandObserver
+        protected IDisposable RegisterCommand<T>(
+            IObservable<CommandNotification> commands,
+            out IObservable<CommandNotification> notifications, 
+            params object[] args) where T : CommandObserver
         {
             var instance = Activator.CreateInstance(typeof(T), args) as CommandObserver;
-            disposables.Add(instance);
-            instance.Register(this);
+            notifications = instance.CommandNotifications;
+            return new CompositeDisposable() 
+            {
+                 instance,
+                 instance.Register(commands)
+            };
         }
     }
 }

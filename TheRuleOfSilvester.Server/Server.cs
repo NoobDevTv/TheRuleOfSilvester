@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reactive.Disposables;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core;
@@ -21,9 +24,13 @@ namespace TheRuleOfSilvester.Server
         private readonly SemaphoreExtended semaphore;
         private readonly SessionProvider sessionProvider;
         private readonly PlayerService playerService;
+        private readonly Subject<ConnectedClient> clientSubject;
+        private readonly SerialDisposable disposables;
 
         public Server()
         {
+            clientSubject = new Subject<ConnectedClient>();
+            disposables = new SerialDisposable();
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             connectedClients = new List<ConnectedClient>();
             semaphore = new SemaphoreExtended(1, 1);
@@ -35,13 +42,18 @@ namespace TheRuleOfSilvester.Server
         {
             sessionProvider.Add(new LobbyServerSession(sessionProvider, playerService));
 
+            disposables.Disposable = new CompositeDisposable()
+            {
+                sessionProvider.NewClients(clientSubject)
+            };
+
             socket.Bind(new IPEndPoint(address, port));
             socket.Listen(1024);
             socket.BeginAccept(OnClientAccepted, null);
         }
         public void Start(string host, int port)
         {
-            var address = Dns.GetHostAddresses(host).FirstOrDefault(
+            IPAddress address = Dns.GetHostAddresses(host).FirstOrDefault(
                 a => a.AddressFamily == socket.AddressFamily);
 
             Start(address, port);
@@ -49,7 +61,8 @@ namespace TheRuleOfSilvester.Server
 
         public void Stop()
         {
-            foreach (var client in connectedClients.ToArray())
+            disposables.Disposable = Disposable.Empty;
+            foreach (ConnectedClient client in connectedClients.ToArray())
             {
                 client.Disconnect();
                 connectedClients.Remove(client);
@@ -66,13 +79,14 @@ namespace TheRuleOfSilvester.Server
 
             socket.Dispose();
             semaphore.Dispose();
+            disposables.Dispose();
 
             socket = null;
         }
 
         private void OnClientAccepted(IAsyncResult ar)
         {
-            var tmpSocket = socket.EndAccept(ar);
+            Socket tmpSocket = socket.EndAccept(ar);
             tmpSocket.NoDelay = true;
 
             var client = new ConnectedClient(tmpSocket);
@@ -80,13 +94,7 @@ namespace TheRuleOfSilvester.Server
 
             OnClientConnected?.Invoke(this, client);
 
-            using (semaphore.Wait())
-            {
-                sessionProvider
-                    .OfType<LobbyServerSession>()
-                    .First()
-                    .AddClient(client);
-            }
+            clientSubject.OnNext(client);
 
             client.Start();
             client.Send(new byte[] { 1 }, 1);

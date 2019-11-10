@@ -42,7 +42,10 @@ namespace TheRuleOfSilvester.Runtime
         private readonly ManualResetEventSlim manualResetEvent;
 
         public Game()
-            => manualResetEvent = new ManualResetEventSlim(false);
+        {
+            CurrentUpdateSets = Observable.Empty<PlayerAction>();
+            manualResetEvent = new ManualResetEventSlim(false);
+        }
 
         public void Run(int frame, bool multiplayer,
             string playername = "", int x = 100, int y = 100)

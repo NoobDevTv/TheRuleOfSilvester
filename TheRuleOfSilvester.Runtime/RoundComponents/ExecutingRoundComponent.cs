@@ -20,32 +20,34 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
 
         private int updateCount;
         private Game game;
-        private readonly CompositeDisposable disposables;
+        private readonly SerialDisposable disposables;
         private readonly Subject<bool> endRound;
 
         public ExecutingRoundComponent()
         {
-            disposables = new CompositeDisposable();
+            disposables = new SerialDisposable();
             endRound = new Subject<bool>();
         }
 
         public void Start(Game game)
         {
             this.game = game;
-            disposables.Add(game.CurrentUpdateSets
-                .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true));
+            disposables.Disposable = new CompositeDisposable
+            {
+                game.CurrentUpdateSets
+                    .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true),
 
-            disposables.Add(game.MultiplayerComponent
-                .CurrentServerStatus
-                .Where(s => s == ServerStatus.Ended)
-                .Subscribe(s =>
-                {
-                    game.Stop();
-                }));
+                game.MultiplayerComponent
+                    .CurrentServerStatus
+                    .Where(s => s == ServerStatus.Ended)
+                    .Subscribe(s =>
+                    {
+                        game.Stop();
+                    }),
 
-            disposables.Add(game
-                        .MultiplayerComponent
-                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty))));
+                game.MultiplayerComponent
+                    .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)))
+            };
         }
 
         private void ExecuteAction(PlayerAction action)
@@ -81,7 +83,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         public void Stop(Game game)
         {
             endRound.OnNext(true);
-            disposables.Dispose();
+            disposables.Disposable = Disposable.Empty;
         }
 
         public void Update(Game game)

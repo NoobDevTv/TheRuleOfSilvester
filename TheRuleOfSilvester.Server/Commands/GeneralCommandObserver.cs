@@ -1,6 +1,7 @@
 ﻿using CommandManagementSystem.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Core;
@@ -19,37 +20,41 @@ namespace TheRuleOfSilvester.Server.Commands
         {
             this.gameManager = gameManager;
             this.playerService = playerService;
+
+            TryAddCommand(CommandName.NewPlayer, NewPlayer);
+            TryAddCommand(CommandName.GetStatus, GetStatus);
+            TryAddCommand(CommandName.GetWinners, GetWinners);
         }
 
-        public override object OnNext(CommandNotification value) => value.CommandName switch
-        {
-            CommandName.NewPlayer => NewPlayer(value.Arguments),
-            CommandName.GetStatus => GetStatus(value.Arguments),
-            CommandName.GetWinners => GetWinners(value.Arguments),
 
-            _ => default,
-        };
-
-        public Player NewPlayer(CommandArgs args)
+        public void NewPlayer(BaseClient client, Notification notification)
         {
-            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var player))
-                return null;
+            if (!playerService.TryGetNetworkPlayer(client, out var player))
+                return;
             
             Console.WriteLine($"{player.PlayerName} has a joint game");
 
-            return gameManager.AddPlayer(player);
+            var gamePlayer = gameManager.AddPlayer(player);
+            Send(client, new Notification(SerializeHelper.Serialize(gamePlayer), NotificationType.Player));
         }
 
-        public ServerStatus GetStatus(CommandArgs args)
+        public void GetStatus(BaseClient client, Notification notification)
         {
-            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var player))
-                return 0;
+            if (!playerService.TryGetNetworkPlayer(client, out var player))
+                return;
 
-            return player.CurrentServerStatus;
+            Send(client, new Notification(SerializeHelper.SerializeEnum(player.CurrentServerStatus), NotificationType.ServerStatus));
         }
 
-        public List<IPlayer> GetWinners(CommandArgs args)
-            => gameManager.GetWinners();
+        public void GetWinners(BaseClient client, Notification notification)
+        {
+            Send(client, new Notification(SerializeHelper.SerializeList(gameManager.GetWinners()), NotificationType.Winner));
+        }
 
+        public override IDisposable Register(IObservable<CommandNotification> observable)
+        {
+           return observable
+                .Subscribe(n => TryDispatch(n));
+        }
     }
 }

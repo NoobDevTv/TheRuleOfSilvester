@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
+using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Observation;
+using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Runtime.Cells;
 using TheRuleOfSilvester.Runtime.Items;
-using TheRuleOfSilvester.Core;
-using System.Reactive.Subjects;
-using System.Reactive.Linq;
-using TheRuleOfSilvester.Network;
-using TheRuleOfSilvester.Core.Observation;
-using System.Reactive.Disposables;
 
 namespace TheRuleOfSilvester.Runtime.RoundComponents
 {
@@ -30,7 +30,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         private Stack<PlayerAction> actions;
         private bool propertyChangedRelevant = true;
         private readonly Subject<IEnumerable<PlayerAction>> playerActions;
-        private readonly CompositeDisposable disposables;
+        private readonly SerialDisposable disposables;
         private readonly Subject<bool> endRound;
 
         public PlanningRoundComponent()
@@ -38,7 +38,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             currentOrder = 1;
             playerActions = new Subject<IEnumerable<PlayerAction>>();
             endRound = new Subject<bool>();
-            disposables = new CompositeDisposable();
+            disposables = new SerialDisposable();
         }
 
         public void Update(Game game)
@@ -61,14 +61,16 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             player = game.Map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
             actions = new Stack<PlayerAction>(player.Role.ActionsPoints);
 
-           disposables.Add(game.MultiplayerComponent?.SendPackages(
-                playerActions
-                    .Select(SerializeHelper.SerializeList)
-                    .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerAction)))));
+            disposables.Disposable = new CompositeDisposable
+            {
+               game.MultiplayerComponent?.SendPackages(
+                    playerActions
+                        .Select(SerializeHelper.SerializeList)
+                        .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerAction)))),
 
-            disposables.Add(game
-                        .MultiplayerComponent
-                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty))));
+                game.MultiplayerComponent?
+                    .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)))
+            };
 
             Subscribe();
         }
@@ -77,16 +79,15 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         {
             Desubscribe();
 
-            if (game.IsMutliplayer)
-                playerActions.OnNext(actions);
+            playerActions.OnNext(actions);
 
             currentOrder = 1;
-            int z = actions.Count;
-            for (int i = 0; i < z; i++)
+            var z = actions.Count;
+            for (var i = 0; i < z; i++)
                 UndoLastMovement(game.Map);
 
             endRound.OnNext(true);
-            disposables.Dispose();
+            disposables.Disposable = Disposable.Empty;
         }
 
         public void UndoLastMovement(Map map)
@@ -94,7 +95,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             if (actions.Count == 0)
                 return;
 
-            var move = actions.Pop();
+            PlayerAction move = actions.Pop();
             player.Role.SetUsedActionPoints(actions.Count);
             switch (move.ActionType)
             {
@@ -108,7 +109,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                     break;
                 case ActionType.ChangedMapCell:
 
-                    var inventoryCell = player.CellInventory.Last();
+                    MapCell inventoryCell = player.CellInventory.Last();
                     player.CellInventory.Remove(inventoryCell);
 
                     var mapCell = map.SwapInventoryAndMapCell(inventoryCell, move.Point, 1) as MapCell;
@@ -118,7 +119,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                     player.CellInventory.Add(mapCell, 0);
                     break;
                 case ActionType.CollectedItem:
-                    var item = player.ItemInventory.LastOrDefault();
+                    BaseItemCell item = player.ItemInventory.LastOrDefault();
                     item.Position = player.Position;
                     map.Cells.Add(item);
                     player.ItemInventory.Remove(item);

@@ -19,7 +19,7 @@ namespace TheRuleOfSilvester.Server.Commands
             this.playerService = playerService;
         }
 
-        public override object OnNext(CommandNotification value) => value.CommandName switch
+        public override object Dispatch(CommandNotification value) => value.CommandName switch
         {
             CommandName.RegisterPlayer => RegisterPlayer(value.Arguments),
             CommandName.GetSessions => GetSessions(value.Arguments),

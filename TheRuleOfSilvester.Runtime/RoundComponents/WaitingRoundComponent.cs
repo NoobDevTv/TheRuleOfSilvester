@@ -10,7 +10,6 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
 {
     class WaitingRoundComponent : IRoundComponent
     {
-
         public RoundMode Round => RoundMode.Waiting;
 
         public bool RoundEnd { get; set; }

@@ -15,10 +15,12 @@ namespace TheRuleOfSilvester.Server
             this.sessionProvider = sessionProvider;
             this.playerService = playerService;
         }
-
-        protected override void RegisterCommands()
+               
+        protected override IDisposable RegisterCommands(IObservable<CommandNotification> commands, 
+            out IObservable<CommandNotification> notifications)
         {
-            RegisterCommand<LobbyCommandObserver>(sessionProvider, playerService);
+            return RegisterCommand<LobbyCommandObserver>(commands, out notifications, sessionProvider, playerService);
         }
+
     }
 }
