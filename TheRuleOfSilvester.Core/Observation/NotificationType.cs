@@ -8,6 +8,9 @@
         Map,
         ServerStatus,
         Winner,
-        PlayerAction
+        PlayerActions,
+        Session,
+        Sessions,
+        Players
     }
 }

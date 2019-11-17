@@ -13,6 +13,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Core.Extensions;
+using System.Reactive.Subjects;
+using TheRuleOfSilvester.Network.Info;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -25,26 +27,37 @@ namespace TheRuleOfSilvester.Runtime
         public IRoundManagerComponent RoundComponent { get; set; }
         public IWaitingComponent WaitingComponent { get; set; }
         public GameStatus CurrentGameStatus { get; set; }
+        public ISessionExplorerComponent SessionExplorerComponent { get; set; } 
 
         public int Frames { get; private set; }
 
-        public Map Map { get; private set; }
+        public Map Map
+        {
+            get => map; private set
+            {
+                map = value;
+                if (RoundComponent == null)
+                    RoundComponent = new DefaultRoundManagerComponent(map);
+            }
+        }
 
         public bool IsMutliplayer { get; private set; }
 
         internal InputAction InputAction { get; private set; }
         public IObservable<Player> Winners { get; private set; }
-            
-
-        private Task gameTask;
-        private CancellationTokenSource tokenSource;
-        private Player player;
+        
         private readonly ManualResetEventSlim manualResetEvent;
+        private CancellationTokenSource tokenSource;
+        private Task gameTask;
+        private Player player;
+        private Map map;
+        private readonly Subject<(CommandName,Notification)> commandSubject;
 
         public Game()
         {
             CurrentUpdateSets = Observable.Empty<PlayerAction>();
             manualResetEvent = new ManualResetEventSlim(false);
+            commandSubject = new Subject<(CommandName, Notification)>();
         }
 
         public void Run(int frame, bool multiplayer,
@@ -106,6 +119,18 @@ namespace TheRuleOfSilvester.Runtime
                     .GetNotifications()
                     .Where(n => n.Type == NotificationType.Winner)
                     .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>));
+
+                MultiplayerComponent
+                    .GetNotifications()
+                    .Where(n => n.Type == NotificationType.Sessions)
+                    .Select(n => n.Deserialize(SerializeHelper.DeserializeToList<GameServerSessionInfo>))
+                    .Select(SessionExplorerComponent.ShowServerSessionDialog)
+                    .Subscribe(session => commandSubject.OnNext((CommandName.JoinSession, new Notification(session.Id.GetBytes(), NotificationType.None))));
+
+                MultiplayerComponent.SendPackages(commandSubject);
+                commandSubject.OnNext((CommandName.RegisterPlayer, new Notification(playername.GetBytes(), NotificationType.None)));
+                commandSubject.OnNext((CommandName.GetSessions, Notification.Empty));
+
             }
             else
             {
@@ -123,9 +148,6 @@ namespace TheRuleOfSilvester.Runtime
             }
 
             WaitingComponent?.SubscribeGameStatus(this);
-            if (RoundComponent == null)
-                RoundComponent = new DefaultRoundManagerComponent(Map);
-
             tokenSource = new CancellationTokenSource();
 
             gameTask = new Task(async () =>
@@ -203,7 +225,7 @@ namespace TheRuleOfSilvester.Runtime
         {
             if (InputAction?.Type == InputActionType.EndGame)
                 Stop();
-                        
+
             if (CurrentGameStatus == GameStatus.Running)
                 GameUpdate();
         }

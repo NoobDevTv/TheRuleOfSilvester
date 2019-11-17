@@ -7,7 +7,7 @@ using TheRuleOfSilvester.Network.Sessions;
 
 namespace TheRuleOfSilvester.Network.Info
 {
-    public  struct GameServerSessionInfo : IByteSerializable
+    public struct GameServerSessionInfo : IByteSerializable
     {
         public int Id { get; set; }
         public int MaxPlayers { get; private set; }
@@ -21,7 +21,6 @@ namespace TheRuleOfSilvester.Network.Info
             Name = gameServerSession.Name;
             CurrentPlayers = gameServerSession.CurrentPlayers;
         }
-
 
         public void Deserialize(BinaryReader binaryReader)
         {

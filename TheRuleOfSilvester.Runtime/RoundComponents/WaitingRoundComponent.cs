@@ -21,7 +21,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             game.InputCompoment.Active = false;
             subscription = game.MultiplayerComponent
                   .GetNotifications()
-                  .Where(x => x.Type == NotificationType.PlayerAction)
+                  .Where(x => x.Type == NotificationType.PlayerActions)
                   .Subscribe(x =>
                   {
                       game.CurrentUpdateSets = x

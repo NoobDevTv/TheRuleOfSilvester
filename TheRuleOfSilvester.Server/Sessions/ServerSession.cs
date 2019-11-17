@@ -17,23 +17,18 @@ namespace TheRuleOfSilvester.Server
     public abstract class ServerSession : IDisposable, IServerSession
     {
         public int Id { get; set; }
-        public IReadOnlyCollection<ConnectedClient> ConnectedClients => connectedClients;
 
-        private readonly List<ConnectedClient> connectedClients;
-        private readonly ConcurrentDictionary<ConnectedClient, IDisposable> connectedSubscriptions;
-        private readonly List<CommandObserver> disposables;
+        private readonly ConcurrentDictionary<BaseClient, IDisposable> connectedSubscriptions;
 
         public ServerSession()
         {
-            connectedClients = new List<ConnectedClient>();
-            connectedSubscriptions = new ConcurrentDictionary<ConnectedClient, IDisposable>();
-            disposables = new List<CommandObserver>();
+            connectedSubscriptions = new ConcurrentDictionary<BaseClient, IDisposable>();
         }
 
-        public IDisposable NewClients(IObservable<ConnectedClient> clients)
+        public IDisposable NewClients(IObservable<BaseClient> clients)
             => clients.Subscribe(AddClient);
 
-        public void AddClient(ConnectedClient client)
+        public void AddClient(BaseClient client)
         {
             var disposables = new CompositeDisposable
             {
@@ -42,19 +37,19 @@ namespace TheRuleOfSilvester.Server
                                        {
                                            CommandName = p.CommandName,
                                            Client = p.Client,
-                                           Notification = new Notification(p.Data, NotificationType.None)
+                                           Notification = Notification.FromBytes(p.Data)
                                        }),
                                  out var notifciations),
 
                 client.SendPackages(notifciations
-                                    .Where(n => n.Client == client)
+                                    .Where(n => n.Client == client || n.Client == null)
                                     .Select(n => new Package(n.CommandName, n.Notification.Serialize())))
             };
 
             connectedSubscriptions.TryAdd(client, disposables);
         }
 
-        public void RemoveClient(ConnectedClient client)
+        public void RemoveClient(BaseClient client)
         {
             if (connectedSubscriptions.TryRemove(client, out var subscription))
                 subscription.Dispose();
@@ -62,13 +57,14 @@ namespace TheRuleOfSilvester.Server
         
         public virtual void Dispose()
         {
-            connectedClients.ForEach(c => c.Disconnect());
             connectedSubscriptions.Values.ForEach(s => s.Dispose());
 
-            connectedClients.Clear();
             connectedSubscriptions.Clear();
         }
-        
+
+        public bool Contains(BaseClient client)
+            => connectedSubscriptions.ContainsKey(client);
+
         protected abstract IDisposable RegisterCommands(
             IObservable<CommandNotification> commandsout, 
             out IObservable<CommandNotification> notifications);

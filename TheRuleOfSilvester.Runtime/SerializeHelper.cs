@@ -19,7 +19,7 @@ namespace TheRuleOfSilvester.Runtime
     {
         public static Map Map { get; set; }
 
-        private static Dictionary<string, Type> mapCells;
+        private static readonly Dictionary<string, Type> mapCells;
         static SerializeHelper()
         {
             mapCells = Assembly.GetExecutingAssembly()
@@ -140,7 +140,7 @@ namespace TheRuleOfSilvester.Runtime
             return (T)Enum.ToObject(typeof(T), value);
         }
 
-        public static byte[] GetBytes<T>(T val) => val switch
+        public static byte[] GetBytes<T>(this T val) => val switch
         {
             byte[] b => b,
             byte b => new byte[] { b },
@@ -161,7 +161,7 @@ namespace TheRuleOfSilvester.Runtime
             _ => throw new NotSupportedException(),
         };
 
-        public static T ToValue<T>(byte[] value)
+        public static T ToValue<T>(this byte[] value)
         {
             return typeof(T).Name switch
             {

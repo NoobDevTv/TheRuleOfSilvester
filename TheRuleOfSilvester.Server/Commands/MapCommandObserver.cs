@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Runtime;
 
@@ -18,39 +19,42 @@ namespace TheRuleOfSilvester.Server.Commands
         {
             this.gameManager = gameManager;
             this.playerService = playerService;
+
+            TryAddCommand(CommandName.GetMap, GetMap);
+            TryAddCommand(CommandName.GetPlayers, GetPlayers);
+            TryAddCommand(CommandName.UpdatePlayer, UpdatePlayer);
         }
 
-        public override object Dispatch(CommandNotification value) => value.CommandName switch
+        public void GetMap(BaseClient client, Notification notification)
         {
-            CommandName.GetMap => GetMap(value.Arguments),
-            CommandName.GetPlayers => GetPlayers(value.Arguments),
-            CommandName.UpdatePlayer => UpdatePlayer(value.Arguments),
+            Send(client, new Notification(SerializeHelper.Serialize(gameManager.Map), NotificationType.Map));
+        }
 
-            _ => default,
-        };
-
-        public Map GetMap(CommandArgs args)
-            => gameManager.Map;
-
-        public IEnumerable<PlayerCell> GetPlayers(CommandArgs args)
+        public void GetPlayers(BaseClient client, Notification notification)
         {
-            if (!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
+            if (!playerService.TryGetNetworkPlayer(client, out var networkPlayer))
                 throw new NotSupportedException();
             
-            return gameManager.Map.Players.Where(p => p != (PlayerCell)networkPlayer.Player);
+            var players = gameManager.Map.Players.Where(p => p != (PlayerCell)networkPlayer.Player);
+            Send(client, new Notification(SerializeHelper.SerializeList(players), NotificationType.Players));
         }
 
-        public short UpdatePlayer(CommandArgs args)
+        public void UpdatePlayer(BaseClient client, Notification notification)
         {
-            var newPlayer = SerializeHelper.Deserialize<Player>(args.Data);
+            var newPlayer = notification.Deserialize(SerializeHelper.Deserialize<Player>);
 
-            if(!playerService.TryGetNetworkPlayer(args.Client.Player, out var networkPlayer))
+            if(!playerService.TryGetNetworkPlayer(client, out var networkPlayer))
                 throw new NotSupportedException();
 
             if (networkPlayer.Player is Cell player)
                 player.Position = newPlayer.Position;                
 
-            return (short)CommandName.UpdatePlayer;
+        }
+
+        public override IDisposable Register(IObservable<CommandNotification> observable)
+        {
+            return observable
+                 .Subscribe(n => TryDispatch(n));
         }
 
     }

@@ -29,5 +29,8 @@ namespace TheRuleOfSilvester.Core.Observation
 
         public byte[] Serialize()
             => BitConverter.GetBytes((int)Type).Concat(data).ToArray();
+
+        public static Notification FromBytes(byte[] data) 
+            => new Notification(data[4..], (NotificationType)BitConverter.ToInt32(data, 0));
     }
 }

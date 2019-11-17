@@ -32,7 +32,7 @@ namespace TheRuleOfSilvester
 
         public IObservable<Notification> GetNotifications() => Client
             .ReceivedPackages
-            .Select(p => new Notification(p.Data, NotificationType.None)); //TODO: Get Notification type from message
+            .Select(p => Notification.FromBytes(p.Data));
 
         public IDisposable SendPackages(IObservable<(CommandName Command, Notification Notification)> notifications)
             => Client.SendPackages(notifications

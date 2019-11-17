@@ -6,9 +6,8 @@ namespace TheRuleOfSilvester.Network.Sessions
     public interface IServerSession
     {
         public int Id { get; set; }
-        IReadOnlyCollection<ConnectedClient> ConnectedClients { get; }
 
-        void AddClient(ConnectedClient client);
-        void RemoveClient(ConnectedClient client);
+        void AddClient(BaseClient client);
+        void RemoveClient(BaseClient client);
     }
 }

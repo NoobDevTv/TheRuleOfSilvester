@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Network.Info;
 using TheRuleOfSilvester.Network.Sessions;
+using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester.Server.Commands
 {
@@ -17,49 +19,52 @@ namespace TheRuleOfSilvester.Server.Commands
         {
             this.sessionProvider = sessionProvider;
             this.playerService = playerService;
+
+            TryAddCommand(CommandName.RegisterPlayer, RegisterPlayer);
+            TryAddCommand(CommandName.GetSessions, GetSessions);
+            TryAddCommand(CommandName.JoinSession, JoinSession);
+            TryAddCommand(CommandName.NewSession, NewSession);
         }
 
-        public override object Dispatch(CommandNotification value) => value.CommandName switch
-        {
-            CommandName.RegisterPlayer => RegisterPlayer(value.Arguments),
-            CommandName.GetSessions => GetSessions(value.Arguments),
-            CommandName.JoinSession => JoinSession(value.Arguments),
-            CommandName.NewGame => NewGame(value.Arguments),
-            _ => default,
-        };
-
-        private object NewGame(CommandArgs arguments)
+        private void NewSession(BaseClient client, Notification notification)
         {
             var session = new GameServerSession(playerService);
             sessionProvider.Add(session);
-            return new GameServerSessionInfo(session);
+            Send(client, new Notification(SerializeHelper.Serialize(new GameServerSessionInfo(session)), NotificationType.Session));
         }
 
-        private object RegisterPlayer(CommandArgs arguments)
+        private void RegisterPlayer(BaseClient client, Notification notification)
         {
-            var playerName = Encoding.UTF8.GetString(arguments.Data);
+            var playerName = notification.Deserialize(Encoding.UTF8.GetString);
             Console.WriteLine($"{playerName} has a joint in the Lobby");
             
-            return playerService.TryAddPlayer(arguments.Client, playerName);
+           playerService.TryAddPlayer(client, playerName);
         }
 
-        private object GetSessions(CommandArgs arguments)
+        private void GetSessions(BaseClient client, Notification notification)
         {
-            return sessionProvider
+            var list = sessionProvider
                 .OfType<IGameServerSession>()
                 .Select(s => new GameServerSessionInfo(s));
+
+            Send(client, new Notification(SerializeHelper.SerializeList(list), NotificationType.Sessions));
         }
 
-        private bool JoinSession(CommandArgs arguments)
+        private void JoinSession(BaseClient client, Notification notification)
         {
-            var sessionId = BitConverter.ToInt32(arguments.Data);
+            var sessionId = notification.Deserialize(b => BitConverter.ToInt32(b, 0));
 
             if (!sessionProvider.Contains(sessionId))
-                return false;
+                return;
 
-            sessionProvider.EnqueueSessionChange(sessionId, arguments.Client, ServerSession);
+            sessionProvider.EnqueueSessionChange(sessionId, client);
 
-            return true;
+        }
+
+        public override IDisposable Register(IObservable<CommandNotification> observable)
+        {
+            return observable
+                 .Subscribe(n => TryDispatch(n));
         }
     }
 }

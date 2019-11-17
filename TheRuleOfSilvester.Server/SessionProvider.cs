@@ -84,20 +84,20 @@ namespace TheRuleOfSilvester.Server
             }
         }
 
-        public void EnqueueSessionChange(int sessionId, ConnectedClient client, ServerSession currentSession)
+        public void EnqueueSessionChange(int sessionId, BaseClient client)
         {
             if(enqueueTask == null)
             {
                 enqueueTask = Task.Run(async () =>
                 {
-                    await InternalEnqueue(sessionId, client, currentSession);
+                    await InternalEnqueue(sessionId, client);
                 });
             }
             else
             {
                 enqueueTask.ContinueWith(async (o) =>
                 {
-                    await InternalEnqueue(sessionId, client, currentSession);
+                    await InternalEnqueue(sessionId, client);
                 });
             }
         }
@@ -112,12 +112,12 @@ namespace TheRuleOfSilvester.Server
 
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
-
-
-        private Task InternalEnqueue(int sessionId, ConnectedClient client, ServerSession currentSession)
+        
+        private Task InternalEnqueue(int sessionId, BaseClient client)
         {
             using (semaphore.Wait())
             {
+                var currentSession = sessions.Values.First(s => s.Contains(client));
                 currentSession?.RemoveClient(client);
                 sessions[sessionId].AddClient(client);
 

@@ -66,7 +66,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                game.MultiplayerComponent?.SendPackages(
                     playerActions
                         .Select(SerializeHelper.SerializeList)
-                        .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerAction)))),
+                        .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerActions)))),
 
                 game.MultiplayerComponent?
                     .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)))

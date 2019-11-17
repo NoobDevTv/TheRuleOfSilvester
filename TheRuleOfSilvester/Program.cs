@@ -8,6 +8,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
+using TheRuleOfSilvester.Drawing;
 using TheRuleOfSilvester.Runtime;
 
 namespace TheRuleOfSilvester
@@ -22,7 +23,6 @@ namespace TheRuleOfSilvester
         public static bool Running { get; private set; }
 
         private static string playerName;
-
         //┌┬┐└┴┘│├┼┤
         private static void Main(string[] args)
         {
@@ -35,6 +35,8 @@ namespace TheRuleOfSilvester
                 inputComponent = new InputComponent();
                 multiplayerComponent = new MultiplayerComponent();
                 Running = true;
+
+
 
                 menu = new GameMenu(new List<MenuItem>()
                 {
@@ -134,6 +136,7 @@ namespace TheRuleOfSilvester
                 game.DrawComponent = new DrawComponent();
                 game.InputCompoment = inputComponent;
                 game.MultiplayerComponent = multiplayerComponent;
+                game.SessionExplorerComponent = new SessionExplorerComponent();
                 game.Run(60, isMultiplayer, playerName, x, y);
                 inputComponent.Start();
 
