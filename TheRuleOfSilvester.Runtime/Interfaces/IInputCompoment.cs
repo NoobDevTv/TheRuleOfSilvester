@@ -6,10 +6,9 @@ using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime.Interfaces
 {
-    public interface IInputCompoment : IDisposable
+    public interface IInputCompoment
     {
-        ConcurrentQueue<InputAction> InputActions { get; }
+        IObservable<InputAction> InputActions { get; }
 
-        bool Active { get; set; }
     }
 }

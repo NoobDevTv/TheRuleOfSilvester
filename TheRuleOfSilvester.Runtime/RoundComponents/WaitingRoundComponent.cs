@@ -18,7 +18,6 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
 
         public void Start(Game game)
         {
-            game.InputCompoment.Active = false;
             subscription = game.MultiplayerComponent
                   .GetNotifications()
                   .Where(x => x.Type == NotificationType.PlayerActions)

@@ -57,7 +57,6 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
 
         public void Start(Game game)
         {
-            game.InputCompoment.Active = true;
             player = game.Map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
             actions = new Stack<PlayerAction>(player.Role.ActionsPoints);
 

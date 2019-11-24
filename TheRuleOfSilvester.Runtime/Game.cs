@@ -150,6 +150,12 @@ namespace TheRuleOfSilvester.Runtime
             WaitingComponent?.SubscribeGameStatus(this);
             tokenSource = new CancellationTokenSource();
 
+            InputCompoment.InputActions?.Subscribe(a =>
+            {
+                InputAction?.SetInvalid();
+                InputAction = a;
+            });
+
             gameTask = new Task(async () =>
             {
                 try
@@ -185,7 +191,6 @@ namespace TheRuleOfSilvester.Runtime
 
         public void Update()
         {
-            BeforeUpdate();
             SystemUpdate();
             UiUpdate();
             AfterUpdate();
@@ -207,23 +212,10 @@ namespace TheRuleOfSilvester.Runtime
             gameTask = null;
             player = null;
         }
-
-        private void BeforeUpdate()
-        {
-            if (InputCompoment.InputActions.TryDequeue(out var inputAction))
-            {
-                InputAction = inputAction;
-            }
-            else
-            {
-                InputAction?.SetInvalid();
-                InputAction = null;
-            }
-        }
-
+        
         private void SystemUpdate()
         {
-            if (InputAction?.Type == InputActionType.EndGame)
+            if (InputAction?.Type == InputActionType.Back)
                 Stop();
 
             if (CurrentGameStatus == GameStatus.Running)

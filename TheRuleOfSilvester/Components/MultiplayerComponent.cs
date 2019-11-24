@@ -12,7 +12,7 @@ using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using TheRuleOfSilvester.Core.Observation;
 
-namespace TheRuleOfSilvester
+namespace TheRuleOfSilvester.Components
 {
     public class MultiplayerComponent : IMultiplayerComponent
     {

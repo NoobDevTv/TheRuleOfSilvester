@@ -9,6 +9,7 @@
         StartAction,
         RoundButton,
         RoundActionButton,
-        EndGame
+        Back,
+        Unknown
     }
 }
