@@ -15,14 +15,14 @@ namespace TheRuleOfSilvester.MenuItems
     {
         private readonly SelectionGrid<MenuItem> selectionGrid;
 
-        public MultiplayerMenuItem() : base("Multiplayer")
+        public MultiplayerMenuItem(ConsoleInput consoleInput) : base(consoleInput, "Multiplayer")
         {
-            selectionGrid = new SelectionGrid<MenuItem>(new List<MenuItem>
+            selectionGrid = new SelectionGrid<MenuItem>(ConsoleInput, new List<MenuItem>
             {
-                new SimpleMenuItem("Join Lobby", null),
-                new SimpleMenuItem("Join with IPAddress", null),
-                new SimpleMenuItem("Create Global Game", null),
-                new SimpleMenuItem("Create Local Game", null)
+                new SimpleMenuItem(ConsoleInput,"Join Lobby", null),
+                new SimpleMenuItem(ConsoleInput,"Join with IPAddress", null),
+                new SimpleMenuItem(ConsoleInput,"Create Global Game", null),
+                new SimpleMenuItem(ConsoleInput,"Create Local Game", null)
             });
         }
 

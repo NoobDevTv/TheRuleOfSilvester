@@ -14,7 +14,7 @@ namespace TheRuleOfSilvester
 
         public SessionExplorerComponent()
         {
-            selectionControl = new SelectionGrid<GameServerSessionInfo>();
+            //selectionControl = new SelectionGrid<GameServerSessionInfo>();
         }
 
         public GameServerSessionInfo ShowServerSessionDialog(IEnumerable<GameServerSessionInfo> gameServerSessionInfos)
@@ -25,7 +25,7 @@ namespace TheRuleOfSilvester
             var maxNameLength = gameServerSessionInfos.Max(x => x.Name.Length) + 4;
             var str = $"{{0,-{maxNameLength}}} {{1,2}}/{{2,-2}}";
             selectionControl.AddRange(gameServerSessionInfos.Select(x => (x, string.Format(str, x.Name, x.CurrentPlayers, x.MaxPlayers))));
-            var ret = selectionControl.ShowModal("Lobby", true);
+            var ret = selectionControl.ShowModalAndReturn("Lobby", true);
 
             return ret;
         }

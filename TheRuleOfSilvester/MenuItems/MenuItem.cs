@@ -15,21 +15,23 @@ namespace TheRuleOfSilvester.MenuItems
     {
         public string Title { get; }
         protected ConsoleInput ConsoleInput { get; private set; }
-        
-        protected MenuItem(string title)
-            => Title = title;
 
-        public Task<IDisposable> Run(ConsoleInput consoleInput)
+        protected MenuItem(ConsoleInput consoleInput, string title)
         {
+            Title = title;
             ConsoleInput = consoleInput;
+        }
+
+        public Task<IDisposable> Run()
+        {
             Console.Clear();
             var compositeDisposable = new CompositeDisposable();
 
             var cancelationSource = new CancellationTokenSource();
 
-            var disposable = consoleInput
+            var disposable = ConsoleInput
                  .ReceivedKeys
-                 .FirstAsync(i => i == ConsoleKey.Escape)
+                 .FirstAsync(i => i.Key == ConsoleKey.Escape)
                  .Subscribe(i => cancelationSource.Cancel());
 
             compositeDisposable.Add(cancelationSource);

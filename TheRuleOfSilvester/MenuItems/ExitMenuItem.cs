@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheRuleOfSilvester.Drawing;
 using TheRuleOfSilvester.Runtime.Interfaces;
 
 namespace TheRuleOfSilvester.MenuItems
@@ -13,7 +14,7 @@ namespace TheRuleOfSilvester.MenuItems
 
         private readonly CancellationTokenSource source;
 
-        public ExitMenuItem() : base("Exit")
+        public ExitMenuItem(ConsoleInput consoleInput) : base(consoleInput, "Exit")
         {
             source = new CancellationTokenSource();
             Token = source.Token;

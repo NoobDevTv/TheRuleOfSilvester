@@ -22,27 +22,37 @@ namespace TheRuleOfSilvester
         private static async Task Main(string[] args)
         {
             //are = new AutoResetEvent(false);
+            Console.ForegroundColor = ConsoleColor.White;
             Console.OutputEncoding = Encoding.Unicode;
             Console.CursorVisible = false;
-            
-            var input = new ConsoleInput();
-            var exitItem = new ExitMenuItem();
 
-            var menu = new SelectionGrid<MenuItem>(new List<MenuItem>()
+            var input = new ConsoleInput();
+            var exitItem = new ExitMenuItem(input);
+
+            var menu = new SelectionGrid<MenuItem>(input, new List<MenuItem>()
                 {
-                   new SinglePlayerMenuItem(),
-                   new MultiplayerMenuItem(),
-                   new OptionsMenuItem(),
+                   new SinglePlayerMenuItem(input),
+                   new MultiplayerMenuItem(input),
+                   new OptionsMenuItem(input),
                    exitItem
                 });
 
             do
             {
                 Console.Clear();
-                MenuItem menuItem = menu.ShowModal("The Rule Of Silvester", true);
+                MenuItem menuItem = menu.ShowModalAndReturn("The Rule Of Silvester", true);
+                IDisposable disposable = null;
+                
+                try
+                {
+                    disposable = await menuItem.Run();
+                }
+                catch (OperationCanceledException)
+                {
+                    //No issue
+                }
 
-                var disposable = await menuItem.Run(input);
-                disposable.Dispose();
+                disposable?.Dispose();
             } while (!exitItem.Token.IsCancellationRequested);
         }
     }

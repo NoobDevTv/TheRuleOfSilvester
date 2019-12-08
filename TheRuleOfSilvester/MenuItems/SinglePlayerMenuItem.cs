@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheRuleOfSilvester.Drawing;
 using TheRuleOfSilvester.Runtime;
 using TheRuleOfSilvester.Runtime.Interfaces;
 
@@ -10,7 +11,7 @@ namespace TheRuleOfSilvester.MenuItems
 {
     internal sealed class SinglePlayerMenuItem : MenuItem
     {
-        public SinglePlayerMenuItem() : base("New Game")
+        public SinglePlayerMenuItem(ConsoleInput consoleInput) : base(consoleInput, "New Game")
         {
         }
 

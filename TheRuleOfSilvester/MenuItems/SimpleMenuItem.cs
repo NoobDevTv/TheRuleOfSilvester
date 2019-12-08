@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheRuleOfSilvester.Drawing;
 using TheRuleOfSilvester.Runtime.Interfaces;
 
 namespace TheRuleOfSilvester.MenuItems
@@ -11,7 +12,7 @@ namespace TheRuleOfSilvester.MenuItems
     {
         private readonly Action action;
 
-        public SimpleMenuItem(string title, Action action) : base(title)
+        public SimpleMenuItem(ConsoleInput consoleInput, string title, Action action) : base(consoleInput, title)
         {
             this.action = action;
         }

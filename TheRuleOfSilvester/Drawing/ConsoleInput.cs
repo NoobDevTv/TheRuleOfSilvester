@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TheRuleOfSilvester.Drawing
@@ -18,39 +20,16 @@ namespace TheRuleOfSilvester.Drawing
                 .RefCount();
         }
 
-        public  Task<string> ReadLine()
+        public async Task<string> ReadLine(CancellationToken token)
         {
-            var builder = new StringBuilder();
+            using var builder = new ObservableStringBuilder(ReceivedKeys);
+            return await builder.ReadLine(token);
+        }
 
-            ReceivedKeys
-                .Where(k=> k.Key == ConsoleKey.Enter || k.Key == ConsoleKey.Escape)
-                .Subscribe(k =>
-                {});
-
-            ReceivedKeys
-                .Where(k=> k.Key == ConsoleKey.Backspace)
-                .Subscribe(k =>
-                {
-                    if (k.Key == ConsoleKey.Backspace)
-                    {
-                        Console.CursorLeft--;
-                        Console.Write(" ");
-                        Console.CursorLeft--;
-                        builder.Remove(builder.Length - 1, 1);
-                    }
-                });
-
-            ReceivedKeys
-                .Where(x=>x.Key != ConsoleKey.Enter || x.Key != ConsoleKey.Backspace || x.Key != ConsoleKey.Escape)
-                .Select(k => k.KeyChar)
-                .Do(c => Console.Write(c))
-                .Subscribe(c => builder.Append(c));
-
-
-            return Task.Run(() => {
-                using var reader = new StreamReader(Console.OpenStandardInput());
-                return reader.ReadLine();
-            });
+        public async Task<ConsoleKeyInfo> ReadKey(bool intercept, CancellationToken token)
+        {
+            using var builder = new ObservableStringBuilder(ReceivedKeys);
+            return await builder.ReadKey(intercept, token);
         }
 
         private IObservable<ConsoleKeyInfo> CreateObservable()
@@ -62,9 +41,94 @@ namespace TheRuleOfSilvester.Drawing
                 }
             }, token));
 
-        private class ObservableStringReader
+        private sealed class ObservableStringBuilder : IDisposable
         {
-            //TODO: Have fun
+            private readonly StringBuilder stringBuilder;
+            private readonly IObservable<ConsoleKeyInfo> closeKeys;
+            private readonly IObservable<ConsoleKeyInfo> backspace;
+            private readonly IObservable<ConsoleKeyInfo> appendkeys;
+            private readonly IObservable<ConsoleKeyInfo> keys;
+
+            private readonly SerialDisposable disposables;
+            private readonly ManualResetEventSlim resetEvent;
+
+            public ObservableStringBuilder(IObservable<ConsoleKeyInfo> observableKeys)
+            {
+                disposables = new SerialDisposable();
+                stringBuilder = new StringBuilder();
+                resetEvent = new ManualResetEventSlim();
+
+                keys = observableKeys;
+                closeKeys = observableKeys.Where(k => k.Key == ConsoleKey.Enter || k.Key == ConsoleKey.Escape);
+                backspace = observableKeys.Where(k => k.Key == ConsoleKey.Backspace);
+                appendkeys = observableKeys.Where(x => x.Key != ConsoleKey.Enter && x.Key != ConsoleKey.Backspace && x.Key != ConsoleKey.Escape);
+            }
+
+            public Task<string> ReadLine(CancellationToken token)
+            {
+                resetEvent.Reset();
+                var close = closeKeys.Subscribe(Close);
+                var undo = backspace.Subscribe(Undo);
+                var append = appendkeys.Subscribe(Append);
+                disposables.Disposable = new CompositeDisposable { close, undo, append };
+
+                return Task.Run(() =>
+                {
+                    resetEvent.Wait(token);
+                    Console.WriteLine();
+                    return stringBuilder.ToString();
+                }, token);
+            }
+
+            public async Task<ConsoleKeyInfo> ReadKey(bool intercept, CancellationToken token)
+            {
+                ConsoleKeyInfo consoleKey = default;
+                resetEvent.Reset();
+                using var dispose = keys.Subscribe(k =>
+                 {
+                     if (!intercept)
+                         Console.Write(k.KeyChar);
+
+                     consoleKey = k;
+                     resetEvent.Set();
+                 });
+
+                return await Task.Run(() =>
+                {
+                    resetEvent.Wait(token);
+                    return consoleKey;
+                }, token);
+            }
+
+            public void Dispose()
+            {
+                stringBuilder.Clear();
+
+                disposables.Dispose();
+                resetEvent.Dispose();
+            }
+
+            private void Append(ConsoleKeyInfo obj)
+            {
+                Console.Write(obj.KeyChar);
+                stringBuilder.Append(obj.KeyChar);
+            }
+
+            private void Undo(ConsoleKeyInfo obj)
+            {
+                if (Console.CursorLeft == 0)
+                    return;
+                Console.CursorLeft--;
+                Console.Write(" ");
+                Console.CursorLeft--;
+                stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            }
+
+            private void Close(ConsoleKeyInfo obj)
+            {
+                resetEvent.Set();
+            }
         }
+
     }
 }
