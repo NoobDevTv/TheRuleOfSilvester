@@ -35,14 +35,17 @@ namespace TheRuleOfSilvester
                    new MultiplayerMenuItem(input),
                    new OptionsMenuItem(input),
                    exitItem
-                });
+                })
+            {
+                Name = "MainMenuGrid"
+            };
 
             do
             {
                 Console.Clear();
-                MenuItem menuItem = menu.ShowModalAndReturn("The Rule Of Silvester", true);
+                MenuItem menuItem = menu.ShowModal("The Rule Of Silvester", true);
                 IDisposable disposable = null;
-                
+
                 try
                 {
                     disposable = await menuItem.Run();

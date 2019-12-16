@@ -4,12 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reactive.Linq;
+using System.Diagnostics;
+using TheRuleOfSilvester.Core;
+using System.Runtime.CompilerServices;
 
 namespace TheRuleOfSilvester.Drawing
 {
     public abstract class Grid<T>
     {
+        public string Name { get; set; }
+
+        public abstract IEnumerable<ConsoleKey> ConsoleKeys { get; }
+
         public T Current => ConsoleLocationItems[CurrentIndex].Item.Value;
+        public bool Showing { get; protected set; }
+
         protected Item CurrentItem => ConsoleLocationItems[CurrentIndex].Item;
         protected (int Left, int Top) CurrentPosition => ConsoleLocationItems[CurrentIndex].Position;
         protected string CurrentDisplayText => ConsoleLocationItems[CurrentIndex].Item.Display;
@@ -19,27 +29,37 @@ namespace TheRuleOfSilvester.Drawing
 
         protected List<((int Left, int Top) Position, Item Item)> ConsoleLocationItems { get; }
         protected List<Item> Items { get; }
+        protected ConsoleInput Input { get; }
 
+
+        protected readonly IObservable<ConsoleKeyInfo> inputObservable;
         private ConsoleKeyInfo currentKey;
+        private readonly AutoResetEvent onKeyPressed;
 
-        private readonly ConsoleInput input;
-        private readonly IDisposable subscription;
-        private readonly ManualResetEventSlim onKeyPressed;
+        private readonly SemaphoreExtended semaphore;
 
         protected Grid(ConsoleInput consoleInput)
         {
-            onKeyPressed = new ManualResetEventSlim();
+            semaphore = new SemaphoreExtended(1, 1);
+            onKeyPressed = new AutoResetEvent(false);
             Items = new List<Item>();
             ConsoleLocationItems = new List<((int Left, int Top) Position, Item Item)>();
             CurrentIndex = 0;
             UpDownValue = 0;
 
-            input = consoleInput;
-            subscription = input.ReceivedKeys.Subscribe(k =>
-            {
-                currentKey = k;
-                onKeyPressed.Set();
-            });
+
+            Input = consoleInput;
+            inputObservable = Input
+                .ReceivedKeys
+                .Where(k => ConsoleKeys.Contains(k.Key))
+                .Do(k =>
+                {
+                    using (semaphore.Wait())
+                        currentKey = k;
+
+                    onKeyPressed.Set();
+                });
+
         }
 
         protected Grid(ConsoleInput consoleInput, IEnumerable<T> values) : this(consoleInput)
@@ -61,8 +81,20 @@ namespace TheRuleOfSilvester.Drawing
         public void Clear()
             => Items.Clear();
 
-        public virtual void ShowModal(string instructions, bool vertical = false, bool clearConsole = true)
+        public virtual void Show(string instructions, bool vertical = false, bool clearConsole = true)
         {
+            using var sub = inputObservable.Subscribe();
+            Showing = true;
+            Draw(instructions, vertical, clearConsole);
+            Reset();
+            Showing = false;
+        }
+
+        public virtual void Draw(string instructions, bool vertical = false, bool clearConsole = true)
+        {
+            if (!Showing)
+                return;
+
             if (!string.IsNullOrWhiteSpace(instructions))
             {
                 Console.WriteLine(instructions);
@@ -72,7 +104,7 @@ namespace TheRuleOfSilvester.Drawing
             BuildConsoleLocationOfItems(vertical);
         }
 
-        protected virtual void Select(ConsoleKeyInfo pressedKey)
+        protected virtual void IndexSelect(ConsoleKeyInfo pressedKey)
         {
             switch (pressedKey.Key)
             {
@@ -135,19 +167,22 @@ namespace TheRuleOfSilvester.Drawing
             UpDownValue = ConsoleLocationItems.Count(x => x.Position.Top == ConsoleLocationItems.First().Position.Top);
         }
 
-        protected virtual void DrawSelected((int Left, int Top) pos, string display, bool selected)
+        protected virtual void DrawSelected((int Left, int Top) pos, Item display, bool selected)
         {
             SetConsoleCursor(pos);
             Console.ForegroundColor = selected ? ConsoleColor.Green : ConsoleColor.White;
-            Console.Write((selected ? ">" : "") + display + (selected ? "<" : "  "));
+            Console.Write((selected ? ">" : "") + display.Display + (selected ? "<" : "  "));
         }
 
         protected virtual void GetSelected(out bool selected, out ConsoleKeyInfo pressedKey)
         {
-            onKeyPressed.Wait();
-            pressedKey = currentKey;
-            selected = pressedKey.Key == ConsoleKey.Enter || pressedKey.Key == ConsoleKey.Select || pressedKey.Key == ConsoleKey.Spacebar;
-            onKeyPressed.Reset();
+            onKeyPressed.WaitOne();
+            using (semaphore.Wait())
+            {
+                pressedKey = currentKey;
+                selected = pressedKey.Key == ConsoleKey.Enter || pressedKey.Key == ConsoleKey.Select || pressedKey.Key == ConsoleKey.Spacebar;
+                currentKey = default;
+            }
         }
 
         /// <summary>
@@ -157,7 +192,7 @@ namespace TheRuleOfSilvester.Drawing
         /// <param name="items">List of values to be choosen from</param>
         /// <param name="clearConsole">Console Clear command after selection</param>
         /// <returns>Choosen value</returns>
-        protected virtual void Draw(bool clearConsole = true)
+        protected virtual Item Select(bool clearConsole = true)
         {
             (int Left, int Top) startPos = ConsoleLocationItems.First().Position;
 
@@ -165,11 +200,11 @@ namespace TheRuleOfSilvester.Drawing
             SetConsoleCursor(startPos);
             do
             {
-                DrawSelected(CurrentPosition, CurrentDisplayText, true);
+                DrawSelected(CurrentPosition, CurrentItem, true);
                 GetSelected(out selected, out var pressedKey);
 
-                DrawSelected(CurrentPosition, CurrentDisplayText, false);
-                Select(pressedKey);
+                DrawSelected(CurrentPosition, CurrentItem, false);
+                IndexSelect(pressedKey);
 
             } while (!selected);
 
@@ -182,9 +217,15 @@ namespace TheRuleOfSilvester.Drawing
                 Console.CursorTop = ConsoleLocationItems.Max(x => x.Position.Top);
                 Console.WriteLine();
             }
+            return CurrentItem;
         }
 
-        protected readonly struct Item
+        protected virtual void Reset()
+        {
+            CurrentIndex = 0;
+        }
+
+        protected readonly struct Item : IEquatable<Item>
         {
             public readonly T Value { get; }
             public readonly string Display { get; }
@@ -194,6 +235,21 @@ namespace TheRuleOfSilvester.Drawing
                 Value = value;
                 Display = display;
             }
+
+            public override bool Equals(object obj)
+                => obj is Item item
+                   && Equals(item);
+            public bool Equals(Item other)
+                => EqualityComparer<T>.Default.Equals(Value, other.Value)
+                   && Display == other.Display;
+
+            public override int GetHashCode()
+                => HashCode.Combine(Value, Display);
+
+            public static bool operator ==(Item left, Item right)
+                => left.Equals(right);
+            public static bool operator !=(Item left, Item right)
+                => !(left == right);
         }
     }
 }

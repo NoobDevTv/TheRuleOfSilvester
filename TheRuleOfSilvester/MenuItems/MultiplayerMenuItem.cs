@@ -19,11 +19,15 @@ namespace TheRuleOfSilvester.MenuItems
         {
             selectionGrid = new SelectionGrid<MenuItem>(ConsoleInput, new List<MenuItem>
             {
+
                 new SimpleMenuItem(ConsoleInput,"Join Lobby", null),
                 new SimpleMenuItem(ConsoleInput,"Join with IPAddress", null),
                 new SimpleMenuItem(ConsoleInput,"Create Global Game", null),
                 new SimpleMenuItem(ConsoleInput,"Create Local Game", null)
-            });
+            })
+            {
+                Name = "MultiplayerGrid"
+            };
         }
 
         protected override Task Action(CancellationToken token)

@@ -25,6 +25,15 @@ namespace TheRuleOfSilvester.Drawing
             using var builder = new ObservableStringBuilder(ReceivedKeys);
             return await builder.ReadLine(token);
         }
+        public async Task<string> ReadLine(string defaultValue, CancellationToken token, bool intercept = true)
+        {
+            using var builder = new ObservableStringBuilder(defaultValue, ReceivedKeys);
+
+            if (!intercept)
+                Console.Write(defaultValue);
+
+            return await builder.ReadLine(token);
+        }
 
         public async Task<ConsoleKeyInfo> ReadKey(bool intercept, CancellationToken token)
         {
@@ -62,6 +71,10 @@ namespace TheRuleOfSilvester.Drawing
                 closeKeys = observableKeys.Where(k => k.Key == ConsoleKey.Enter || k.Key == ConsoleKey.Escape);
                 backspace = observableKeys.Where(k => k.Key == ConsoleKey.Backspace);
                 appendkeys = observableKeys.Where(x => x.Key != ConsoleKey.Enter && x.Key != ConsoleKey.Backspace && x.Key != ConsoleKey.Escape);
+            }
+            public ObservableStringBuilder(string defaultValue, IObservable<ConsoleKeyInfo> observableKeys) : this(observableKeys)
+            {
+                stringBuilder.Append(defaultValue);
             }
 
             public Task<string> ReadLine(CancellationToken token)
@@ -116,7 +129,7 @@ namespace TheRuleOfSilvester.Drawing
 
             private void Undo(ConsoleKeyInfo obj)
             {
-                if (Console.CursorLeft == 0)
+                if (Console.CursorLeft == 0 || stringBuilder.Length == 0)
                     return;
                 Console.CursorLeft--;
                 Console.Write(" ");

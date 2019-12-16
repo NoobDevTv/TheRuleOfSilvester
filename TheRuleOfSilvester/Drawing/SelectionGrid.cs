@@ -7,6 +7,17 @@ namespace TheRuleOfSilvester.Drawing
 {
     public sealed class SelectionGrid<T> : Grid<T>
     {
+        public override IEnumerable<ConsoleKey> ConsoleKeys => new[]
+        {
+            ConsoleKey.Enter,
+            ConsoleKey.Select,
+            ConsoleKey.Spacebar,
+            ConsoleKey.UpArrow,
+            ConsoleKey.DownArrow,
+            ConsoleKey.LeftArrow,
+            ConsoleKey.RightArrow
+        };
+
         public SelectionGrid(ConsoleInput consoleInput) : base(consoleInput)
         { }
         public SelectionGrid(ConsoleInput consoleInput, IEnumerable<T> values) 
@@ -16,15 +27,18 @@ namespace TheRuleOfSilvester.Drawing
             : base(consoleInput, values)
         { }
 
-        public override void ShowModal(string instructions, bool vertical = false, bool clearConsole = true)
+        public override void Draw(string instructions, bool vertical = false, bool clearConsole = true)
         {
-            base.ShowModal(instructions, vertical, clearConsole);
-            Draw(clearConsole);
+            base.Draw(instructions, vertical, clearConsole);
+            Select(clearConsole);
         }
-        public T ShowModalAndReturn(string instructions, bool vertical = false, bool clearConsole = true)
+        public T ShowModal(string instructions, bool vertical = false, bool clearConsole = true)
         {
-            base.ShowModal(instructions, vertical, clearConsole);
-            Draw(clearConsole);
+            using var sub = inputObservable.Subscribe();
+            Showing = true;
+            base.Draw(instructions, vertical, clearConsole);
+            Select(clearConsole);
+            Showing = false;
             return Current;
         }
     }

@@ -10,18 +10,22 @@ namespace TheRuleOfSilvester.MenuItems
 {
     internal sealed class OptionsMenuItem : MenuItem
     {
+        private readonly EditableGrid<string> editableGrid;
+
         public OptionsMenuItem(ConsoleInput consoleInput) : base(consoleInput, "Options")
         {
+            editableGrid = new EditableGrid<string>(consoleInput) { 
+                Name = "OptionsGrid"
+            };
+            editableGrid.Add("localhost", "Servername");
+            editableGrid.Add("TessilRx", "Spielername");
         }
 
-        protected override async Task Action(CancellationToken token)
+        protected override Task Action(CancellationToken token)
         {
-            Console.Clear();
-            Console.WriteLine("Options");
-
-            var test = await ConsoleInput.ReadLine(token);
-            Console.WriteLine("You: " + test);
+            editableGrid.Show("Options", vertical: true, clearConsole: true);
             token.WaitHandle.WaitOne();
+            return Task.CompletedTask;
         }
     }
 }
