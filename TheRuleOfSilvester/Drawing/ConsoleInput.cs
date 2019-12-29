@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -13,12 +14,14 @@ namespace TheRuleOfSilvester.Drawing
     {
         public IObservable<ConsoleKeyInfo> ReceivedKeys { get; set; }
 
+
         public ConsoleInput()
         {
-            ReceivedKeys = CreateObservable()
-                .Publish()
-                .RefCount();
-        }
+            var connectable = CreateObservable()
+                                .Publish();
+            connectable.Connect();
+            ReceivedKeys = connectable;
+        } 
 
         public async Task<string> ReadLine(CancellationToken token)
         {

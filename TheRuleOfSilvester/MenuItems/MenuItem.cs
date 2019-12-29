@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace TheRuleOfSilvester.MenuItems
 
             var disposable = ConsoleInput
                  .ReceivedKeys
-                 .FirstAsync(i => i.Key == ConsoleKey.Escape)
+                 .Where(i => i.Key == ConsoleKey.Escape)
                  .Subscribe(i => cancelationSource.Cancel());
 
             compositeDisposable.Add(cancelationSource);

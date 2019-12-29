@@ -20,6 +20,9 @@ namespace TheRuleOfSilvester.Drawing
             ConsoleKey.RightArrow
         };
 
+        public event EventHandler<IEnumerable<T>> OnSave;
+        public event EventHandler OnExit;
+
         public EditableGrid(ConsoleInput consoleInput) : base(consoleInput)
         {
         }
@@ -28,24 +31,39 @@ namespace TheRuleOfSilvester.Drawing
             : base(consoleInput, values)
         { }
 
-        public override void Show(string instructions, bool vertical = false, bool clearConsole = true)
+        public override void Show(string instructions, CancellationToken token, bool vertical = false, bool clearConsole = true)
         {
+            token.Register(Reset);
             Showing = true;
-            var pos = (Console.CursorLeft, Console.CursorTop);
+            var (CursorLeft, CursorTop) = (Console.CursorLeft, Console.CursorTop);
+
             do
             {
-                Console.SetCursorPosition(pos.CursorLeft, pos.CursorTop);
+                token.ThrowIfCancellationRequested();
+                Console.SetCursorPosition(CursorLeft, CursorTop);
+                
                 using (var sub = inputObservable.Subscribe())
-                    Draw(instructions, vertical, clearConsole);
-                HandleSelected(CurrentItem);
+                    Draw(instructions, token, vertical, clearConsole);
+
+                switch (CurrentItem)
+                {
+                    case Item item:
+                        HandleSelected(item);
+                        break;
+                    case OptionsItem optionsItem:
+                        HandleOption(optionsItem);
+                        break;
+                }
+
+                
             } while (ContinueLoop(CurrentItem));
+
             Reset();
-            Showing = false;
         }
 
-        public override void Draw(string instructions, bool vertical = false, bool clearConsole = true)
+        public override void Draw(string instructions, CancellationToken token, bool vertical = false, bool clearConsole = true)
         {
-            base.Draw(instructions, vertical, clearConsole);
+            base.Draw(instructions, token, vertical, clearConsole);
 
             foreach (var locationItem in ConsoleLocationItems)
             {
@@ -63,20 +81,18 @@ namespace TheRuleOfSilvester.Drawing
 
             Console.SetCursorPosition(0, Console.CursorTop + 2);
 
-            ConsoleLocationItems.Add(((Console.CursorLeft, Console.CursorTop), new Item(default, "Exit")));
+            ConsoleLocationItems.Add(((Console.CursorLeft, Console.CursorTop), new OptionsItem("Exit", Option.Exit)));
             Console.Write("Exit");
 
             Console.SetCursorPosition(7, Console.CursorTop);
-            ConsoleLocationItems.Add(((Console.CursorLeft, Console.CursorTop), new Item(default, "Save")));
+            ConsoleLocationItems.Add(((Console.CursorLeft, Console.CursorTop), new OptionsItem("Save", Option.Save)));
             Console.Write("Save");
 
-            Select(false);
-
-
+            Select(token, false);
 
         }
 
-        private void HandleSelected(Item selected)
+        private void HandleSelected(IItem selected)
         {
             var cli = ConsoleLocationItems.FirstOrDefault(x => x.Item == selected);
             var leftBox = cli.Position.Left + cli.Item.Display.Length + 2;
@@ -92,9 +108,23 @@ namespace TheRuleOfSilvester.Drawing
             Items.Insert(index, new Item((T)input.AsEnumerable(), cli.Item.Display));
         }
 
-        private bool ContinueLoop(Item item) => item.Display != "Exit" && item.Display != "Save";
+        private void HandleOption(OptionsItem item)
+        {
+            switch (item.Option)
+            {
+                case Option.Exit:
+                    OnExit?.Invoke(this, EventArgs.Empty);
+                    break;
+                case Option.Save:
+                    OnSave?.Invoke(this, Items.Select(i => i.Value));
+                    break;
+            }
+        }
 
-        protected override void DrawSelected((int Left, int Top) pos, Item display, bool selected)
+        private bool ContinueLoop(IItem item) 
+            => !(item is OptionsItem);
+
+        protected override void DrawSelected((int Left, int Top) pos, IItem display, bool selected)
         {
             SetConsoleCursor(pos);
             Console.ForegroundColor = selected ? ConsoleColor.Green : ConsoleColor.White;
@@ -102,6 +132,42 @@ namespace TheRuleOfSilvester.Drawing
                 Console.Write((selected ? ">" : "") + display.Display + ": " + display.Value + (selected ? "<" : "  "));
             else
                 base.DrawSelected(pos, display, selected);
+        }
+
+        private readonly struct OptionsItem : IItem, IEquatable<OptionsItem>
+        {
+            public readonly T Value => default;
+            public readonly string Display { get; }
+            public readonly Option Option { get;  }
+
+            public OptionsItem(string display, Option option)
+            {
+                Display = display;
+                Option = option;
+            }
+
+            public override bool Equals(object obj) 
+                => obj is OptionsItem item 
+                && Equals(item);
+
+            public bool Equals(OptionsItem other)
+                => Display == other.Display 
+                && Option == other.Option;
+
+            public override int GetHashCode() 
+                => HashCode.Combine(Display, Option);
+
+            public static bool operator ==(OptionsItem left, OptionsItem right) 
+                => left.Equals(right);
+
+            public static bool operator !=(OptionsItem left, OptionsItem right) 
+                => !(left == right);
+        }
+
+        private enum Option
+        {
+            Exit,
+            Save
         }
 
     }

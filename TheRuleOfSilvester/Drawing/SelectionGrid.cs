@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace TheRuleOfSilvester.Drawing
 {
@@ -27,18 +28,19 @@ namespace TheRuleOfSilvester.Drawing
             : base(consoleInput, values)
         { }
 
-        public override void Draw(string instructions, bool vertical = false, bool clearConsole = true)
+        public override void Draw(string instructions, CancellationToken token, bool vertical = false, bool clearConsole = true)
         {
-            base.Draw(instructions, vertical, clearConsole);
-            Select(clearConsole);
+            base.Draw(instructions, token, vertical, clearConsole);
+            Select(token, clearConsole);
         }
-        public T ShowModal(string instructions, bool vertical = false, bool clearConsole = true)
+        public T ShowModal(string instructions, CancellationToken token, bool vertical = false, bool clearConsole = true)
         {
+            token.Register(Reset);
+            Reset();
             using var sub = inputObservable.Subscribe();
             Showing = true;
-            base.Draw(instructions, vertical, clearConsole);
-            Select(clearConsole);
-            Showing = false;
+            base.Draw(instructions, token, vertical, clearConsole);
+            Select(token, clearConsole);
             return Current;
         }
     }
