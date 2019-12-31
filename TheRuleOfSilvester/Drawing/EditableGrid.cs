@@ -20,16 +20,21 @@ namespace TheRuleOfSilvester.Drawing
             ConsoleKey.RightArrow
         };
 
+        public Func<IEnumerable<char>, string, T> ConvertMethod { get; set; }
+
         public event EventHandler<IEnumerable<T>> OnSave;
         public event EventHandler OnExit;
 
         public EditableGrid(ConsoleInput consoleInput) : base(consoleInput)
         {
+            ConvertMethod = (c, s) => (T)c;
         }
 
         public EditableGrid(ConsoleInput consoleInput, IEnumerable<(T Value, string DisplayValue)> values)
             : base(consoleInput, values)
-        { }
+        {
+            ConvertMethod = (c, s) => (T)c;
+        }
 
         public override void Show(string instructions, CancellationToken token, bool vertical = false, bool clearConsole = true)
         {
@@ -94,19 +99,22 @@ namespace TheRuleOfSilvester.Drawing
 
         private void HandleSelected(IItem selected)
         {
-            var cli = ConsoleLocationItems.FirstOrDefault(x => x.Item == selected);
+            var cli = ConsoleLocationItems.FirstOrDefault(x => x.Item.Display == selected.Display);
             var leftBox = cli.Position.Left + cli.Item.Display.Length + 2;
             var rightBox = cli.Item.Value.ToString().Length + leftBox;
 
             Console.SetCursorPosition(rightBox, cli.Position.Top);
-            var value = Task.Run(async () => await Input.ReadLine(cli.Item.Value.ToString(), CancellationToken.None, true));
-            value.Wait();
-            var input = value.Result;
+            //var value = Task.Run(async () => await Input.ReadLineAsync(cli.Item.Value.ToString(), CancellationToken.None, true));
+            //value.Wait();
+            var input = Input.ReadLine(cli.Item.Value.ToString(), CancellationToken.None, true);
             var item = Items.FirstOrDefault(x => x == cli.Item);
             var index = Items.IndexOf(item);
             Items.Remove(item);
-            Items.Insert(index, new Item((T)input.AsEnumerable(), cli.Item.Display));
+            var value = ConvertMethod(input.AsEnumerable(), cli.Item.Display);
+            Items.Insert(index, new Item(value, cli.Item.Display));
         }
+
+
 
         private void HandleOption(OptionsItem item)
         {

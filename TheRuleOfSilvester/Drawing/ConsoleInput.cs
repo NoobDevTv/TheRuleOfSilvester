@@ -21,27 +21,46 @@ namespace TheRuleOfSilvester.Drawing
                                 .Publish();
             connectable.Connect();
             ReceivedKeys = connectable;
-        } 
+        }
 
-        public async Task<string> ReadLine(CancellationToken token)
+        public async Task<string> ReadLineAsync(CancellationToken token)
         {
             using var builder = new ObservableStringBuilder(ReceivedKeys);
-            return await builder.ReadLine(token);
+            return await builder.ReadLineAsync(token);
         }
-        public async Task<string> ReadLine(string defaultValue, CancellationToken token, bool intercept = true)
+        public async Task<string> ReadLineAsync(string defaultValue, CancellationToken token, bool intercept = true)
         {
             using var builder = new ObservableStringBuilder(defaultValue, ReceivedKeys);
 
             if (!intercept)
                 Console.Write(defaultValue);
 
-            return await builder.ReadLine(token);
+            return await builder.ReadLineAsync(token);
         }
-
-        public async Task<ConsoleKeyInfo> ReadKey(bool intercept, CancellationToken token)
+        public string ReadLine(CancellationToken token)
         {
             using var builder = new ObservableStringBuilder(ReceivedKeys);
-            return await builder.ReadKey(intercept, token);
+            return builder.ReadLine(token);
+        }
+        public string ReadLine(string defaultValue, CancellationToken token, bool intercept = true)
+        {
+            using var builder = new ObservableStringBuilder(defaultValue, ReceivedKeys);
+
+            if (!intercept)
+                Console.Write(defaultValue);
+
+            return builder.ReadLine(token);
+        }
+
+        public async Task<ConsoleKeyInfo> ReadKeyAsync(bool intercept, CancellationToken token)
+        {
+            using var builder = new ObservableStringBuilder(ReceivedKeys);
+            return await builder.ReadKeyAsync(intercept, token);
+        }
+        public ConsoleKeyInfo ReadKey(bool intercept, CancellationToken token)
+        {
+            using var builder = new ObservableStringBuilder(ReceivedKeys);
+            return builder.ReadKey(intercept, token);
         }
 
         private IObservable<ConsoleKeyInfo> CreateObservable()
@@ -80,7 +99,7 @@ namespace TheRuleOfSilvester.Drawing
                 stringBuilder.Append(defaultValue);
             }
 
-            public Task<string> ReadLine(CancellationToken token)
+            public Task<string> ReadLineAsync(CancellationToken token)
             {
                 resetEvent.Reset();
                 var close = closeKeys.Subscribe(Close);
@@ -96,7 +115,20 @@ namespace TheRuleOfSilvester.Drawing
                 }, token);
             }
 
-            public async Task<ConsoleKeyInfo> ReadKey(bool intercept, CancellationToken token)
+            public string ReadLine(CancellationToken token)
+            {
+                resetEvent.Reset();
+                var close = closeKeys.Subscribe(Close);
+                var undo = backspace.Subscribe(Undo);
+                var append = appendkeys.Subscribe(Append);
+                disposables.Disposable = new CompositeDisposable { close, undo, append };
+
+                resetEvent.Wait(token);
+                Console.WriteLine();
+                return stringBuilder.ToString();
+            }
+
+            public async Task<ConsoleKeyInfo> ReadKeyAsync(bool intercept, CancellationToken token)
             {
                 ConsoleKeyInfo consoleKey = default;
                 resetEvent.Reset();
@@ -114,6 +146,22 @@ namespace TheRuleOfSilvester.Drawing
                     resetEvent.Wait(token);
                     return consoleKey;
                 }, token);
+            }
+            public ConsoleKeyInfo ReadKey(bool intercept, CancellationToken token)
+            {
+                ConsoleKeyInfo consoleKey = default;
+                resetEvent.Reset();
+                using var dispose = keys.Subscribe(k =>
+                {
+                    if (!intercept)
+                        Console.Write(k.KeyChar);
+
+                    consoleKey = k;
+                    resetEvent.Set();
+                });
+
+                resetEvent.Wait(token);
+                return consoleKey;
             }
 
             public void Dispose()

@@ -29,16 +29,9 @@ namespace TheRuleOfSilvester
             Console.OutputEncoding = Encoding.Unicode;
             Console.CursorVisible = false;
 
-            var option = new OptionFile();
-            option.Options.Add("Test", new Option(new Demo { A = 12, B = "Test", demo =new Demo { A = 4 } } ));
-            option.Options.Add("TestB", new Option(new Demo { A = 12, B = "TestA", } ));
-            option.Options.Add("TestC", new Option(new Demo { A = 14 } ));
-            option.Options.Add("TestD", new Option( new Demo {  } ));
-
-            var demo = JsonConvert.SerializeObject(option, Formatting.Indented);
-
-            //var optionFile = File.ReadAllText(Path.Combine(".", "options.json"));
-            var file = JsonConvert.DeserializeObject<OptionFile>(demo);
+            
+            var optionFileInfo = new FileInfo(Path.Combine(".", "options.json"));
+            var optionFile = OptionFile.Load(optionFileInfo);
 
             var input = new ConsoleInput();
             var exitItem = new ExitMenuItem(input);
@@ -47,7 +40,7 @@ namespace TheRuleOfSilvester
                 {
                    new SinglePlayerMenuItem(input),
                    new MultiplayerMenuItem(input),
-                   new OptionsMenuItem(input),
+                   new OptionsMenuItem(input, optionFile),
                    exitItem
                 })
             {
@@ -71,13 +64,6 @@ namespace TheRuleOfSilvester
 
                 disposable?.Dispose();
             } while (!exitItem.Token.IsCancellationRequested);
-        }
-
-        public class Demo
-        {
-            public int A { get; set; }
-            public string B { get; set; }
-            public Demo demo { get; set; }
         }
     }
 }
