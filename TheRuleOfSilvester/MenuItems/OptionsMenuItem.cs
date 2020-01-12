@@ -15,6 +15,7 @@ namespace TheRuleOfSilvester.MenuItems
     internal sealed class OptionsMenuItem : MenuItem
     {
         private readonly EditableGrid<OptionValue> editableGrid;
+        private readonly OptionFile optionFile;
         private readonly ManualResetEventSlim resetEvent;
 
         public OptionsMenuItem(ConsoleInput consoleInput, OptionFile optionFile) : base(consoleInput, "Options")
@@ -26,6 +27,7 @@ namespace TheRuleOfSilvester.MenuItems
                 ConvertMethod = ConvertInput
             };
 
+            this.optionFile = optionFile;
             editableGrid.AddRange(optionFile
                                     .Options
                                     .Select(o => (new OptionValue(o.Key, o.Value), o.Key)));
@@ -44,9 +46,21 @@ namespace TheRuleOfSilvester.MenuItems
                 .Subscribe(o => resetEvent.Set());
             Observable
                 .FromEventPattern<IEnumerable<OptionValue>>(a => editableGrid.OnSave += a, r => editableGrid.OnSave -= r)
-                .Subscribe(o => resetEvent.Set());
+                .Select(e => e.EventArgs)
+                .Subscribe(o =>
+                {
+                    o.ForEach(value =>
+                    {
+                        if (optionFile.Options.TryGetValue(value.OptionKey, out var oldValue))
+                        {
+                            optionFile.Options.TryUpdate(value.OptionKey, value.Option, oldValue);
+                        }
+                    });
+                    optionFile.Save();
+                    resetEvent.Set();
+                });
 
-            editableGrid.Show("Options", token, vertical: true, clearConsole: true);
+            editableGrid.Show(Title, token, vertical: true, clearConsole: true);
 
             resetEvent.Wait(token);
             resetEvent.Reset();

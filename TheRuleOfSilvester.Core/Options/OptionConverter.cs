@@ -11,6 +11,12 @@ namespace TheRuleOfSilvester.Core.Options
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            if(!CanConvert(objectType))
+            {
+                serializer.ContractResolver.ResolveContract(objectType).Converter = null;
+                return serializer.Deserialize(reader, objectType);
+            }
+
             if (reader.TokenType == JsonToken.StartObject)
             {
                 var jObject = JObject.Load(reader);
@@ -19,8 +25,8 @@ namespace TheRuleOfSilvester.Core.Options
                 return new Option(jObject.ToObject(Type.GetType(name)));
             }
             else
-            {
-                return new Option(serializer.Deserialize(reader, objectType));
+            {                
+                return new Option(serializer.Deserialize(reader));
             }
         }
 

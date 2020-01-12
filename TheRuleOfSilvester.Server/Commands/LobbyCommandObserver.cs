@@ -41,11 +41,41 @@ namespace TheRuleOfSilvester.Server.Commands
            playerService.TryAddPlayer(client, playerName);
         }
 
+        class FakeSession : IGameServerSession
+        {
+            public FakeSession(int maxPlayers, string name, int currentPlayers, int id)
+            {
+                MaxPlayers = maxPlayers;
+                Name = name;
+                CurrentPlayers = currentPlayers;
+                Id = id;
+            }
+
+            public int MaxPlayers { get; }
+
+            public string Name { get; }
+
+            public int CurrentPlayers { get; }
+
+            public int Id { get; set; }
+
+            public void AddClient(BaseClient client) => throw new NotImplementedException();
+            public void RemoveClient(BaseClient client) => throw new NotImplementedException();
+        }
+
         private void GetSessions(BaseClient client, Notification notification)
         {
             var list = sessionProvider
                 .OfType<IGameServerSession>()
                 .Select(s => new GameServerSessionInfo(s));
+
+            //list = new[]
+            //{
+            //    new GameServerSessionInfo(new FakeSession(10, "Test1", 5, 1)),
+            //    new GameServerSessionInfo(new FakeSession(6, "Name", 3, 19)),
+            //    new GameServerSessionInfo(new FakeSession(2, "Tolles Game", 1, 2)),
+            //    new GameServerSessionInfo(new FakeSession(50, "Nicht Joinen, nur test", 40, 5)),
+            //};
 
             Send(client, new Notification(SerializeHelper.SerializeList(list), NotificationType.Sessions));
         }

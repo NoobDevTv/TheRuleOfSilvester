@@ -44,6 +44,10 @@ namespace TheRuleOfSilvester.Components
         public void Disconnect() 
             => Client.Disconnect();
 
+        /// <summary>
+        /// Waits for an open Connection
+        /// </summary>
+        /// <exception cref="ArgumentException">If connection refused</exception>
         public void Wait() 
             => Client.Wait();        
     }

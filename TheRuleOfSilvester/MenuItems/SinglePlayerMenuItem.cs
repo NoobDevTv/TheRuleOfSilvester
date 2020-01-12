@@ -24,7 +24,7 @@ namespace TheRuleOfSilvester.MenuItems
             var game = new Game
             {
                 DrawComponent = new DrawComponent(),
-                SessionExplorerComponent = new SessionExplorerComponent()
+                SessionExplorerComponent = new SessionExplorerComponent(ConsoleInput)
             };
 
             throw new NotImplementedException();

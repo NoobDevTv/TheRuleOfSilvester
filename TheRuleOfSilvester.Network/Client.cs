@@ -26,17 +26,22 @@ namespace TheRuleOfSilvester.Network
             Socket.BeginConnect(new IPEndPoint(address, port), OnConnected, null);
         }
 
+        /// <summary>
+        /// Waits for an open Connection
+        /// </summary>
+        /// <exception cref="ArgumentException">If connection refused</exception>
+        [Obsolete("Not necessary with reactive", false)]
         public void Wait()
         {
             //Wait for Connection
-            while (!Socket.Connected)
-                Thread.Sleep(1);
+            //while (!Socket.Connected)
+            //    Thread.Sleep(1);
 
-            var buffer = new byte[1];
-            Socket.Receive(buffer);
+            //var buffer = new byte[1];
+            //Socket.Receive(buffer);
 
-            if (buffer[0] == 0)
-                throw new Exception("Connection Error");
+            //if (buffer[0] == 0)
+            //    throw new ArgumentException("Connection Error");
         }
 
         private void OnConnected(IAsyncResult ar)

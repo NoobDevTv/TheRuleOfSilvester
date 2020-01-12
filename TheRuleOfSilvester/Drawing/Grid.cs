@@ -152,7 +152,11 @@ namespace TheRuleOfSilvester.Drawing
         {
             ConsoleLocationItems.Clear();
             var oldPos = (Console.CursorLeft, Console.CursorTop);
-            var maxLengthName = Items.Max(x => x.Display.Length) + 2;
+
+            int maxLengthName = 0;
+            if(Items.Count > 0)
+                maxLengthName = Items.Max(x => x.Display.Length) + 2;
+
             foreach (var item in Items)
             {
                 ConsoleLocationItems.Add(
@@ -163,6 +167,7 @@ namespace TheRuleOfSilvester.Drawing
                 if (maxLengthName + 2 + Console.CursorLeft > Console.WindowWidth || vertical)
                     Console.WriteLine();
             }
+
             SetConsoleCursor(oldPos);
             UpDownValue = ConsoleLocationItems.Count(x => x.Position.Top == ConsoleLocationItems.First().Position.Top);
         }

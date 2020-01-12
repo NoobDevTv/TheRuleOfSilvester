@@ -29,9 +29,7 @@ namespace TheRuleOfSilvester
             Console.OutputEncoding = Encoding.Unicode;
             Console.CursorVisible = false;
 
-            
-            var optionFileInfo = new FileInfo(Path.Combine(".", "options.json"));
-            var optionFile = OptionFile.Load(optionFileInfo);
+            var optionFile = OptionFile.Load();
 
             var input = new ConsoleInput();
             var exitItem = new ExitMenuItem(input);
@@ -39,7 +37,7 @@ namespace TheRuleOfSilvester
             var menu = new SelectionGrid<MenuItem>(input, new List<MenuItem>()
                 {
                    new SinglePlayerMenuItem(input),
-                   new MultiplayerMenuItem(input),
+                   new MultiplayerMenuItem(input, optionFile),
                    new OptionsMenuItem(input, optionFile),
                    exitItem
                 })

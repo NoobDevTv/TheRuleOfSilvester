@@ -97,7 +97,7 @@ namespace TheRuleOfSilvester.Server
             clientSubject.OnNext(client);
 
             client.Start();
-            client.Send(new byte[] { 1 }, 1);
+            //client.Send(new byte[] { 1 }, 1);
             socket.BeginAccept(OnClientAccepted, null);
         }
     }

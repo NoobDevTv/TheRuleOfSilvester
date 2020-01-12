@@ -10,14 +10,14 @@ namespace TheRuleOfSilvester.MenuItems
 {
     internal sealed class SimpleMenuItem : MenuItem
     {
-        private readonly Action action;
+        private readonly Func<CancellationToken, Task> action;
 
-        public SimpleMenuItem(ConsoleInput consoleInput, string title, Action action) : base(consoleInput, title)
+        public SimpleMenuItem(ConsoleInput consoleInput, string title, Func<CancellationToken,Task> action) : base(consoleInput, title)
         {
             this.action = action;
         }
 
         protected override Task Action(CancellationToken token)
-            => Task.Run(action);
+            => action(token);
     }
 }
