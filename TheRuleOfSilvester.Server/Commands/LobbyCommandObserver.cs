@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TheRuleOfSilvester.Core.Observation;
@@ -28,7 +29,17 @@ namespace TheRuleOfSilvester.Server.Commands
 
         private void NewSession(BaseClient client, Notification notification)
         {
-            var session = new GameServerSession(playerService);
+            string name;
+            int maxPlayers;
+
+            using (var stream = new MemoryStream(notification.Deserialize(b => b)))           
+            using (var binaryReader = new BinaryReader(stream))
+            {
+                name = binaryReader.ReadString();
+                maxPlayers = binaryReader.ReadInt32();
+            }
+
+            var session = new GameServerSession(playerService, name, maxPlayers);
             sessionProvider.Add(session);
             Send(client, new Notification(SerializeHelper.Serialize(new GameServerSessionInfo(session)), NotificationType.Session));
         }

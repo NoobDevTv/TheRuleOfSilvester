@@ -10,7 +10,7 @@ using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Runtime.Items;
 using TheRuleOfSilvester.Runtime.Roles;
 
-namespace TheRuleOfSilvester
+namespace TheRuleOfSilvester.Components
 {
     internal class DrawComponent : IDrawComponent
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheRuleOfSilvester.Components;
 using TheRuleOfSilvester.Drawing;
 using TheRuleOfSilvester.Runtime;
 using TheRuleOfSilvester.Runtime.Interfaces;
@@ -23,8 +24,7 @@ namespace TheRuleOfSilvester.MenuItems
 
             var game = new Game
             {
-                DrawComponent = new DrawComponent(),
-                SessionExplorerComponent = new SessionExplorerComponent(ConsoleInput)
+                DrawComponent = new DrawComponent()
             };
 
             throw new NotImplementedException();

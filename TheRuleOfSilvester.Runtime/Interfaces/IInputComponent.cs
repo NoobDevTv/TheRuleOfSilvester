@@ -6,7 +6,7 @@ using TheRuleOfSilvester.Core;
 
 namespace TheRuleOfSilvester.Runtime.Interfaces
 {
-    public interface IInputCompoment
+    public interface IInputComponent
     {
         IObservable<InputAction> InputActions { get; }
 

@@ -14,7 +14,7 @@ using TheRuleOfSilvester.Runtime.Interfaces;
 
 namespace TheRuleOfSilvester.Components
 {
-    public sealed class InputComponent : IInputCompoment
+    public sealed class InputComponent : IInputComponent
     {
         public IObservable<InputAction> InputActions { get; }
 

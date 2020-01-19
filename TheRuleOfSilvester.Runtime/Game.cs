@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TheRuleOfSilvester.Core;
+using TheRuleOfSilvester.Core.Extensions;
+using TheRuleOfSilvester.Core.Observation;
+using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Network.Info;
 using TheRuleOfSilvester.Runtime.Cells;
 using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Runtime.Roles;
-using TheRuleOfSilvester.Core;
-using TheRuleOfSilvester.Network;
-using System.Linq;
-using System.Reactive.Linq;
-using TheRuleOfSilvester.Core.Observation;
-using TheRuleOfSilvester.Core.Extensions;
-using System.Reactive.Subjects;
-using TheRuleOfSilvester.Network.Info;
 
 namespace TheRuleOfSilvester.Runtime
 {
@@ -22,12 +22,11 @@ namespace TheRuleOfSilvester.Runtime
     {
         public IObservable<PlayerAction> CurrentUpdateSets { get; internal set; }
         public IDrawComponent DrawComponent { get; set; }
-        public IInputCompoment InputCompoment { get; set; }
+        public IInputComponent InputCompoment { get; set; }
         public IMultiplayerComponent MultiplayerComponent { get; set; }
         public IRoundManagerComponent RoundComponent { get; set; }
         public IWaitingComponent WaitingComponent { get; set; }
         public GameStatus CurrentGameStatus { get; set; }
-        public ISessionExplorerComponent SessionExplorerComponent { get; set; } 
 
         public int Frames { get; private set; }
 
@@ -45,13 +44,13 @@ namespace TheRuleOfSilvester.Runtime
 
         internal InputAction InputAction { get; private set; }
         public IObservable<Player> Winners { get; private set; }
-        
+
         private readonly ManualResetEventSlim manualResetEvent;
         private CancellationTokenSource tokenSource;
         private Task gameTask;
         private Player player;
         private Map map;
-        private readonly Subject<(CommandName,Notification)> commandSubject;
+        private readonly Subject<(CommandName, Notification)> commandSubject;
 
         public Game()
         {
@@ -60,119 +59,54 @@ namespace TheRuleOfSilvester.Runtime
             commandSubject = new Subject<(CommandName, Notification)>();
         }
 
-        public void Run(int frame, bool multiplayer,
-            string playername = "", int x = 100, int y = 100)
+        public void RunMultiplayer(int frame, int sessionId)
         {
-            IsMutliplayer = multiplayer;
+            IsMutliplayer = true;
+            MultiplayerComponent.Connect();
 
-            if (multiplayer)
-            {
-                MultiplayerComponent.Connect();
-                MultiplayerComponent.Wait();
-            }
-
-            Frames = frame;
-
-            if (multiplayer)
-            {
-                //bye bye synchronous
-                //if (!MultiplayerComponent.ConnectPlayer(playername))
-                //{
-                //    //TODO: Error handling
-                //}
-
-                //MultiplayerComponent.CreateGame(); //HACK: Debugging
-                //var sessions = MultiplayerComponent.GetGameSessions();
-
-                //foreach (var item in sessions)
-                //{
-                //    //TODO Implement Session UI
-                //}
-
-                //HACK: Debugging
-                //var gameSession = sessions.FirstOrDefault();
-
-                //if (!MultiplayerComponent.JoinSession(gameSession))
-                //{
-                //    //TODO: Error handling
-                //}
-
-                MultiplayerComponent
-                    .GetNotifications()
-                    .Where(n => n.Type == NotificationType.Map)
-                    .Select(n => n.Deserialize(SerializeHelper.Deserialize<Map>))
-                    .Subscribe(m =>
-                    {
-                        Map = m;
-                        m.SubscribePlayerNotifications(MultiplayerComponent.GetNotifications());
-                    });
-
-                MultiplayerComponent
-                      .CurrentServerStatus
-                      .Where(s => s == ServerStatus.Started)
-                      .Subscribe(s =>
-                      {
-                          CurrentGameStatus = GameStatus.Running;
-                      });
-
-                Winners = MultiplayerComponent
-                    .GetNotifications()
-                    .Where(n => n.Type == NotificationType.Winner)
-                    .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>));
-
-                MultiplayerComponent
-                    .GetNotifications()
-                    .Where(n => n.Type == NotificationType.Sessions)
-                    .Select(n => n.Deserialize(SerializeHelper.DeserializeToList<GameServerSessionInfo>))
-                    .Select(SessionExplorerComponent.ShowServerSessionDialog)
-                    .Subscribe(session => commandSubject.OnNext((CommandName.JoinSession, new Notification(session.Id.GetBytes(), NotificationType.None))));
-
-                MultiplayerComponent.SendPackages(commandSubject);
-                commandSubject.OnNext((CommandName.RegisterPlayer, new Notification(playername.GetBytes(), NotificationType.None)));
-                commandSubject.OnNext((CommandName.GetSessions, Notification.Empty));
-
-            }
-            else
-            {
-                var generator = new MapGenerator();
-                Map = generator.Generate(x, y);
-
-                player = new Player(Map, RoleManager.GetRandomRole())
+            MultiplayerComponent
+                .GetNotifications()
+                .Where(n => n.Type == NotificationType.Map)
+                .Select(n => n.Deserialize(SerializeHelper.Deserialize<Map>))
+                .Subscribe(m =>
                 {
-                    IsLocal = true,
-                    Position = new Position(7, 4)
-                };
-                CurrentGameStatus = GameStatus.Running;
+                    Map = m;
+                    m.SubscribePlayerNotifications(MultiplayerComponent.GetNotifications());
+                });
 
-                Map.AddPlayer(player);
-            }
+            MultiplayerComponent
+                  .CurrentServerStatus
+                  .Where(s => s == ServerStatus.Started)
+                  .Subscribe(s =>
+                  {
+                      CurrentGameStatus = GameStatus.Running;
+                  });
 
-            WaitingComponent?.SubscribeGameStatus(this);
-            tokenSource = new CancellationTokenSource();
+            Winners = MultiplayerComponent
+                .GetNotifications()
+                .Where(n => n.Type == NotificationType.Winner)
+                .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>));
 
-            InputCompoment.InputActions?.Subscribe(a =>
-            {
-                InputAction?.SetInvalid();
-                InputAction = a;
-            });
-
-            gameTask = new Task(async () =>
-            {
-                try
-                {
-                    await Loop(tokenSource.Token);
-                }
-                catch (TaskCanceledException)
-                {
-                    return;
-                }
-            }, TaskCreationOptions.LongRunning);
-
-            gameTask.Start(TaskScheduler.Default);
+            MultiplayerComponent.SendPackages(commandSubject);
+            commandSubject.OnNext((CommandName.JoinSession, new Notification(sessionId.GetBytes(), NotificationType.None)));
+            Run(frame);
         }
 
-        public void Run(int frame)
-            => Run(frame, false);
+        public void RunSinglePlayer(int frame, int x, int y)
+        {
+            var generator = new MapGenerator();
+            Map = generator.Generate(x, y);
+
+            player = new Player(Map, RoleManager.GetRandomRole())
+            {
+                IsLocal = true,
+                Position = new Position(7, 4)
+            };
+            CurrentGameStatus = GameStatus.Running;
+
+            Map.AddPlayer(player);
+            Run(frame);
+        }
 
         public void Stop()
         {
@@ -212,7 +146,35 @@ namespace TheRuleOfSilvester.Runtime
             gameTask = null;
             player = null;
         }
-        
+
+        private void Run(int frame)
+        {
+            Frames = frame;
+
+            WaitingComponent?.SubscribeGameStatus(this);
+            tokenSource = new CancellationTokenSource();
+
+            InputCompoment.InputActions?.Subscribe(a =>
+            {
+                InputAction?.SetInvalid();
+                InputAction = a;
+            });
+
+            gameTask = new Task(async () =>
+            {
+                try
+                {
+                    await Loop(tokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    return;
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            gameTask.Start(TaskScheduler.Default);
+        }
+
         private void SystemUpdate()
         {
             if (InputAction?.Type == InputActionType.Back)

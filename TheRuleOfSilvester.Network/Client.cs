@@ -20,6 +20,8 @@ namespace TheRuleOfSilvester.Network
         
         public void Connect(string host, int port)
         {
+            if (Socket.Connected)
+                return;
             var address = Dns.GetHostAddresses(host).FirstOrDefault(
                 a => a.AddressFamily == Socket.AddressFamily);
 

@@ -11,17 +11,19 @@ namespace TheRuleOfSilvester.Server
 {
     public sealed class GameServerSession : ServerSession, IGameServerSession
     {
-        public int MaxPlayers => 4;
-        public string Name => "";
+        public int MaxPlayers { get; }
+        public string Name { get; }
         public int CurrentPlayers => gameManager.Players.Count;
 
         private readonly GameManager gameManager;
         private readonly PlayerService playerService;
 
-        public GameServerSession(PlayerService playerService) : base()
+        public GameServerSession(PlayerService playerService, string name, int maxPlayers) : base()
         {
             gameManager = new GameManager();
             this.playerService = playerService;
+            Name = name;
+            MaxPlayers = maxPlayers;
         }
 
         protected override IDisposable RegisterCommands(IObservable<CommandNotification> commands, 

@@ -21,6 +21,7 @@ namespace TheRuleOfSilvester.Network
         RegisterPlayer,
         GetSessions,
         JoinSession,
+        JoinedSession,
         NewSession,
     }
 }

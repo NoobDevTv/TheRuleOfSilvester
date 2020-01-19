@@ -7,13 +7,13 @@ using TheRuleOfSilvester.Drawing;
 using TheRuleOfSilvester.Network.Info;
 using TheRuleOfSilvester.Runtime.Interfaces;
 
-namespace TheRuleOfSilvester
+namespace TheRuleOfSilvester.Drawing
 {
-    public sealed class SessionExplorerComponent : ISessionExplorerComponent
+    public sealed class SessionExplorer : ISessionExplorer
     {
         private readonly SelectionGrid<GameServerSessionInfo> selectionControl;
 
-        public SessionExplorerComponent(ConsoleInput consoleInput)
+        public SessionExplorer(ConsoleInput consoleInput)
         {
             selectionControl = new SelectionGrid<GameServerSessionInfo>(consoleInput);
         }
