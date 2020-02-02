@@ -43,53 +43,32 @@ namespace TheRuleOfSilvester.MenuItems
 
 
 
-        protected override async Task Action(CancellationToken token)
-        {
-            do
-            {
-                Console.Clear();
-                MenuItem menuItem = selectionGrid.ShowModal(Title, token, true);
-                IDisposable disposable = null;
-
-                try
+        protected override IObservable<MenuResult> Action(CancellationToken token)
+            => Observable.Create<MenuResult>(observer => Task.Run(() =>
                 {
-                    disposable = await menuItem.Run();
-                }
-                catch (OperationCanceledException)
-                {
-                    //No issue
-                }
+                    Console.Clear();
+                    MenuItem menuItem = selectionGrid.ShowModal(Title, token, true);
+                    menuItem.Run().Subscribe();
+                    token.ThrowIfCancellationRequested();
+                }));
 
-                disposable?.Dispose();
-            } while (!token.IsCancellationRequested);
-
-
-            //Console.Clear();
-            //multiplayerComponent.Host = address.ToString();
-            //multiplayerComponent.Port = 4400;
-
-            //CreateGame(true);
-        }
-
-        private Task JoinLobby(CancellationToken token)
+        private IObservable<MenuResult> JoinLobby(CancellationToken token)
         {
             var component = GetMultiplayerComponent(token);
 
             var notification = new[] { (CommandName.GetSessions, new Notification(Array.Empty<byte>(), NotificationType.Sessions)) };
             var selectionGrid = new SessionExplorer(ConsoleInput);
 
-            var sessions = CreateSessionsAndResetEvent(component, 
-                SerializeHelper.DeserializeToList<GameServerSessionInfo>, 
-                NotificationType.Sessions,
-                out var resetEvent)
+            var sessions = CreateSessionsAndResetEvent(component,
+                SerializeHelper.DeserializeToList<GameServerSessionInfo>,
+                NotificationType.Sessions)
                     .Select(selectionGrid.ShowServerSessionDialog);
 
-            using (resetEvent)
-                return RunAndWait(component, sessions, resetEvent, notification);
+            return RunAndWait(component, sessions, notification);
         }
 
 
-        private Task CreateGlobalGame(CancellationToken token)
+        private IObservable<MenuResult> CreateGlobalGame(CancellationToken token)
         {
             var component = GetMultiplayerComponent(token);
             string name = string.Empty;
@@ -127,42 +106,43 @@ namespace TheRuleOfSilvester.MenuItems
             }
 
             var notification = new[] { (CommandName.NewSession, new Notification(data, NotificationType.Sessions)) };
-            var sessions = CreateSessionsAndResetEvent(component, 
+            var sessions = CreateSessionsAndResetEvent(component,
                 SerializeHelper.Deserialize<GameServerSessionInfo>,
-                NotificationType.Session,
-                out var resetEvent);
+                NotificationType.Session);
 
-            using (resetEvent)
-                return RunAndWait(component, sessions, resetEvent, notification);
+            return RunAndWait(component, sessions, notification);
         }
 
         private IObservable<T> CreateSessionsAndResetEvent<T>(IMultiplayerComponent component,
-            Func<byte[], T> deserializeFunc, NotificationType type, out ManualResetEventSlim resetEvent)
+            Func<byte[], T> deserializeFunc, NotificationType type)
         {
-            resetEvent = new ManualResetEventSlim(false);
             return component
                 .GetNotifications()
                 .Where(n => n.Type == type)
                 .Select(n => n.Deserialize(deserializeFunc));
         }
 
-        private Task RunAndWait(IMultiplayerComponent multiplayerComponent, IObservable<GameServerSessionInfo> sessions,
-            ManualResetEventSlim resetEvent, (CommandName, Notification)[] notification)
+        private IObservable<MenuResult> RunAndWait(
+            IMultiplayerComponent multiplayerComponent,
+            IObservable<GameServerSessionInfo> sessions,
+            (CommandName, Notification)[] notification)
         {
-            using var subscription = sessions
-                             .Do(session => RunGame(multiplayerComponent, session))
-                             .Subscribe(session =>
-                             {
-                                 resetEvent.Set();
-                             });
+            return Observable.Create<MenuResult>(observer =>
+            {
+                multiplayerComponent.Connect();
+                var subscription = sessions
+                                 .Select(session =>
+                                 {
+                                     return new MenuResult<Game>(GetGame(multiplayerComponent, session));
+                                 })
+                                 .Subscribe(observer);
 
-            multiplayerComponent.Connect();
-            using var packages = multiplayerComponent.SendPackages(notification.ToObservable());
-            resetEvent.Wait();
-            return Task.CompletedTask;
+                using var packages = multiplayerComponent.SendPackages(notification.ToObservable());
+                return subscription;
+            });
         }
 
-        private void RunGame(IMultiplayerComponent component, GameServerSessionInfo gameServerSessionInfo)
+        private Game GetGame(IMultiplayerComponent component, GameServerSessionInfo gameServerSessionInfo)
         {
             var game = new Game
             {
@@ -171,7 +151,7 @@ namespace TheRuleOfSilvester.MenuItems
                 DrawComponent = new DrawComponent()
             };
             game.RunMultiplayer(30, gameServerSessionInfo.Id);
-            game.Wait();
+            return game;
         }
 
         private IMultiplayerComponent GetMultiplayerComponent(CancellationToken token)

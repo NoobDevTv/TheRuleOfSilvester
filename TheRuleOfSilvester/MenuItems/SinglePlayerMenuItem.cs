@@ -16,7 +16,7 @@ namespace TheRuleOfSilvester.MenuItems
         {
         }
 
-        protected override Task Action(CancellationToken token)
+        protected override IObservable<MenuResult> Action(CancellationToken token)
         {
             Console.Clear();
             var x = GetIntFromUser("Map Width", 10, 400);

@@ -16,11 +16,9 @@ namespace TheRuleOfSilvester.MenuItems
     {
         private readonly EditableGrid<OptionValue> editableGrid;
         private readonly OptionFile optionFile;
-        private readonly ManualResetEventSlim resetEvent;
 
         public OptionsMenuItem(ConsoleInput consoleInput, OptionFile optionFile) : base(consoleInput, "Options")
         {
-            resetEvent = new ManualResetEventSlim(false);
             editableGrid = new EditableGrid<OptionValue>(consoleInput)
             {
                 Name = "OptionsGrid",
@@ -39,32 +37,33 @@ namespace TheRuleOfSilvester.MenuItems
             return new OptionValue(key, new Option(value));
         }
 
-        protected override Task Action(CancellationToken token)
+        protected override IObservable<MenuResult> Action(CancellationToken token)
         {
-            Observable
-                .FromEventPattern(a => editableGrid.OnExit += a, r => editableGrid.OnExit -= r)
-                .Subscribe(o => resetEvent.Set());
-            Observable
-                .FromEventPattern<IEnumerable<OptionValue>>(a => editableGrid.OnSave += a, r => editableGrid.OnSave -= r)
-                .Select(e => e.EventArgs)
-                .Subscribe(o =>
-                {
-                    o.ForEach(value =>
-                    {
-                        if (optionFile.Options.TryGetValue(value.OptionKey, out var oldValue))
-                        {
-                            optionFile.Options.TryUpdate(value.OptionKey, value.Option, oldValue);
-                        }
-                    });
-                    optionFile.Save();
-                    resetEvent.Set();
-                });
+            IObservable<MenuResult> exitObservable = Observable
+                 .FromEventPattern(a => editableGrid.OnExit += a, r => editableGrid.OnExit -= r)
+                 .Select(e => new MenuResult<object>(null));
+            IObservable<MenuResult> saveObservable = Observable
+                 .FromEventPattern<IEnumerable<OptionValue>>(a => editableGrid.OnSave += a, r => editableGrid.OnSave -= r)
+                 .Select(e => e.EventArgs)
+                 .Select(o =>
+                 {
+                     o.ForEach(value =>
+                     {
+                         if (optionFile.Options.TryGetValue(value.OptionKey, out Option oldValue))
+                         {
+                             optionFile.Options.TryUpdate(value.OptionKey, value.Option, oldValue);
+                         }
+                     });
+                     optionFile.Save();
+                     return new MenuResult<OptionFile>(optionFile);
+                 });
 
-            editableGrid.Show(Title, token, vertical: true, clearConsole: true);
-
-            resetEvent.Wait(token);
-            resetEvent.Reset();
-            return Task.CompletedTask;
+            return Observable.Create<MenuResult>(observer =>
+             {
+                 var sub = Observable.Merge(exitObservable, saveObservable).Subscribe(m => observer.OnCompleted());
+                 editableGrid.Show(Title, token, vertical: true, clearConsole: true);
+                 return sub;
+             });
         }
 
         private class OptionValue : IEnumerable<char>

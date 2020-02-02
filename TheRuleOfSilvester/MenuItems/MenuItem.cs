@@ -23,7 +23,7 @@ namespace TheRuleOfSilvester.MenuItems
             ConsoleInput = consoleInput;
         }
 
-        public Task<IDisposable> Run()
+        public IObservable<MenuResult> Run()
         {
             Console.Clear();
             var compositeDisposable = new CompositeDisposable();
@@ -38,16 +38,12 @@ namespace TheRuleOfSilvester.MenuItems
             compositeDisposable.Add(cancelationSource);
             compositeDisposable.Add(disposable);
 
-            return Task.Run<IDisposable>(async () =>
-            {
-                await Action(cancelationSource.Token);
-                return compositeDisposable;
-            });
+            return Action(cancelationSource.Token);
         }
 
         public override string ToString()
             => Title;
 
-        protected abstract Task Action(CancellationToken token);
+        protected abstract IObservable<MenuResult> Action(CancellationToken token);
     }
 }

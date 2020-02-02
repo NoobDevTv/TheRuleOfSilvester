@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,11 +21,11 @@ namespace TheRuleOfSilvester.MenuItems
             Token = source.Token;
         }
 
-        protected override Task Action(CancellationToken token)
-        {
-            source.Cancel();
-            return Task.CompletedTask;
-        }
+        protected override IObservable<MenuResult> Action(CancellationToken token) 
+            => Observable.Create<MenuResult>(observer => Task.Run(() =>
+                {
+                    observer.OnNext(new MenuResult<bool>(true));
+                }));
 
         public void Dispose()
         {
