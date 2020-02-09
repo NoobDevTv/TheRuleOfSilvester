@@ -76,10 +76,25 @@ namespace TheRuleOfSilvester.Runtime
 
             MultiplayerComponent
                   .CurrentServerStatus
-                  .Where(s => s == ServerStatus.Started)
                   .Subscribe(s =>
                   {
-                      CurrentGameStatus = GameStatus.Running;
+                      switch (s)
+                      {
+                          case ServerStatus.Started:
+                              CurrentGameStatus = GameStatus.Running;
+                              break;
+                          case ServerStatus.Waiting:
+                              CurrentGameStatus = GameStatus.Waiting;
+                              break;
+                          case ServerStatus.Stopped:
+                              CurrentGameStatus = GameStatus.Stopped;
+                              break;
+                          case ServerStatus.Paused:
+                              CurrentGameStatus = GameStatus.Paused;
+                              break;
+                          default:
+                              break;
+                      }
                   });
 
             Winners = MultiplayerComponent

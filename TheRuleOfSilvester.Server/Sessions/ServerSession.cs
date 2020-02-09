@@ -49,11 +49,13 @@ namespace TheRuleOfSilvester.Server
                 registerCommands,
                 client.SendPackages(notifciations
                                     .Where(n => n.Client == client || n.Client == null)
-                                    .Select(n => new Package(n.CommandName, n.Notification.Serialize())))
+                                    .Select(n => new Package(n.CommandName, n.Notification.Serialize()))),
+                client.ReceivedPackages.Subscribe(p => { }, () => RemoveClient(client))
             };
 
             var successful = connectedSubscriptions.TryAdd(client, disposables);
             Send(client, CommandName.JoinedSession, new Notification(successful.GetBytes(), NotificationType.Success));
+            OnClientAdded(client);
         }
 
         public void RemoveClient(BaseClient client)
@@ -71,6 +73,8 @@ namespace TheRuleOfSilvester.Server
 
         public bool Contains(BaseClient client)
             => connectedSubscriptions.ContainsKey(client);
+
+        protected virtual void OnClientAdded(BaseClient client) { }
 
         protected void Send(BaseClient client, CommandName commandName, Notification notification)
             => Send(new CommandNotification() { Client = client, CommandName = commandName, Notification = notification });

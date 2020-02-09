@@ -6,7 +6,8 @@ namespace TheRuleOfSilvester.Network
 {
     public enum CommandName : short
     {
-        Error = -1, 
+        Error = -2, 
+        Disconnect = -1,
 
         GetMap,
         GetMovableTiles,

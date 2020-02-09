@@ -133,7 +133,7 @@ namespace TheRuleOfSilvester.Runtime
             var underlyingType = Enum.GetUnderlyingType(typeof(T));
 
             var method = typeof(SerializeHelper)
-                            .GetMethod(nameof(ToValue), BindingFlags.Static)
+                            .GetMethod(nameof(ToValue), BindingFlags.Static | BindingFlags.Public)
                             .MakeGenericMethod(underlyingType);
 
             var value = method.Invoke(null, new object[] { e });

@@ -8,6 +8,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network;
 
@@ -16,6 +17,7 @@ namespace TheRuleOfSilvester.Server
     public class Server : IDisposable
     {
         public event EventHandler<ConnectedClient> OnClientConnected;
+        public event EventHandler OnClientDisconnected;
 
         public int ClientAmount => connectedClients.Count;
 
@@ -91,14 +93,27 @@ namespace TheRuleOfSilvester.Server
 
             var client = new ConnectedClient(tmpSocket);
             connectedClients.Add(client);
+            client.OnDisconnected += ClientOnDisconnected;
 
             OnClientConnected?.Invoke(this, client);
 
+            client.Start();
             clientSubject.OnNext(client);
 
-            client.Start();
             //client.Send(new byte[] { 1 }, 1);
             socket.BeginAccept(OnClientAccepted, null);
+        }
+
+        private void ClientOnDisconnected(object sender, EventArgs e)
+        {
+            if(sender is ConnectedClient client)
+            {
+                connectedClients.Remove(client);
+                client.Stop();
+                client.Dispose();
+            }
+
+            OnClientDisconnected?.Invoke(sender, e);
         }
     }
 }

@@ -75,7 +75,7 @@ namespace TheRuleOfSilvester
                                 exitResetEvent.Set();
                                 break;
                             case MenuResult<Game> gameResult:
-                                gameResult.Content.Wait();
+                                //gameResult.Content.Wait();
                                 break;
                             default:
                                 break;

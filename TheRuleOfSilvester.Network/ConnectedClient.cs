@@ -14,6 +14,6 @@ namespace TheRuleOfSilvester.Network
 
         public ConnectedClient(Socket socket) : base(socket)
         {
-        }        
+        }
     }
 }

@@ -80,13 +80,13 @@ namespace TheRuleOfSilvester.Server.Commands
                 .OfType<IGameServerSession>()
                 .Select(s => new GameServerSessionInfo(s));
 
-            //list = new[]
-            //{
-            //    new GameServerSessionInfo(new FakeSession(10, "Test1", 5, 1)),
-            //    new GameServerSessionInfo(new FakeSession(6, "Name", 3, 19)),
-            //    new GameServerSessionInfo(new FakeSession(2, "Tolles Game", 1, 2)),
-            //    new GameServerSessionInfo(new FakeSession(50, "Nicht Joinen, nur test", 40, 5)),
-            //};
+            list = new[]
+            {
+                new GameServerSessionInfo(new FakeSession(10, "Test1", 5, 1)),
+                new GameServerSessionInfo(new FakeSession(6, "Name", 3, 19)),
+                new GameServerSessionInfo(new FakeSession(2, "Tolles Game", 1, 2)),
+                new GameServerSessionInfo(new FakeSession(50, "Nicht Joinen, nur test", 40, 5)),
+            };
 
             Send(client, new Notification(SerializeHelper.SerializeList(list), NotificationType.Sessions));
         }

@@ -19,6 +19,6 @@ namespace TheRuleOfSilvester.MenuItems
         }
 
         protected override IObservable<MenuResult> Action(CancellationToken token)
-            => Observable.Create<MenuResult>(observer => () => action(token).Subscribe(observer));
+            => Observable.Create<MenuResult>(observer => Task.Run(() =>  action(token).Subscribe(observer)));
     }
 }

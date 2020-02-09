@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
+using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Network.Sessions;
+using TheRuleOfSilvester.Runtime;
 using TheRuleOfSilvester.Server.Commands;
 
 namespace TheRuleOfSilvester.Server
@@ -39,6 +41,18 @@ namespace TheRuleOfSilvester.Server
             notifications = Observable.Merge(generalNotifications, mapNotifications, roundNotifications);
 
             return disposables;
+        }
+
+        protected override void OnClientAdded(BaseClient client)
+        {
+            var status = ServerStatus.Waiting;
+
+            if (playerService.TryGetNetworkPlayer(client, out var networkPlayer))
+                status = networkPlayer.CurrentServerStatus;
+
+
+            Send(client, CommandName.GetStatus, new Notification(status.GetBytes(), NotificationType.ServerStatus));
+            base.OnClientAdded(client);
         }
     }
 }

@@ -20,6 +20,8 @@ namespace TheRuleOfSilvester.Server
                 Console.CancelKeyPress += (s, e) => mResetEvent.Reset();
                 
                 server.OnClientConnected += ServerOnClientConnected;
+                server.OnClientDisconnected += ServerOnClientDisconnected;
+
                 Console.WriteLine("Server has started, waiting for clients");
                 string command;
                 do
@@ -31,6 +33,11 @@ namespace TheRuleOfSilvester.Server
                 Console.WriteLine("Game started.");
                 mResetEvent.WaitOne();
             }
+        }
+
+        private static void ServerOnClientDisconnected(object sender, EventArgs e)
+        {
+            Console.WriteLine("Client has disconnected. Current Amount: " + server.ClientAmount);
         }
 
         private static void ServerOnClientConnected(object sender, ConnectedClient e)

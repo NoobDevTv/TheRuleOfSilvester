@@ -18,8 +18,10 @@ namespace TheRuleOfSilvester.Drawing
             selectionControl = new SelectionGrid<GameServerSessionInfo>(consoleInput);
         }
 
-        public GameServerSessionInfo ShowServerSessionDialog(IEnumerable<GameServerSessionInfo> gameServerSessionInfos)
+        public GameServerSessionInfo ShowServerSessionDialog(IEnumerable<GameServerSessionInfo> gameServerSessionInfos, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             selectionControl.Clear();
             Console.CursorVisible = false;
             Console.SetCursorPosition(0, 0);
@@ -31,7 +33,7 @@ namespace TheRuleOfSilvester.Drawing
 
             var str = $"{{0,-{maxNameLength}}} {{1,2}}/{{2,-2}}";
             selectionControl.AddRange(gameServerSessionInfos.Select(x => (x, string.Format(str, x.Name, x.CurrentPlayers, x.MaxPlayers))));
-            var ret = selectionControl.ShowModal("Lobby", CancellationToken.None, true);
+            var ret = selectionControl.ShowModal("Lobby", token, true);
 
             return ret;
         }

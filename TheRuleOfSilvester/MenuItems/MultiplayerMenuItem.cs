@@ -48,9 +48,8 @@ namespace TheRuleOfSilvester.MenuItems
                 {
                     Console.Clear();
                     MenuItem menuItem = selectionGrid.ShowModal(Title, token, true);
-                    menuItem.Run().Subscribe();
-                    token.ThrowIfCancellationRequested();
-                }));
+                    return menuItem.Run().Subscribe(observer);
+                }, token));
 
         private IObservable<MenuResult> JoinLobby(CancellationToken token)
         {
@@ -62,7 +61,7 @@ namespace TheRuleOfSilvester.MenuItems
             var sessions = CreateSessionsAndResetEvent(component,
                 SerializeHelper.DeserializeToList<GameServerSessionInfo>,
                 NotificationType.Sessions)
-                    .Select(selectionGrid.ShowServerSessionDialog);
+                    .Select(sessions => selectionGrid.ShowServerSessionDialog(sessions, token));
 
             return RunAndWait(component, sessions, notification);
         }
@@ -76,7 +75,7 @@ namespace TheRuleOfSilvester.MenuItems
 
             var editableGrid = new EditableGrid<string>(ConsoleInput);
             editableGrid.Add("", "Session name");
-            editableGrid.Add("", "Max Players");
+            editableGrid.Add("4", "Max Players");
             editableGrid.ConvertMethod = (value, display) =>
             {
                 var raw = new string(value.ToArray());
@@ -135,10 +134,23 @@ namespace TheRuleOfSilvester.MenuItems
                                  {
                                      return new MenuResult<Game>(GetGame(multiplayerComponent, session));
                                  })
-                                 .Subscribe(observer);
+                                 .Subscribe(result => observer.OnNext(result), exception =>
+                                 {
+                                     multiplayerComponent.Disconnect();
+                                     observer.OnError(exception);
+                                 });
 
-                using var packages = multiplayerComponent.SendPackages(notification.ToObservable());
-                return subscription;
+                var sub2 = multiplayerComponent
+                            .GetNotifications()
+                            .Where(n => n.Type == NotificationType.Success)
+                            .Select(n => multiplayerComponent.SendPackages(notification.ToObservable()))
+                            .Subscribe();
+
+                return new CompositeDisposable
+                {
+                    subscription,
+                    sub2
+                };
             });
         }
 

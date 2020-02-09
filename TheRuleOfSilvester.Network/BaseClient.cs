@@ -12,9 +12,11 @@ using TheRuleOfSilvester.Core.Observation;
 
 namespace TheRuleOfSilvester.Network
 {
-    public abstract class BaseClient
+    public abstract class BaseClient : IDisposable
     {
         public IObservable<Package> ReceivedPackages => packageSubject;
+
+        public event EventHandler OnDisconnected;
 
         protected readonly Socket Socket;
         protected readonly SocketAsyncEventArgs ReceiveArgs;
@@ -23,23 +25,26 @@ namespace TheRuleOfSilvester.Network
         private byte nextSendQueueWriteIndex;
         private bool sending;
 
+        private Task internalTask;
+        private CancellationTokenSource tokenSource;
+
         private readonly SocketAsyncEventArgs sendArgs;
 
         private readonly (byte[] data, int len)[] sendQueue;
         private readonly object sendLock;
-        
+
         private readonly Subject<Package> packageSubject;
+
 
         protected BaseClient(Socket socket)
         {
             packageSubject = new Subject<Package>();
-            
+
             sendQueue = new (byte[] data, int len)[256];
             sendLock = new object();
 
             Socket = socket;
             Socket.NoDelay = true;
-
             ReceiveArgs = new SocketAsyncEventArgs();
             ReceiveArgs.Completed += OnReceived;
             ReceiveArgs.SetBuffer(ArrayPool<byte>.Shared.Rent(20480), 0, 20480);
@@ -49,19 +54,27 @@ namespace TheRuleOfSilvester.Network
 
         }
 
-        public Task Start()
+        public void Start()
         {
-            return Task.Run(() =>
+            tokenSource = new CancellationTokenSource();
+            internalTask = Task.Run(() =>
             {
                 if (Socket.ReceiveAsync(ReceiveArgs))
                     return;
 
-                Receive(ReceiveArgs);
-            });
+                Receive(ReceiveArgs, tokenSource.Token);
+            }, tokenSource.Token);
+        }
+
+        public void Stop()
+        {
+            tokenSource.Cancel();
+            tokenSource.Dispose();
         }
 
         public void Disconnect()
         {
+            Send(new Package(CommandName.Disconnect, Array.Empty<byte>()));
             Socket.Disconnect(false);
         }
 
@@ -94,7 +107,16 @@ namespace TheRuleOfSilvester.Network
             var package = Package.FromByteArray(data);
             package.Client = this;
 
-            CallOnNext(package);
+            if (package.CommandName == CommandName.Disconnect)
+            {
+                Socket.Close();
+                packageSubject.OnCompleted();
+                OnDisconnected?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                CallOnNext(package);
+            }
 
             return receiveArgsCount;
         }
@@ -157,10 +179,11 @@ namespace TheRuleOfSilvester.Network
 
         private void OnReceived(object sender, SocketAsyncEventArgs e)
         {
-            Receive(e);
+            var token = tokenSource?.Token ?? CancellationToken.None;
+            Receive(e, token);
         }
 
-        protected void Receive(SocketAsyncEventArgs e)
+        protected void Receive(SocketAsyncEventArgs e, CancellationToken token)
         {
             do
             {
@@ -175,11 +198,37 @@ namespace TheRuleOfSilvester.Network
 
                 } while (offset < e.BytesTransferred);
 
-            } while (!Socket.ReceiveAsync(e));
+            } while (!token.IsCancellationRequested && !Socket.ReceiveAsync(e));
         }
 
 
         public IDisposable SendPackages(IObservable<Package> packages)
             => packages.Subscribe(Send);
+
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                tokenSource?.Dispose();
+
+                Socket.Dispose();
+                sendArgs.Dispose();
+                ReceiveArgs.Dispose();
+                packageSubject.Dispose();
+
+                OnDisconnected = null;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        ~BaseClient()
+        {
+            Dispose(false);
+        }
     }
 }
