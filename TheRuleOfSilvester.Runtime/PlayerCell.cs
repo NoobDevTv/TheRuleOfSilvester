@@ -104,7 +104,7 @@ namespace TheRuleOfSilvester.Runtime
                 return false;
 
             Map.Cells.Remove(item);
-            for (int i = 0; i < ItemInventory.Count; i++)
+            for (int i = 0; i < ItemInventory.MaximumCount; i++)
             {
                 if (ItemInventory[i] == null)
                 {

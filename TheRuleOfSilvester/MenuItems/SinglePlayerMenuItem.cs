@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,20 +17,25 @@ namespace TheRuleOfSilvester.MenuItems
         {
         }
 
-        protected override IObservable<MenuResult> Action(CancellationToken token)
-        {
-            Console.Clear();
-            var x = GetIntFromUser("Map Width", 10, 400);
-            var y = GetIntFromUser("Map Height", 10, 400);
+        protected override IObservable<MenuResult> Action(CancellationToken token) 
+            => Observable.Create<MenuResult>((observer, cancelToken) => Task.Run(() =>
+                {
+                    Console.Clear();
+                    var x = GetIntFromUser("Map Width", 10, 400);
+                    var y = GetIntFromUser("Map Height", 10, 400);
 
-            var game = new Game
-            {
-                DrawComponent = new DrawComponent()
-            };
+                    var game = new Game
+                    {
+                        InputCompoment = new InputComponent(ConsoleInput),
+                        DrawComponent = new DrawComponent()
+                    };
+                    game.RunSinglePlayer(60, x, y);
+                    var result = new MenuResult<Game>(game);
+                    observer.OnNext(result);
+                    game.Wait();
+                    observer.OnCompleted();
 
-            throw new NotImplementedException();
-            //TODO: Run Game
-        }
+                }, cancelToken));
 
         private int GetIntFromUser(string title, int min = 0, int max = int.MaxValue)
         {
@@ -42,7 +48,7 @@ namespace TheRuleOfSilvester.MenuItems
                 raw = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(raw))
-                    return 0;
+                    return min;
 
             } while (!int.TryParse(raw, out value) || value < min || value > max);
 

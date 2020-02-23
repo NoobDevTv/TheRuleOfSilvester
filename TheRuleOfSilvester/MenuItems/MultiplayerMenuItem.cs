@@ -74,6 +74,8 @@ namespace TheRuleOfSilvester.MenuItems
             int maxPlayers = 0;
 
             var editableGrid = new EditableGrid<string>(ConsoleInput);
+
+            
             editableGrid.Add("", "Session name");
             editableGrid.Add("4", "Max Players");
             editableGrid.ConvertMethod = (value, display) =>
@@ -94,22 +96,39 @@ namespace TheRuleOfSilvester.MenuItems
                 return raw;
             };
 
-            editableGrid.Show("New GameSession", token, vertical: true);
-            byte[] data;
-            using (var stream = new MemoryStream())
-            using (var writer = new BinaryWriter(stream))
+            IObservable<MenuResult> exitObservable = Observable
+                 .FromEventPattern(a => editableGrid.OnExit += a, r => editableGrid.OnExit -= r)
+                 .Select(e => new MenuResult<object>(null))
+                 .Do(m => throw new OperationCanceledException());
+
+            IObservable<MenuResult> saveObservable = Observable
+                 .FromEventPattern<IEnumerable<string>>(a => editableGrid.OnSave += a, r => editableGrid.OnSave -= r)
+                 .Select(e => e.EventArgs)
+                 .SelectMany(o =>
+                 {
+                     byte[] data;
+                     using (var stream = new MemoryStream())
+                     using (var writer = new BinaryWriter(stream))
+                     {
+                         writer.Write(name);
+                         writer.Write(maxPlayers);
+                         data = stream.ToArray();
+                     }
+
+                     var notification = new[] { (CommandName.NewSession, new Notification(data, NotificationType.Sessions)) };
+                     var sessions = CreateSessionsAndResetEvent(component,
+                         SerializeHelper.Deserialize<GameServerSessionInfo>,
+                         NotificationType.Session);
+
+                     return RunAndWait(component, sessions, notification);
+                 });
+
+            return Observable.Create<MenuResult>(observer =>
             {
-                writer.Write(name);
-                writer.Write(maxPlayers);
-                data = stream.ToArray();
-            }
-
-            var notification = new[] { (CommandName.NewSession, new Notification(data, NotificationType.Sessions)) };
-            var sessions = CreateSessionsAndResetEvent(component,
-                SerializeHelper.Deserialize<GameServerSessionInfo>,
-                NotificationType.Session);
-
-            return RunAndWait(component, sessions, notification);
+                var sub = Observable.Merge(exitObservable, saveObservable).Subscribe(observer);
+                editableGrid.Show("New GameSession", token, vertical: true);
+                return sub;
+            });
         }
 
         private IObservable<T> CreateSessionsAndResetEvent<T>(IMultiplayerComponent component,

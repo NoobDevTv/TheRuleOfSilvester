@@ -60,16 +60,26 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
             player = game.Map.Players.OfType<Player>().FirstOrDefault(x => x.IsLocal);
             actions = new Stack<PlayerAction>(player.Role.ActionsPoints);
 
-            disposables.Disposable = new CompositeDisposable
+            if (game.IsMutliplayer)
             {
-               game.MultiplayerComponent?.SendPackages(
-                    playerActions
-                        .Select(SerializeHelper.SerializeList)
-                        .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerActions)))),
+                disposables.Disposable = new CompositeDisposable
+                {
+                   game.MultiplayerComponent.SendPackages(
+                        playerActions
+                            .Select(SerializeHelper.SerializeList)
+                            .Select(b => (CommandName.TransmitActions, new Notification(b, NotificationType.PlayerActions)))),
 
-                game.MultiplayerComponent?
-                    .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)))
-            };
+                    game.MultiplayerComponent
+                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)))
+                };
+            }
+            else
+            {
+                disposables.Disposable = new CompositeDisposable
+                {
+                   playerActions.Subscribe(p => game.CurrentUpdateSets = p.ToArray().Reverse().ToObservable())
+                };
+            }
 
             Subscribe();
         }
@@ -118,7 +128,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                     player.CellInventory.Add(mapCell, 0);
                     break;
                 case ActionType.CollectedItem:
-                    BaseItemCell item = player.ItemInventory.LastOrDefault();
+                    BaseItemCell item = player.ItemInventory.Last();
                     item.Position = player.Position;
                     map.Cells.Add(item);
                     player.ItemInventory.Remove(item);

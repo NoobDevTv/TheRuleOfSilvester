@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using TheRuleOfSilvester.Runtime.Cells;
-using TheRuleOfSilvester.Core;
-using System.Reactive.Linq;
-using System;
-using TheRuleOfSilvester.Network;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Observation;
+using TheRuleOfSilvester.Network;
+using TheRuleOfSilvester.Runtime.Cells;
 
 namespace TheRuleOfSilvester.Runtime.RoundComponents
 {
@@ -32,27 +32,34 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         public void Start(Game game)
         {
             this.game = game;
-            disposables.Disposable = new CompositeDisposable
-            {
-                game.CurrentUpdateSets
-                    .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true),
 
-                game.MultiplayerComponent
-                    .CurrentServerStatus
-                    .Where(s => s == ServerStatus.Ended)
-                    .Subscribe(s =>
-                    {
-                        game.Stop();
-                    }),
+            var currentUpdateSet = Observable.Zip(game.CurrentUpdateSets, Observable.Interval(TimeSpan.FromMilliseconds(250)), (update, interval) => update);
 
-                game.MultiplayerComponent
-                    .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)))
+            var compositeDisposable = new CompositeDisposable {
+                 currentUpdateSet
+                            .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true)
             };
+
+            if (game.IsMutliplayer)
+            {
+                compositeDisposable.Add(game.MultiplayerComponent
+                        .CurrentServerStatus
+                        .Where(s => s == ServerStatus.Ended)
+                        .Subscribe(s =>
+                        {
+                            game.Stop();
+                        }));
+
+                compositeDisposable.Add(game.MultiplayerComponent
+                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty))));
+            }
+
+            disposables.Disposable = compositeDisposable;
         }
 
         private void ExecuteAction(PlayerAction action)
         {
-            var localUpdatePlayer = game.Map.Players.First(p => p == action.Player as PlayerCell);
+            PlayerCell localUpdatePlayer = game.Map.Players.First(p => p == action.Player as PlayerCell);
 
             switch (action.ActionType)
             {
@@ -61,7 +68,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                     game.Map.Players.ForEach(x => x.Invalid = true);
                     break;
                 case ActionType.ChangedMapCell:
-                    var inventoryCell = localUpdatePlayer.CellInventory.First(x => x.Position.X == 1);
+                    MapCell inventoryCell = localUpdatePlayer.CellInventory.First(x => x.Position.X == 1);
                     localUpdatePlayer.CellInventory.Remove(inventoryCell);
 
                     var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point) as MapCell;
