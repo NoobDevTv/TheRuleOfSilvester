@@ -24,7 +24,7 @@ namespace TheRuleOfSilvester.Components
         private Position oldChunkPos;
         private int oldWidth = 0;
         private int oldHeight = 0;
-        private BaseItemCell[] oldPlayerInventory;
+        private Inventory<BaseItemCell> oldPlayerInventory;
         private readonly ChunkCollection chunks;
 
         public DrawComponent()
@@ -202,6 +202,7 @@ namespace TheRuleOfSilvester.Components
             {
                 Console.CursorLeft = CurrentWidth;
                 Console.CursorTop = topPos++;
+                Console.ForegroundColor = ConsoleColor.White;
             }
             ResetCursor();
             Console.Write(player.Name);
@@ -210,7 +211,6 @@ namespace TheRuleOfSilvester.Components
             ResetCursor();
             Console.ForegroundColor = ConsoleColor.Red;
             DrawPlayerHealth(player.Role);
-            Console.ForegroundColor = ConsoleColor.White;
             ResetCursor();
             Console.Write("⚔ATK: " + player.Role.Attack);
             ResetCursor();
@@ -254,14 +254,15 @@ namespace TheRuleOfSilvester.Components
             {
                 Console.CursorLeft = Console.WindowWidth - INFO_WIDTH;
                 Console.CursorTop = topPos++;
+                Console.ForegroundColor = ConsoleColor.White;
             }
 
             var itemInventory = player.ItemInventory;
 
-            if (oldPlayerInventory == null)
-                oldPlayerInventory = new BaseItemCell[itemInventory.Count];
+            if (oldPlayerInventory == null || oldPlayerInventory.MaximumCount != itemInventory.MaximumCount)
+                oldPlayerInventory = new Inventory<BaseItemCell>(itemInventory.MaximumCount);
 
-            for (int i = 0; i < itemInventory.Count; i++)
+            for (int i = 0; i < itemInventory.MaximumCount; i++)
             {
                 ResetCursor();
 
@@ -271,10 +272,10 @@ namespace TheRuleOfSilvester.Components
                         Console.Write(' ');
                     else
                         Console.Write((char)itemInventory[i].Lines[0, 0].ElementID);
+
+                    oldPlayerInventory[i] = itemInventory[i];
                 }
             }
-
-            player.ItemInventory.CopyTo(oldPlayerInventory, 0);
         }
 
         private char BaseElementToChar(BaseElement baseElement)
@@ -283,33 +284,32 @@ namespace TheRuleOfSilvester.Components
             if (baseElement == null)
                 return ' ';
 
-            switch (baseElement.ElementID)
+            return baseElement.ElementID switch
             {
-                case 1: return '│';
-                case 2: return '║';
-                case 3: return '─';
-                case 4: return '═';
-                case 5: return '┌';
-                case 6: return '╔';
-                case 7: return '└';
-                case 8: return '╚';
-                case 9: return '┐';
-                case 10: return '╗';
-                case 11: return '┘';
-                case 12: return '╝';
-                case 13: return '┬';
-                case 14: return '╦';
-                case 15: return '┴';
-                case 16: return '╩';
-                case 17: return '├';
-                case 18: return '╠';
-                case 19: return '┤';
-                case 20: return '╣';
-                case 21: return '┼';
-                case 22: return '╬';
-                default:
-                    return (char)baseElement.ElementID;
-            }
+                1 => '│',
+                2 => '║',
+                3 => '─',
+                4 => '═',
+                5 => '┌',
+                6 => '╔',
+                7 => '└',
+                8 => '╚',
+                9 => '┐',
+                10 => '╗',
+                11 => '┘',
+                12 => '╝',
+                13 => '┬',
+                14 => '╦',
+                15 => '┴',
+                16 => '╩',
+                17 => '├',
+                18 => '╠',
+                19 => '┤',
+                20 => '╣',
+                21 => '┼',
+                22 => '╬',
+                _ => (char)baseElement.ElementID,
+            };
         }
 
         private class ChunkCollection : List<Chunk>

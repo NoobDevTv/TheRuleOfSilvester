@@ -98,18 +98,16 @@ namespace TheRuleOfSilvester.Runtime
             if (list == null)
                 return new byte[0];
 
-            using (var memoryStream = new MemoryStream())
+            using var memoryStream = new MemoryStream();
+            using (var binaryWriter = new BinaryWriter(memoryStream))
             {
-                using (var binaryWriter = new BinaryWriter(memoryStream))
-                {
-                    binaryWriter.Write(list.Count());
+                binaryWriter.Write(list.Count());
 
-                    foreach (var obj in list)
-                        obj.Serialize(binaryWriter);
-                }
-
-                return memoryStream.ToArray();
+                foreach (var obj in list)
+                    obj.Serialize(binaryWriter);
             }
+
+            return memoryStream.ToArray();
         }
 
         public static byte[] SerializeList(IEnumerable list)
