@@ -22,7 +22,7 @@ namespace TheRuleOfSilvester.Server
 
         public GameServerSession(PlayerService playerService, string name, int maxPlayers) : base()
         {
-            gameManager = new GameManager();
+            gameManager = new GameManager(maxPlayers);
             this.playerService = playerService;
             Name = name;
             MaxPlayers = maxPlayers;
@@ -49,8 +49,7 @@ namespace TheRuleOfSilvester.Server
 
             if (playerService.TryGetNetworkPlayer(client, out var networkPlayer))
                 status = networkPlayer.CurrentServerStatus;
-
-
+                        
             Send(client, CommandName.GetStatus, new Notification(status.GetBytes(), NotificationType.ServerStatus));
             base.OnClientAdded(client);
         }

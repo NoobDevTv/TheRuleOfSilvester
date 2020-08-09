@@ -26,11 +26,12 @@ namespace TheRuleOfSilvester.Server
 
         private readonly SemaphoreExtended winnersSemaphore;
         private readonly List<IPlayer> listOfWinners;
-
+        private readonly int maxPlayers;
         private int nextId;
 
-        public GameManager()
+        public GameManager(int maxPlayers)
         {
+            this.maxPlayers = maxPlayers;
             nextId = 0;
             listOfWinners = new List<IPlayer>();
             winnersSemaphore = new SemaphoreExtended(1, 1);
@@ -73,6 +74,10 @@ namespace TheRuleOfSilvester.Server
             Map.Players.Add(player);
             player.Id = NextId;
             networkPlayer.Player = player;
+
+            if (Players.Count == maxPlayers)
+                StartGame();
+
             return player;
         }
 
