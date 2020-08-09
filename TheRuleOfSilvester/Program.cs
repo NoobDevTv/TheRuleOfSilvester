@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,8 +50,39 @@ namespace TheRuleOfSilvester
             {
                 Name = "MainMenuGrid"
             };
-            ShowMenu(menu);
+
+            using var menuItemSubject = new Subject<MenuItem>();
+            IObservable<MenuItem> menuItemsFromMenu = Observable
+                .Return<Func<MenuItem>>(() => menu.ShowModal("The Rule Of Silvester", CancellationToken.None, true))
+                .Do(m => Console.Clear())
+                .Select(showMenu => showMenu());
+
+            using IDisposable subscription = Observable
+                .Merge(menuItemsFromMenu, menuItemSubject)
+                .SelectMany(item => item.Run())
+                .Do(r => HandleResult(r, menuItemSubject))
+                .Repeat()
+                .Subscribe();
+
             exitResetEvent.WaitOne();
+        }
+
+        private static void HandleResult(MenuResult result, IObserver<MenuItem> menuItemObserver)
+        {
+            switch (result)
+            {
+                case MenuResult<bool> exitResult:
+                    exitResetEvent.Set();
+                    break;
+                case MenuResult<Game> gameResult:
+                    gameResult.Content.Wait();
+                    break;
+                case MenuResult<MenuItem> itemResult:
+                    Task.Run(() => menuItemObserver.OnNext(itemResult.Content));
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static void ShowMenu(SelectionGrid<MenuItem> menu)
@@ -65,7 +97,7 @@ namespace TheRuleOfSilvester
                     Console.Clear();
                     MenuItem menuItem = menu.ShowModal("The Rule Of Silvester", CancellationToken.None, true);
 
-                    var menuObservable = menuItem
+                    IDisposable menuObservable = menuItem
                     .Run()
                     .Subscribe(result =>
                     {

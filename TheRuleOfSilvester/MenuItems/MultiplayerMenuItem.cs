@@ -151,7 +151,12 @@ namespace TheRuleOfSilvester.MenuItems
                 var subscription = sessions
                                  .Select(session =>
                                  {
-                                     return new MenuResult<Game>(GetGame(multiplayerComponent, session));
+                                     return new MenuResult<MenuItem>(
+                                                                        new LobbyMenuItem(
+                                                                                ConsoleInput,
+                                                                                GetGame(multiplayerComponent, session),
+                                                                                multiplayerComponent.CurrentServerStatus)
+                                                                    );
                                  })
                                  .Subscribe(result => observer.OnNext(result), exception =>
                                  {
