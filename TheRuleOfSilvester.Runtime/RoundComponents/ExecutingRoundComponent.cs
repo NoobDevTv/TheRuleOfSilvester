@@ -68,12 +68,19 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
                     game.Map.Players.ForEach(x => x.Invalid = true);
                     break;
                 case ActionType.ChangedMapCell:
-                    MapCell inventoryCell = localUpdatePlayer.CellInventory.First(x => x.Position.X == 1);
+                    MapCell inventoryCell = localUpdatePlayer.CellInventory.FirstOrDefault();
                     localUpdatePlayer.CellInventory.Remove(inventoryCell);
 
                     var mapCell = game.Map.SwapInventoryAndMapCell(inventoryCell, action.Point) as MapCell;
 
-                    localUpdatePlayer.CellInventory.ForEach(x => { x.Position = new Position(x.Position.X - 2, x.Position.Y); x.Invalid = true; });
+                    localUpdatePlayer.CellInventory.ForEach(x =>
+                    {
+                        x.Position = new Position(x.Position.X - 2, x.Position.Y);
+                        x.Invalid = true;
+
+                        localUpdatePlayer.CellInventory.Remove(x);
+                        localUpdatePlayer.CellInventory.Add(x);
+                    });
                     localUpdatePlayer.CellInventory.Add(mapCell);
                     localUpdatePlayer.Invalid = true;
                     break;
