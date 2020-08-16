@@ -54,7 +54,7 @@ namespace TheRuleOfSilvester.Server
             };
 
             var successful = connectedSubscriptions.TryAdd(client, disposables);
-            Send(client, CommandName.JoinedSession, new Notification(successful.GetBytes(), NotificationType.Success));
+            Send(client, CommandName.JoinedSession, new Notification(BitConverter.GetBytes(Id), NotificationType.SessionId));
             OnClientAdded(client);
         }
 

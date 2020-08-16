@@ -19,8 +19,8 @@ namespace TheRuleOfSilvester.Runtime.Interfaces
         void Disconnect();
 
         void Wait();
-                
-        IObservable<Notification> GetNotifications();
+
+        IObservable<(CommandName CommandName, Notification Notification)> GetNotifications();
         IDisposable SendPackages(IObservable<(CommandName Command, Notification Notification)> notifications);
     }
 }

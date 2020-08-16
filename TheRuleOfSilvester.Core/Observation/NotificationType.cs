@@ -10,6 +10,7 @@
         Winner,
         PlayerActions,
         Session,
+        SessionId,
         Sessions,
         Players,
         Success

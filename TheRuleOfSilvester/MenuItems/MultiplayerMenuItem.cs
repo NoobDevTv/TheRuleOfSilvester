@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +56,10 @@ namespace TheRuleOfSilvester.MenuItems
         {
             var component = GetMultiplayerComponent(token);
 
-            var notification = new[] { (CommandName.GetSessions, new Notification(Array.Empty<byte>(), NotificationType.Sessions)) };
+            var notification = new[] {
+                (CommandName.RegisterPlayer, new Notification(Encoding.UTF8.GetBytes("JoinLobbyPlayer"), NotificationType.None)),
+                (CommandName.GetSessions, new Notification(Array.Empty<byte>(), NotificationType.Sessions))
+            };
             var selectionGrid = new SessionExplorer(ConsoleInput);
 
             var sessions = CreateSessionsAndResetEvent(component,
@@ -75,7 +79,7 @@ namespace TheRuleOfSilvester.MenuItems
 
             var editableGrid = new EditableGrid<string>(ConsoleInput);
 
-            
+
             editableGrid.Add("", "Session name");
             editableGrid.Add("4", "Max Players");
             editableGrid.ConvertMethod = (value, display) =>
@@ -115,7 +119,11 @@ namespace TheRuleOfSilvester.MenuItems
                          data = stream.ToArray();
                      }
 
-                     var notification = new[] { (CommandName.NewSession, new Notification(data, NotificationType.Sessions)) };
+                     var notification = new[] {
+                         (CommandName.RegisterPlayer, new Notification(Encoding.UTF8.GetBytes("JoinLobbyPlayer"), NotificationType.None)),
+                         (CommandName.NewSession, new Notification(data, NotificationType.Sessions)),
+                     };
+
                      var sessions = CreateSessionsAndResetEvent(component,
                          SerializeHelper.Deserialize<GameServerSessionInfo>,
                          NotificationType.Session);
@@ -136,6 +144,7 @@ namespace TheRuleOfSilvester.MenuItems
         {
             return component
                 .GetNotifications()
+                .Select(n => n.Notification)
                 .Where(n => n.Type == type)
                 .Select(n => n.Deserialize(deserializeFunc));
         }
@@ -164,17 +173,28 @@ namespace TheRuleOfSilvester.MenuItems
                                      observer.OnError(exception);
                                  });
 
-                var sub2 = multiplayerComponent
-                            .GetNotifications()
-                            .Where(n => n.Type == NotificationType.Success)
+                var sessionIds = multiplayerComponent
+                                    .GetNotifications()
+                                    .Select(n => n.Notification)
+                                    .Where(n => n.Type == NotificationType.SessionId)
+                                    .Select(n => n.Deserialize(i => BitConverter.ToInt32(i)));
+                IDisposable initialConnectionSubscription = null;
+                initialConnectionSubscription = sessionIds
+                            .Where(id => id == 1)
                             .Select(n => multiplayerComponent.SendPackages(notification.ToObservable()))
-                            .Subscribe();
+                            .Subscribe(n => initialConnectionSubscription.Dispose());
 
-                return new CompositeDisposable
-                {
-                    subscription,
-                    sub2
-                };
+                var newPlayer = new[] { (CommandName.NewPlayer, Notification.Empty) }.ToObservable();
+                var newPlayerSubscripiton = sessionIds
+                    .Where(id => id != 1)
+                    .Subscribe(id => multiplayerComponent.SendPackages(newPlayer));
+
+                return StableCompositeDisposable
+                        .Create(
+                            subscription,
+                            initialConnectionSubscription,
+                            newPlayerSubscripiton
+                        );
             });
         }
 

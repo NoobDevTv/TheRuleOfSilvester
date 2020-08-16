@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -51,30 +52,38 @@ namespace TheRuleOfSilvester.Runtime
         private Player player;
         private Map map;
         private readonly Subject<(CommandName, Notification)> commandSubject;
+        private readonly CompositeDisposable disposables;
 
         public Game()
         {
-            CurrentUpdateSets = Observable.Empty<PlayerAction>();
             manualResetEvent = new ManualResetEventSlim(false);
             commandSubject = new Subject<(CommandName, Notification)>();
+            disposables = new CompositeDisposable()
+            {
+                commandSubject,
+                manualResetEvent
+            };
+
+            CurrentUpdateSets = Observable.Empty<PlayerAction>();
         }
 
         public void RunMultiplayer(int frame, int sessionId)
         {
             IsMutliplayer = true;
-            MultiplayerComponent.Connect();
+            //MultiplayerComponent.Connect();
 
-            MultiplayerComponent
+           var mapSub =  MultiplayerComponent
                 .GetNotifications()
+                .Select(n => n.Notification)
                 .Where(n => n.Type == NotificationType.Map)
                 .Select(n => n.Deserialize(SerializeHelper.Deserialize<Map>))
                 .Subscribe(m =>
                 {
                     Map = m;
-                    m.SubscribePlayerNotifications(MultiplayerComponent.GetNotifications());
+                    m.SubscribePlayerNotifications(MultiplayerComponent.GetNotifications().Select(n => n.Notification));
                 });
 
-            MultiplayerComponent
+            var statusSub = MultiplayerComponent
                   .CurrentServerStatus
                   .Subscribe(s =>
                   {
@@ -97,12 +106,16 @@ namespace TheRuleOfSilvester.Runtime
                       }
                   });
 
+            disposables.Add(statusSub);
+            disposables.Add(mapSub);
+
             Winners = MultiplayerComponent
                 .GetNotifications()
+                .Select(n => n.Notification)
                 .Where(n => n.Type == NotificationType.Winner)
                 .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>));
 
-            MultiplayerComponent.SendPackages(commandSubject);
+            disposables.Add(MultiplayerComponent.SendPackages(commandSubject));
             commandSubject.OnNext((CommandName.JoinSession, new Notification(sessionId.GetBytes(), NotificationType.None)));
             Run(frame);
         }
@@ -140,6 +153,9 @@ namespace TheRuleOfSilvester.Runtime
 
         public void Update()
         {
+            if (Map is null)
+                return;
+
             SystemUpdate();
             UiUpdate();
             AfterUpdate();
@@ -155,7 +171,8 @@ namespace TheRuleOfSilvester.Runtime
             tokenSource?.Dispose();
             gameTask?.Dispose();
             player?.Dispose();
-            manualResetEvent?.Dispose();
+
+            disposables.Dispose();
 
             tokenSource = null;
             gameTask = null;

@@ -18,7 +18,7 @@ namespace TheRuleOfSilvester.Server
 
         internal bool TryAddPlayer(BaseClient client, string playerName)
         {
-            var networkPlayer = new NetworkPlayer(playerName);
+            var networkPlayer = new NetworkPlayer(playerName, client);
 
             if (players.ContainsKey(client))
                 return false;

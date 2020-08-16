@@ -11,28 +11,43 @@ using TheRuleOfSilvester.Core.Extensions;
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using TheRuleOfSilvester.Core.Observation;
+using System.Reactive.Subjects;
+using System.Reactive.Disposables;
+using System.Diagnostics;
 
 namespace TheRuleOfSilvester.Components
 {
-    public class MultiplayerComponent : IMultiplayerComponent
+    public class MultiplayerComponent : IMultiplayerComponent, IDisposable
     {
         public Client Client { get; private set; }
 
         public int Port { get; set; }
         public string Host { get; set; }
         public IObservable<ServerStatus> CurrentServerStatus
-            => GetNotifications()
-               .Where(n => n.Type == NotificationType.ServerStatus)
-               .Select(n => n.Deserialize(SerializeHelper.DeserializeEnum<ServerStatus>));
-        
+            => serverStatusSubject;
+
+        private readonly IDisposable disposables;
+        private readonly BehaviorSubject<ServerStatus> serverStatusSubject;
+
         public MultiplayerComponent()
         {
             Client = new Client();
+            serverStatusSubject = new BehaviorSubject<ServerStatus>(ServerStatus.Undefined);
+
+            disposables = StableCompositeDisposable.Create(
+                serverStatusSubject,
+                GetNotifications()
+                   .Do(s => Debug.WriteLine("Received Notification from Server: "+ s.Notification.Type.ToString()))
+                   .Where(n => n.Notification.Type == NotificationType.ServerStatus)
+                   .Select(n => n.Notification.Deserialize(SerializeHelper.DeserializeEnum<ServerStatus>))
+                   .Do(s => Debug.WriteLine("Received Status from Server " + s.ToString()))
+                   .Subscribe(serverStatusSubject)
+                );
         }
 
-        public IObservable<Notification> GetNotifications() => Client
+        public IObservable<(CommandName CommandName, Notification Notification)> GetNotifications() => Client
             .ReceivedPackages
-            .Select(p => Notification.FromBytes(p.Data));
+            .Select(p => (p.CommandName, Notification.FromBytes(p.Data)));
 
         public IDisposable SendPackages(IObservable<(CommandName Command, Notification Notification)> notifications)
             => Client.SendPackages(notifications
@@ -49,6 +64,9 @@ namespace TheRuleOfSilvester.Components
         /// </summary>
         /// <exception cref="ArgumentException">If connection refused</exception>
         public void Wait() 
-            => Client.Wait();        
+            => Client.Wait();
+
+        public void Dispose()
+            => disposables.Dispose();
     }
 }

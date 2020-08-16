@@ -42,7 +42,7 @@ namespace TheRuleOfSilvester.Server
             roles = RoleManager.GetAllRolesRandomized();
             Map = new MapGenerator().Generate(20, 10);
         }
-        
+
         internal List<IPlayer> GetWinners()
         {
             var tmpPlayer = new List<IPlayer>();
@@ -60,14 +60,14 @@ namespace TheRuleOfSilvester.Server
 
         internal Player AddPlayer(NetworkPlayer networkPlayer)
         {
-            if(Players.Contains(networkPlayer))
+            if (Players.Contains(networkPlayer))
             {
                 //TODO: throw exception
             }
 
             var player = new Player(Map, roles.Dequeue())
             {
-                Name = networkPlayer.PlayerName, 
+                Name = networkPlayer.PlayerName,
                 Position = new Position(7, 4),
             };
             Players.Add(networkPlayer);
@@ -91,7 +91,7 @@ namespace TheRuleOfSilvester.Server
                 actions.Clear();
             }
         }
-    
+
 
         internal void StartGame()
         {
@@ -99,7 +99,14 @@ namespace TheRuleOfSilvester.Server
                 roles.Enqueue(role);
 
             foreach (var player in Players)
+            {
+                player.StartGame(Map);
+            }
+
+            foreach (var player in Players)
+            {
                 player.CurrentServerStatus = ServerStatus.Started;
+            }
         }
 
         internal void EndRound(NetworkPlayer player)
@@ -111,7 +118,7 @@ namespace TheRuleOfSilvester.Server
 
             CheckAllPlayersAsync();
         }
-        
+
         private void CheckAllPlayersAsync()
         {
             Task.Run(() =>
@@ -141,7 +148,7 @@ namespace TheRuleOfSilvester.Server
                 }
             });
         }
-               
+
         private void Execute()
         {
             executor.Execute(Map);

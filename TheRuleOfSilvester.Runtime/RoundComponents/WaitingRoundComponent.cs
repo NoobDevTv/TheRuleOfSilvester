@@ -20,6 +20,7 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
         {
             subscription = game.MultiplayerComponent?
                   .GetNotifications()
+                  .Select(n => n.Notification)
                   .Where(x => x.Type == NotificationType.PlayerActions)
                   .Subscribe(x =>
                   {
