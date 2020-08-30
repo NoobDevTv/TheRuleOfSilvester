@@ -28,12 +28,18 @@ namespace TheRuleOfSilvester.Components
 
         private readonly IDisposable disposables;
         private readonly BehaviorSubject<ServerStatus> serverStatusSubject;
+        private readonly IObservable<(CommandName CommandName, Notification)> notifications;
 
         public MultiplayerComponent()
         {
             Client = new Client();
             serverStatusSubject = new BehaviorSubject<ServerStatus>(ServerStatus.Undefined);
 
+            notifications = Client
+                                .ReceivedPackages
+                                .Select(p => (p.CommandName, Notification.FromBytes(p.Data)))
+                                .Publish()
+                                .RefCount();
             disposables = StableCompositeDisposable.Create(
                 serverStatusSubject,
                 GetNotifications()
@@ -45,9 +51,8 @@ namespace TheRuleOfSilvester.Components
                 );
         }
 
-        public IObservable<(CommandName CommandName, Notification Notification)> GetNotifications() => Client
-            .ReceivedPackages
-            .Select(p => (p.CommandName, Notification.FromBytes(p.Data)));
+        public IObservable<(CommandName CommandName, Notification Notification)> GetNotifications()
+            => notifications;
 
         public IDisposable SendPackages(IObservable<(CommandName Command, Notification Notification)> notifications)
             => Client.SendPackages(notifications

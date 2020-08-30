@@ -1,6 +1,8 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reactive.Subjects;
@@ -34,11 +36,12 @@ namespace TheRuleOfSilvester.Network
         private readonly object sendLock;
 
         private readonly Subject<Package> packageSubject;
-
+        private readonly Logger logger;
 
         protected BaseClient(Socket socket)
         {
             packageSubject = new Subject<Package>();
+            logger = LogManager.GetCurrentClassLogger();
 
             sendQueue = new (byte[] data, int len)[256];
             sendLock = new object();
@@ -97,8 +100,10 @@ namespace TheRuleOfSilvester.Network
 
         public void Send(Package package)
         {
+            logger.Debug($"Send: [{package.Id}] {package.CommandName} ({package.Data?.Length})");
             Send(package.ToByteArray(), package.Data.Length + Package.HEADER_SIZE);
         }
+
 
         protected virtual int ProcessInternal(byte[] receiveArgsBuffer, int receiveArgsCount, int offset)
         {
@@ -115,14 +120,15 @@ namespace TheRuleOfSilvester.Network
             }
             else
             {
-                CallOnNext(package);
+               CallOnNext(package);
             }
 
-            return receiveArgsCount;
+            return package.Data.Length + Package.HEADER_SIZE;
         }
 
         protected virtual void CallOnNext(Package package)
         {
+            logger.Debug($"Received: [{package.Id}] {package.CommandName} ({package.Data?.Length})");
             packageSubject.OnNext(package);
         }
 

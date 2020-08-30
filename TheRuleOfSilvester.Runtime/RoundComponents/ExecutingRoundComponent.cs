@@ -35,26 +35,30 @@ namespace TheRuleOfSilvester.Runtime.RoundComponents
 
             var currentUpdateSet = Observable.Zip(game.CurrentUpdateSets, Observable.Interval(TimeSpan.FromMilliseconds(250)), (update, interval) => update);
 
-            var compositeDisposable = new CompositeDisposable {
-                 currentUpdateSet
-                            .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true)
-            };
+
+            var executeActions = currentUpdateSet
+                       .Subscribe(ExecuteAction, e => { }, () => RoundEnd = true);
 
             if (game.IsMutliplayer)
             {
-                compositeDisposable.Add(game.MultiplayerComponent
-                        .CurrentServerStatus
-                        .Where(s => s == ServerStatus.Ended)
-                        .Subscribe(s =>
-                        {
-                            game.Stop();
-                        }));
+                //TODO: DEADLOCK
+               //var status = game.MultiplayerComponent
+               //         .CurrentServerStatus
+               //         .Where(s => s == ServerStatus.Ended)
+               //         .Subscribe(s =>
+               //         {
+               //             game.Stop();
+               //         });
 
-                compositeDisposable.Add(game.MultiplayerComponent
-                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty))));
+               var endroundStatus = game.MultiplayerComponent
+                        .SendPackages(endRound.Select(v => (CommandName.EndRound, Notification.Empty)));
+
+                disposables.Disposable = StableCompositeDisposable.Create(executeActions, endroundStatus);
             }
-
-            disposables.Disposable = compositeDisposable;
+            else
+            {
+                disposables.Disposable = StableCompositeDisposable.Create(executeActions);
+            }
         }
 
         private void ExecuteAction(PlayerAction action)

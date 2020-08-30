@@ -62,9 +62,9 @@ namespace TheRuleOfSilvester.Runtime
 
             Round = rounds.FirstOrDefault(x => x.Round == RoundMode);
 
-            Round?.Start(game);
-
             roundModeCell.Text = ("RoundMode: " + RoundMode).PadRight(20, ' ');
+
+            Round?.Start(game);
         }
     }
 }

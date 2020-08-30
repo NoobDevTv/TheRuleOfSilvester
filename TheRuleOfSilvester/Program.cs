@@ -1,4 +1,7 @@
 ﻿using Newtonsoft.Json;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -27,6 +30,14 @@ namespace TheRuleOfSilvester
         //┌┬┐└┴┘│├┼┤
         private static void Main(string[] args)
         {
+
+            var config = new LoggingConfiguration();
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, new FileTarget("client-tros.logfile")
+            {
+                FileName = $"./logs/client-{DateTime.Now:ddMMyy_hhmmss}.log"
+            });
+            LogManager.Configuration = config;
+
             //are = new AutoResetEvent(false);
             Console.ForegroundColor = ConsoleColor.White;
             Console.OutputEncoding = Encoding.Unicode;

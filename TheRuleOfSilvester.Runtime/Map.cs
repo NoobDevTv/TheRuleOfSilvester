@@ -121,6 +121,7 @@ namespace TheRuleOfSilvester.Runtime
         public IDisposable SubscribePlayerNotifications(IObservable<Notification> notifications) => notifications
             .Where(n => n.Type == NotificationType.Player)
             .Select(n => n.Deserialize(SerializeHelper.Deserialize<Player>))
+            .Do(p => p.IsLocal = true)
             .Subscribe(AddPlayer);
 
         public void AddPlayer(IPlayer player)

@@ -99,7 +99,7 @@ namespace TheRuleOfSilvester.Components
         public void DrawTextCells(List<TextCell> cells)
         {
             int offset;
-            foreach (var cellGroup in cells.GroupBy(x => x?.Position?.X))
+            foreach (var cellGroup in cells.Where(x => !(x.Position is null)).GroupBy(x => x?.Position.X))
             {
                 offset = 1;
                 foreach (var cell in cellGroup)

@@ -153,7 +153,7 @@ namespace TheRuleOfSilvester.Runtime
 
         public void Update()
         {
-            if (Map is null)
+            if (Map is null || Map.Players.Count < 1)
                 return;
 
             SystemUpdate();
@@ -218,6 +218,9 @@ namespace TheRuleOfSilvester.Runtime
 
         private void GameUpdate()
         {
+            if (player is null)
+                player = (Player)map.Players.FirstOrDefault(p => p.IsLocal);
+
             player?.Update(this);
             RoundComponent.Update(this);
         }

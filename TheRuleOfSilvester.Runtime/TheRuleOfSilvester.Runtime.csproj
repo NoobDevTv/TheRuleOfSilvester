@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NLog" Version="4.7.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TheRuleOfSilvester.Core\TheRuleOfSilvester.Core.csproj" />
     <ProjectReference Include="..\TheRuleOfSilvester.Network\TheRuleOfSilvester.Network.csproj" />
   </ItemGroup>
