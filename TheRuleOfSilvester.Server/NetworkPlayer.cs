@@ -37,17 +37,10 @@ namespace TheRuleOfSilvester.Server
         }
         private ServerStatus currentServerStatus;
 
-        public List<PlayerAction> UpdateSets
-        {
-            get => updateSets;
-            internal set => SetValue(value, ref updateSets, eventInvoke: v => OnPlayerActionsChanged?.Invoke(this, v));
-        }
-        private List<PlayerAction> updateSets;
 
         public string PlayerName { get; }
 
         public event EventHandler<RoundMode> OnRoundModeChanged;
-        public event EventHandler<List<PlayerAction>> OnPlayerActionsChanged;
         public event EventHandler<ServerStatus> OnServerStatusChanged;
 
         private RoundMode roundMode;
@@ -56,6 +49,7 @@ namespace TheRuleOfSilvester.Server
 
         private readonly IDisposable subscription;
         private readonly Subject<(CommandName CommandName, Notification Notification)> notificationSubject;
+        private readonly Subject<List<PlayerAction>> updateSetSubject;
         private readonly Logger logger;
 
         public NetworkPlayer(string playerName, BaseClient client)
@@ -63,20 +57,19 @@ namespace TheRuleOfSilvester.Server
             logger = LogManager.GetCurrentClassLogger();
             PlayerName = playerName;
             maxRoundMode = Enum.GetValues(typeof(RoundMode)).Cast<int>().Max() + 1;
-            UpdateSets = new List<PlayerAction>();
             CurrentServerStatus = ServerStatus.Waiting;
 
             notificationSubject = new Subject<(CommandName CommandName, Notification Notification)>();
+            updateSetSubject = new Subject<List<PlayerAction>>();
 
             var status = Observable
                 .FromEventPattern<ServerStatus>(a => OnServerStatusChanged += a, r => OnServerStatusChanged -= r)
                 .Do(s => logger.Debug("Send Status to Player: " + s.EventArgs.ToString()))
                 .Select(eventP => (CommandName.GetStatus, new Notification(SerializeHelper.SerializeEnum(eventP.EventArgs), NotificationType.ServerStatus)));
 
-            var updateSets = Observable
-                .FromEventPattern<List<PlayerAction>>(a => OnPlayerActionsChanged += a, r => OnPlayerActionsChanged -= r)
-                .Do(s => logger.Debug("Send UpdateSet to Player: " + s.EventArgs.ToString()))
-                .Select(eventP => (CommandName.Wait, new Notification(SerializeHelper.SerializeList(eventP.EventArgs), NotificationType.PlayerActions)));
+            var updateSets = updateSetSubject
+                .Do(s => logger.Debug("Send UpdateSet to Player: " + s.Count))
+                .Select(sets => (CommandName.Wait, new Notification(SerializeHelper.SerializeList(sets), NotificationType.PlayerActions)));
 
             var updates = Observable.Merge(status, updateSets);
             var packages = notificationSubject
@@ -85,7 +78,8 @@ namespace TheRuleOfSilvester.Server
             subscription = StableCompositeDisposable.Create(
                 client.SendPackages(packages),
                 updates.Subscribe(notificationSubject),
-                notificationSubject);
+                notificationSubject,
+                updateSetSubject);
         }
 
         public void StartGame(Map map)
@@ -105,9 +99,12 @@ namespace TheRuleOfSilvester.Server
             if (Equals(value, field))
                 return;
 
-            Console.WriteLine("Set value");
+            logger.Debug($"Set {value} from {caller}");
             field = value;
             eventInvoke?.Invoke(value);
         }
+
+        internal void SendUpdateSets(List<PlayerAction> updateSets)
+            => updateSetSubject.OnNext(updateSets);
     }
 }

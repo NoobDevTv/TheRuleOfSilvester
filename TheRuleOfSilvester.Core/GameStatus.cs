@@ -9,6 +9,7 @@ namespace TheRuleOfSilvester.Core
         Stopped,
         Paused,
         Running,
-        Waiting
+        Waiting,
+        Ended
     }
 }

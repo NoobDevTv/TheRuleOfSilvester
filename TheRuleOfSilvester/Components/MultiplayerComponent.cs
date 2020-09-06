@@ -14,6 +14,7 @@ using TheRuleOfSilvester.Core.Observation;
 using System.Reactive.Subjects;
 using System.Reactive.Disposables;
 using System.Diagnostics;
+using NLog;
 
 namespace TheRuleOfSilvester.Components
 {
@@ -28,12 +29,15 @@ namespace TheRuleOfSilvester.Components
 
         private readonly IDisposable disposables;
         private readonly BehaviorSubject<ServerStatus> serverStatusSubject;
+        private readonly Logger logger;
         private readonly IObservable<(CommandName CommandName, Notification)> notifications;
 
         public MultiplayerComponent()
         {
             Client = new Client();
             serverStatusSubject = new BehaviorSubject<ServerStatus>(ServerStatus.Undefined);
+
+            logger = LogManager.GetCurrentClassLogger();
 
             notifications = Client
                                 .ReceivedPackages
@@ -43,10 +47,10 @@ namespace TheRuleOfSilvester.Components
             disposables = StableCompositeDisposable.Create(
                 serverStatusSubject,
                 GetNotifications()
-                   .Do(s => Debug.WriteLine("Received Notification from Server: "+ s.Notification.Type.ToString()))
+                   //.Do(s => logger.Debug("Received Notification from Server: "+ s.Notification.Type.ToString()))
                    .Where(n => n.Notification.Type == NotificationType.ServerStatus)
                    .Select(n => n.Notification.Deserialize(SerializeHelper.DeserializeEnum<ServerStatus>))
-                   .Do(s => Debug.WriteLine("Received Status from Server " + s.ToString()))
+                   .Do(s => logger.Debug("Received Status from Server " + s.ToString()))
                    .Subscribe(serverStatusSubject)
                 );
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -47,6 +48,7 @@ namespace TheRuleOfSilvester.Runtime
         public IObservable<Player> Winners { get; private set; }
 
         private readonly ManualResetEventSlim manualResetEvent;
+        private readonly Logger logger;
         private CancellationTokenSource tokenSource;
         private Task gameTask;
         private Player player;
@@ -57,6 +59,7 @@ namespace TheRuleOfSilvester.Runtime
         public Game()
         {
             manualResetEvent = new ManualResetEventSlim(false);
+            logger = LogManager.GetCurrentClassLogger();
             commandSubject = new Subject<(CommandName, Notification)>();
             disposables = new CompositeDisposable()
             {
@@ -85,6 +88,7 @@ namespace TheRuleOfSilvester.Runtime
 
             var statusSub = MultiplayerComponent
                   .CurrentServerStatus
+                  //.Do(s => logger.Debug("New Server Status: " + s))
                   .Subscribe(s =>
                   {
                       switch (s)
@@ -100,6 +104,9 @@ namespace TheRuleOfSilvester.Runtime
                               break;
                           case ServerStatus.Paused:
                               CurrentGameStatus = GameStatus.Paused;
+                              break;
+                          case ServerStatus.Ended:
+                              CurrentGameStatus = GameStatus.Ended;
                               break;
                           default:
                               break;
@@ -235,6 +242,9 @@ namespace TheRuleOfSilvester.Runtime
                 case GameStatus.Paused:
                 case GameStatus.Waiting:
                     DrawComponent.DrawTextCells(new List<TextCell> { new TextCell("NOT Running", Map) });
+                    break;
+                case GameStatus.Ended:
+                    DrawComponent.DrawTextCells(new List<TextCell> { new TextCell("Game ended", Map) });
                     break;
                 case GameStatus.Stopped:
                 default:

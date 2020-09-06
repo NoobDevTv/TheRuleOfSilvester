@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
@@ -27,12 +28,14 @@ namespace TheRuleOfSilvester.Server
         private readonly SemaphoreExtended winnersSemaphore;
         private readonly List<IPlayer> listOfWinners;
         private readonly int maxPlayers;
+        private readonly Logger logger;
         private int nextId;
 
         public GameManager(int maxPlayers)
         {
             this.maxPlayers = maxPlayers;
             nextId = 0;
+            logger = LogManager.GetCurrentClassLogger();
             listOfWinners = new List<IPlayer>();
             winnersSemaphore = new SemaphoreExtended(1, 1);
 
@@ -112,10 +115,6 @@ namespace TheRuleOfSilvester.Server
         internal void EndRound(NetworkPlayer player)
         {
             player.RoundMode++;
-
-            if (player.UpdateSets.Count > 0)
-                player.UpdateSets.Clear();
-
             CheckAllPlayersAsync();
         }
 
@@ -135,10 +134,9 @@ namespace TheRuleOfSilvester.Server
                 var winners = referee.GetWinners(Players.Select(t => t.Player));
                 if (winners.Count() > 0)
                 {
-                    Console.Clear();
                     foreach (var winner in winners)
                     {
-                        Console.WriteLine($"{winner.Name} has won the match :)");
+                        logger.Info($"{winner.Name} has won the match :)");
                     }
 
                     Players.ForEach(p => p.CurrentServerStatus = ServerStatus.Ended);
@@ -155,7 +153,7 @@ namespace TheRuleOfSilvester.Server
 
             foreach (var player in Players)
             {
-                player.UpdateSets = executor.UpdateSets;
+                player.SendUpdateSets(executor.UpdateSets);
                 player.RoundMode++;
             }
         }

@@ -24,7 +24,6 @@ namespace TheRuleOfSilvester.Server.Commands
 
             TryAddCommand(CommandName.TransmitActions, TransmitActions);
             TryAddCommand(CommandName.EndRound, EndRound);
-            TryAddCommand(CommandName.Wait, Wait);
         }
 
         public void TransmitActions(BaseClient client, Notification notification)
@@ -42,20 +41,7 @@ namespace TheRuleOfSilvester.Server.Commands
                 throw new NotSupportedException();
 
             gameManager.EndRound(networkPlayer);
-        }
-
-        public void Wait(BaseClient client, Notification notification)
-        {
-            if (!playerService.TryGetNetworkPlayer(client, out var networkPlayer))
-                throw new NotSupportedException();
-
-            var array = BitConverter
-                 .GetBytes(networkPlayer.RoundMode == RoundMode.Executing)
-                 .Concat(SerializeHelper.SerializeList(networkPlayer.UpdateSets ?? new List<PlayerAction>()))
-                 .ToArray();
-
-            Send(client, new Notification(array, NotificationType.PlayerActions));
-        }
+        }       
 
         public override IDisposable Register(IObservable<CommandNotification> observable)
         {
