@@ -27,7 +27,7 @@ namespace TheRuleOfSilvester
             {
                 Console.Clear();
                 //are = new AutoResetEvent(false);
-                Console.OutputEncoding = Encoding.Unicode;
+                Console.OutputEncoding = Encoding.UTF8;
                 Console.CursorVisible = false;
                 inputComponent = new InputComponent();
                 multiplayerComponent = new MultiplayerComponent();
