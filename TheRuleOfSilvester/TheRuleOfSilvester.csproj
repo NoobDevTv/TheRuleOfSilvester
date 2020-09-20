@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>1.1.0.0</FileVersion>
     <Version>0.1.0</Version>

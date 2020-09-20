@@ -1,12 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog" Version="4.7.4" />
+    <PackageReference Include="System.Interactive" Version="4.1.1" />
+    <PackageReference Include="System.Interactive.Async" Version="4.1.1" />
+    <PackageReference Include="System.Reactive" Version="4.4.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TheRuleOfSilvester.Generators\TheRuleOfSilvester.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+ 
+  
 </Project>

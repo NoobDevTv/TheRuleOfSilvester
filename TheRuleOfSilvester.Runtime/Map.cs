@@ -10,7 +10,6 @@ using TheRuleOfSilvester.Runtime.Cells;
 using TheRuleOfSilvester.Runtime;
 using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Runtime.Items;
-using TheRuleOfSilvester.Core.Extensions;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.Observation;
 using System.Reactive.Linq;

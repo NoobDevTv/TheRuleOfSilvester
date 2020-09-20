@@ -7,7 +7,6 @@ using TheRuleOfSilvester.Runtime.Interfaces;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Network.Info;
-using TheRuleOfSilvester.Core.Extensions;
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using TheRuleOfSilvester.Core.Observation;

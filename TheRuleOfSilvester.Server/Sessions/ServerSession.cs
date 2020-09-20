@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using TheRuleOfSilvester.Core;
-using TheRuleOfSilvester.Core.Extensions;
 using TheRuleOfSilvester.Core.Observation;
 using TheRuleOfSilvester.Network;
 using TheRuleOfSilvester.Network.Sessions;
