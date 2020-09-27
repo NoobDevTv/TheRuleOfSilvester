@@ -11,11 +11,7 @@ namespace TheRuleOfSilvester.Core.SumTypes
     {
         public TypeMismatchException(): base($"Unexpected Type")
         {
-            //var demo = new Variant<string, string, int, int>();
-            //demo.TestMethod();
-
-            var test = new Variant<int, string>("");
-            test.Map(i => i += 1, s => Console.WriteLine(s));
+    
 
         }
 
