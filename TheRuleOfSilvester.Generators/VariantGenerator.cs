@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -37,13 +38,14 @@ namespace TheRuleOfSilvester.Generators
                 {
                     builder.AppendLine($"public Variant({typeParams[index]} value) => (typeId, this.value) = ({index}, value);");
 
-                    //builder.AppendLine($"public bool Is<{typeParams[index]}>() => {index} == typeId;");
+                    builder.AppendLine($"public bool Contains({typeParams[index]} value) " +
+                        $"=> {index} == typeId && Equals(value, this.value);");
                 }
 
                 AddGetMethod(builder, typeParams);
                 AddMapMethod(builder, typeParams);
 
-                builder.AppendLine("public bool Contains(Type type)");
+                builder.AppendLine("public bool Is(Type type)");
                 builder.AppendLine("    => type == ValueType;");
 
                 builder.AppendLine($"public override bool Equals(object other) => other is Variant<{paramsList}> variant && Equals(variant);");
@@ -53,6 +55,8 @@ namespace TheRuleOfSilvester.Generators
                 builder.AppendLine($"   && value.Equals(other.value);");
 
                 builder.AppendLine($"public override int GetHashCode() => typeId + -1851467485 + (value?.GetHashCode() ?? 1);");
+
+                builder.AppendLine($"public override string ToString() => $\"Variant<{{ValueType.Name}}>({{value}})\";");
 
                 foreach (var t in typeParams)
                     builder.AppendLine($"public static implicit operator Variant<{paramsList}>({t} obj) => new Variant<{paramsList}>(obj);");
