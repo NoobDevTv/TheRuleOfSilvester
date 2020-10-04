@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TheRuleOfSilvester
 {
-    public static class ValueConverter
+    internal static class ValueConverter
     {
         public static object Parse(string value)
         {     

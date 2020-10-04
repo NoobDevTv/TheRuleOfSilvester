@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TheRuleOfSilvester.Runtime\TheRuleOfSilvester.Runtime.csproj" />
     <ProjectReference Include="..\TheRuleOfSilvester.Network\TheRuleOfSilvester.Network.csproj" />
+    <ProjectReference Include="..\TheRuleOfSilvester.UI\TheRuleOfSilvester.UI.csproj" />
   </ItemGroup>
 
 </Project>

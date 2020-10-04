@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Generators", "TheRuleOfSilvester.Generators\TheRuleOfSilvester.Generators.csproj", "{E814807A-BDE0-469B-AE52-A0761CAA5835}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuleOfSilvester.Core.Tests", "TheRuleOfSilvester.Core.Tests\TheRuleOfSilvester.Core.Tests.csproj", "{532965B2-C5FF-4D73-B46F-14F0001C1487}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheRuleOfSilvester.Core.Tests", "TheRuleOfSilvester.Core.Tests\TheRuleOfSilvester.Core.Tests.csproj", "{532965B2-C5FF-4D73-B46F-14F0001C1487}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheRuleOfSilvester.UI", "TheRuleOfSilvester.UI\TheRuleOfSilvester.UI.csproj", "{C7A189FF-E9C0-43DC-A15E-DD116DD18E46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{532965B2-C5FF-4D73-B46F-14F0001C1487}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{532965B2-C5FF-4D73-B46F-14F0001C1487}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{532965B2-C5FF-4D73-B46F-14F0001C1487}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7A189FF-E9C0-43DC-A15E-DD116DD18E46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7A189FF-E9C0-43DC-A15E-DD116DD18E46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7A189FF-E9C0-43DC-A15E-DD116DD18E46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7A189FF-E9C0-43DC-A15E-DD116DD18E46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
