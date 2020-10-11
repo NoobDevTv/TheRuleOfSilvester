@@ -14,7 +14,6 @@ namespace TheRuleOfSilvester.Drawing
     {
         public IObservable<ConsoleKeyInfo> ReceivedKeys { get; set; }
 
-
         public ConsoleInput()
         {
             var connectable = CreateObservable()
@@ -63,11 +62,12 @@ namespace TheRuleOfSilvester.Drawing
             return builder.ReadKey(intercept, token);
         }
 
-        private IObservable<ConsoleKeyInfo> CreateObservable()
+        private static IObservable<ConsoleKeyInfo> CreateObservable()
             => Observable.Create<ConsoleKeyInfo>((observer, token) => Task.Run(() =>
             {
-                while (!token.IsCancellationRequested)
+                while (true)
                 {
+                    token.ThrowIfCancellationRequested();
                     observer.OnNext(Console.ReadKey(true));
                 }
             }, token));

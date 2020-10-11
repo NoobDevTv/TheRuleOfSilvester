@@ -8,10 +8,11 @@ using System.Reactive.Linq;
 using System.Diagnostics;
 using TheRuleOfSilvester.Core;
 using System.Runtime.CompilerServices;
+using TheRuleOfSilvester.UI.Controls;
 
 namespace TheRuleOfSilvester.Drawing
 {
-    public abstract class Grid<T>
+    public abstract class Grid<T> : Control
     {
         public string Name { get; set; }
 
@@ -38,7 +39,7 @@ namespace TheRuleOfSilvester.Drawing
 
         private readonly SemaphoreExtended semaphore;
 
-        protected Grid(ConsoleInput consoleInput)
+        protected Grid() : base()
         {
             semaphore = new SemaphoreExtended(1, 1);
             onKeyPressed = new ManualResetEventSlim(false);
@@ -88,6 +89,15 @@ namespace TheRuleOfSilvester.Drawing
             Showing = true;
             Draw(instructions, token, vertical, clearConsole);
             Reset();            
+        }
+
+        protected override void OnShow()
+        {
+
+        }
+
+        protected override void OnStateChange(ControlState oldState, ControlState currentState)
+        {
         }
 
         public virtual void Draw(string instructions, CancellationToken token, bool vertical = false, bool clearConsole = true)

@@ -17,12 +17,22 @@ namespace TheRuleOfSilvester.UI
             this.viewStates = viewStates;
         }
 
-        public IDisposable Show()
-            => viewStates
-                .Do(HandleState)
-                .Subscribe();
+        public IObservable<TState> Show()
+        {
+            OnShow();
+            return viewStates
+                           .Do(HandleState);
+        }
+
+        public void Hide()
+        {
+            OnHide();
+        }
 
         protected abstract void OnStateChange(TState oldState, TState currentState);
+
+        protected virtual void OnShow() { }
+        protected virtual void OnHide() { }
 
         private void HandleState(TState state)
         {
@@ -35,6 +45,6 @@ namespace TheRuleOfSilvester.UI
             OnStateChange(oldState, currentState);
         }
 
-       
+
     }
 }

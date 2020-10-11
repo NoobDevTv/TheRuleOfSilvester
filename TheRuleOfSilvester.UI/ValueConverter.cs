@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TheRuleOfSilvester.Core.SumTypes;
 
 namespace TheRuleOfSilvester
 {
     internal static class ValueConverter
     {
-        public static object Parse(string value)
-        {     
+        public static Variant<string, byte, short, ushort, int, uint, long, ulong, float, double, decimal, bool, char> Parse(string value)
+        {
             if (byte.TryParse(value, out byte parsedByte))
                 return parsedByte;
 
