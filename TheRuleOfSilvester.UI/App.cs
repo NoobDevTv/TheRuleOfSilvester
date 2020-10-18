@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using TheRuleOfSilvester.Core;
 using TheRuleOfSilvester.Core.IoC;
+using TheRuleOfSilvester.UI.Drawing;
+using TheRuleOfSilvester.UI.Inputs;
 
 namespace TheRuleOfSilvester.UI
 {
@@ -18,6 +20,16 @@ namespace TheRuleOfSilvester.UI
         public App()
         {
             typeContainer = TypeContainer.Get<ITypeContainer>();
+            var input = new Input(ConsoleDriver.ReadKey, ConsoleDriver.ReadLine);
+            var graphic = new Graphic(
+                ConsoleDriver.Write, 
+                ConsoleDriver.WriteLine, 
+                ConsoleDriver.ForegroundColor, 
+                ConsoleDriver.BackgroundColor, 
+                ConsoleDriver.SetCursorPosition);
+
+            typeContainer.Register(input);
+            typeContainer.Register(graphic);
 
             router = new Router();
             manualReset = new ManualResetEvent(false);

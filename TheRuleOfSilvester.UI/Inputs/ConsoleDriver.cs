@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -26,18 +27,18 @@ namespace TheRuleOfSilvester.UI.Inputs
         public static IObservable<string> Write(IObservable<string> strings)
             => strings.Do(Console.Write);
 
-        public static IObservable<ConsoleColor> ForGroundColor(IObservable<ConsoleColor> forgroundColors)
+        public static IObservable<ConsoleColor> ForegroundColor(IObservable<ConsoleColor> forgroundColors)
             => forgroundColors
                 .Do(c => Console.ForegroundColor = c);
 
-        public static IObservable<ConsoleColor> BackGroundColor(IObservable<ConsoleColor> backgroundColors)
+        public static IObservable<ConsoleColor> BackgroundColor(IObservable<ConsoleColor> backgroundColors)
             => backgroundColors
                 .Do(c => Console.BackgroundColor = c);
 
-        public static IObservable<(int x, int y)> SetCursorPosition(IObservable<(int x, int y)> cursorPosition)
+        public static IObservable<Point> SetCursorPosition(IObservable<Point> cursorPosition)
             => cursorPosition
-                    .Do(p => { Console.CursorLeft = p.x; Console.CursorTop = p.y; })
-                    .Select(p => (Console.CursorLeft, Console.CursorTop));
+                    .Do(p => { Console.CursorLeft = p.X; Console.CursorTop = p.Y; })
+                    .Select(p => new Point(Console.CursorLeft, Console.CursorTop));
 
         public static IObservable<ConsoleKeyInfo> ReadKey()
             => keyInfos;
