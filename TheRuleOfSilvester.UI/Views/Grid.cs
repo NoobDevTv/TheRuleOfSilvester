@@ -8,11 +8,14 @@ using System.Reactive.Linq;
 using System.Diagnostics;
 using TheRuleOfSilvester.Core;
 using System.Runtime.CompilerServices;
-using TheRuleOfSilvester.UI.Controls;
+using TheRuleOfSilvester.UI.Drawing;
+using TheRuleOfSilvester.UI.Inputs;
+using System.Reactive.Subjects;
+using System.Drawing;
 
-namespace TheRuleOfSilvester.Drawing
+namespace TheRuleOfSilvester.UI.Views
 {
-    public abstract class Grid<T> : Control
+    public abstract class Grid<T> : View
     {
         public string Name { get; set; }
 
@@ -20,6 +23,8 @@ namespace TheRuleOfSilvester.Drawing
 
         public T Current => CurrentItem.Value;
         public bool Showing { get; protected set; }
+
+        public string Instructions { get; set; }
 
         protected IItem CurrentItem => ConsoleLocationItems[CurrentIndex].Item;
         protected (int Left, int Top) CurrentPosition => ConsoleLocationItems[CurrentIndex].Position;
@@ -30,7 +35,8 @@ namespace TheRuleOfSilvester.Drawing
 
         protected List<((int Left, int Top) Position, IItem Item)> ConsoleLocationItems { get; }
         protected List<IItem> Items { get; }
-        protected ConsoleInput Input { get; }
+        protected Input Input { get; }
+        protected Graphic Graphic { get; }
 
 
         protected readonly IObservable<ConsoleKeyInfo> inputObservable;
@@ -39,7 +45,12 @@ namespace TheRuleOfSilvester.Drawing
 
         private readonly SemaphoreExtended semaphore;
 
-        protected Grid() : base()
+        private readonly Subject<string> writeLine;
+        private readonly Subject<string> write;
+        private readonly Subject<Point> cursor;
+        private readonly Subject<System.Drawing.Color> foreground;
+
+        protected Grid(Graphic graphic, Input input) : base(Observable.Empty<ViewState>())
         {
             semaphore = new SemaphoreExtended(1, 1);
             onKeyPressed = new ManualResetEventSlim(false);
@@ -48,8 +59,14 @@ namespace TheRuleOfSilvester.Drawing
             CurrentIndex = 0;
             UpDownValue = 0;
 
+            writeLine = new Subject<string>();
+            write = new Subject<string>();
+            cursor = new Subject<Point>();
+            foreground = new Subject<System.Drawing.Color>();
 
-            Input = consoleInput;
+            Input = input;
+            Graphic = graphic;
+
             inputObservable = Input
                 .ReceivedKeys
                 .Where(k => ConsoleKeys.Contains(k.Key))
@@ -61,12 +78,8 @@ namespace TheRuleOfSilvester.Drawing
                     onKeyPressed.Set();
                 });
 
-        }
 
-        protected Grid(ConsoleInput consoleInput, IEnumerable<T> values) : this(consoleInput)
-            => AddRange(values);
-        protected Grid(ConsoleInput consoleInput, IEnumerable<(T Value, string DisplayValue)> values) : this(consoleInput)
-            => AddRange(values);
+        }
 
         public virtual void Add(T value)
             => Add(value, value.ToString());
@@ -88,7 +101,7 @@ namespace TheRuleOfSilvester.Drawing
             using var sub = inputObservable.Subscribe();
             Showing = true;
             Draw(instructions, token, vertical, clearConsole);
-            Reset();            
+            Reset();
         }
 
         protected override void OnShow()
@@ -96,7 +109,7 @@ namespace TheRuleOfSilvester.Drawing
 
         }
 
-        protected override void OnStateChange(ControlState oldState, ControlState currentState)
+        protected override void OnStateChange(ViewState oldState, ViewState currentState)
         {
         }
 
@@ -107,8 +120,8 @@ namespace TheRuleOfSilvester.Drawing
 
             if (!string.IsNullOrWhiteSpace(instructions))
             {
-                Console.WriteLine(instructions);
-                Console.WriteLine();
+                writeLine.OnNext(instructions);
+                writeLine.OnNext("");
             }
 
             BuildConsoleLocationOfItems(vertical);
@@ -153,40 +166,43 @@ namespace TheRuleOfSilvester.Drawing
         /// Set the Console Cursor Position
         /// </summary>
         /// <param name="positon">Tuple of the position</param>
-        protected virtual void SetConsoleCursor((int Left, int Top) positon)
+        protected virtual void SetConsoleCursor(Point positon)
         {
-            Console.SetCursorPosition(positon.Left, positon.Top);
+            cursor.OnNext(positon);
         }
 
-        protected virtual void BuildConsoleLocationOfItems(bool vertical)
+        protected virtual IObservable<Point> BuildConsoleLocationOfItems(IObservable<Point> cursorPosition, bool vertical)
         {
-            ConsoleLocationItems.Clear();
-            var oldPos = (Console.CursorLeft, Console.CursorTop);
-
-            int maxLengthName = 0;
-            if(Items.Count > 0)
-                maxLengthName = Items.Max(x => x.Display.Length) + 2;
-
-            foreach (var item in Items)
+            return cursorPosition.Select(cursorPos =>
             {
-                ConsoleLocationItems.Add(
-                    ((Console.CursorLeft, Console.CursorTop), item));
+                ConsoleLocationItems.Clear();
+                var oldPos = cursorPos;
 
-                Console.Write(item.Display.PadRight(maxLengthName, ' '));
+                int maxLengthName = 0;
+                if (Items.Count > 0)
+                    maxLengthName = Items.Max(x => x.Display.Length) + 2;
 
-                if (maxLengthName + 2 + Console.CursorLeft > Console.WindowWidth || vertical)
-                    Console.WriteLine();
-            }
+                foreach (var item in Items)
+                {
+                    ConsoleLocationItems.Add(
+                        ((Console.CursorLeft, Console.CursorTop), item));
 
-            SetConsoleCursor(oldPos);
-            UpDownValue = ConsoleLocationItems.Count(x => x.Position.Top == ConsoleLocationItems.First().Position.Top);
+                    write.OnNext(item.Display.PadRight(maxLengthName, ' '));
+
+                    if (maxLengthName + 2 + Console.CursorLeft > Console.WindowWidth || vertical)
+                        writeLine.OnNext("");
+                }
+
+                UpDownValue = ConsoleLocationItems.Count(x => x.Position.Top == ConsoleLocationItems.First().Position.Top);
+                return oldPos;
+            });
         }
 
         protected virtual void DrawSelected((int Left, int Top) pos, IItem display, bool selected)
         {
             SetConsoleCursor(pos);
-            Console.ForegroundColor = selected ? ConsoleColor.Green : ConsoleColor.White;
-            Console.Write((selected ? ">" : "") + display.Display + (selected ? "<" : "  "));
+            foreground.OnNext(selected ? System.Drawing.Color.Green : System.Drawing.Color.White);
+            write.OnNext((selected ? ">" : "") + display.Display + (selected ? "<" : "  "));
         }
 
         protected virtual void GetSelected(CancellationToken token, out bool selected, out ConsoleKeyInfo pressedKey)
@@ -232,8 +248,8 @@ namespace TheRuleOfSilvester.Drawing
             }
             else
             {
-                Console.CursorTop = ConsoleLocationItems.Max(x => x.Position.Top);
-                Console.WriteLine();
+                cursor.OnNext(new Point(ConsoleLocationItems.Max(x => x.Position.Top), 0));
+                writeLine.OnNext("");
             }
             return CurrentItem;
         }
@@ -242,8 +258,8 @@ namespace TheRuleOfSilvester.Drawing
         {
             CurrentIndex = 0;
             Showing = false;
-            
-            Console.ForegroundColor = ConsoleColor.White; //TODO: Defaultcolor
+
+            foreground.OnNext(System.Drawing.Color.White);
         }
 
         protected readonly struct Item : IItem, IEquatable<Item>
@@ -278,5 +294,5 @@ namespace TheRuleOfSilvester.Drawing
             T Value { get; }
             string Display { get; }
         }
-    }    
+    }
 }

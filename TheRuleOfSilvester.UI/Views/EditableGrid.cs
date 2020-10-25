@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TheRuleOfSilvester.Drawing
+namespace TheRuleOfSilvester.UI.Views
 {
     public sealed class EditableGrid<T> : Grid<T> where T : IEnumerable<char>
     {

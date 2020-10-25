@@ -1,27 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using TheRuleOfSilvester.UI.Controls;
 
 namespace TheRuleOfSilvester.UI.Views
 {
     public abstract class View : GraphicsElement<ViewState>
     {
-        private readonly List<Control> controls;
+        private readonly List<View> views;
 
         public View(IObservable<ViewState> viewStates)
             : base(viewStates)
         {
-            controls = new List<Control>();
+            views = new List<View>();
         }       
 
-        public void Add(Control control)
+        public void Add(View view)
         {
-            controls.Add(control);
+            views.Add(view);
         }
 
-        public void Remove(Control control)
+        public void Remove(View view)
         {
-            controls.Remove(control);
+            views.Remove(view);
         }
     }
 }

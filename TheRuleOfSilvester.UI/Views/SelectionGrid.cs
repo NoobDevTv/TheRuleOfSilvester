@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace TheRuleOfSilvester.Drawing
+namespace TheRuleOfSilvester.UI.Views
 {
     public sealed class SelectionGrid<T> : Grid<T>
     {

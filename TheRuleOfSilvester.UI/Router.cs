@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheRuleOfSilvester.UI.Views;
 
 namespace TheRuleOfSilvester.UI
 {
@@ -20,7 +21,7 @@ namespace TheRuleOfSilvester.UI
             CurrentOutlet.Dispose();
         }
 
-        internal void ShowOutlet()
+        public void Navigate(View view)
         {
         }
     }

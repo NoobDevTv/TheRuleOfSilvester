@@ -19,7 +19,9 @@ namespace TheRuleOfSilvester.UI
 
         public App()
         {
-            typeContainer = TypeContainer.Get<ITypeContainer>();
+            manualReset = new ManualResetEvent(false);
+            router = new Router();
+
             var input = new Input(ConsoleDriver.ReadKey, ConsoleDriver.ReadLine);
             var graphic = new Graphic(
                 ConsoleDriver.Write, 
@@ -28,12 +30,10 @@ namespace TheRuleOfSilvester.UI
                 ConsoleDriver.BackgroundColor, 
                 ConsoleDriver.SetCursorPosition);
 
-            typeContainer.Register(input);
-            typeContainer.Register(graphic);
+            typeContainer = TypeContainer.Get<ITypeContainer>();
 
-            router = new Router();
-            manualReset = new ManualResetEvent(false);
-
+            typeContainer.Register(singelton: input);
+            typeContainer.Register(singelton: graphic);
             typeContainer.Register(singelton: router);
         }
 

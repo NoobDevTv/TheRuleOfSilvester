@@ -19,10 +19,10 @@ namespace TheRuleOfSilvester.UI
             serialDisposable = new SerialDisposable();
         }
 
-        public void Navigate(View view)
+        public void Show(View view)
         {
             CurrentView = view;
-            serialDisposable.Disposable = view.Show();
+            serialDisposable.Disposable = view.Show().Subscribe();
         }
 
         public void Dispose()

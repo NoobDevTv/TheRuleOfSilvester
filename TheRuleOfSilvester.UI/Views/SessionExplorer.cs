@@ -4,10 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using TheRuleOfSilvester.Drawing;
-using TheRuleOfSilvester.Network.Info;
-using TheRuleOfSilvester.Runtime.Interfaces;
 
-namespace TheRuleOfSilvester.Drawing
+namespace TheRuleOfSilvester.UI.Views
 {
     public sealed class SessionExplorer : ISessionExplorer
     {
