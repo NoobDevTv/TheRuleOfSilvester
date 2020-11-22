@@ -45,10 +45,10 @@ namespace UI.Demo
         }
 
         public static implicit operator GraphicInstruction(WriteLine value)
-            => new GraphicInstruction(value);
+            => new(value);
         public static implicit operator GraphicInstruction(Write value)
-            => new GraphicInstruction(value);
+            => new(value);
         public static implicit operator GraphicInstruction(SetPosition value)
-            => new GraphicInstruction(value);
+            => new(value);
     }
 }

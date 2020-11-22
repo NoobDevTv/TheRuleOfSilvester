@@ -13,10 +13,15 @@ namespace TheRuleOfSilvester.UI.Inputs
     public static class ConsoleDriver
     {
         private readonly static IObservable<ConsoleKeyInfo> keyInfos;
+        private static readonly IObservable<string> readLine;
 
         static ConsoleDriver()
         {
             keyInfos = CreateObservable()
+                          .Publish()
+                          .RefCount();
+
+            readLine = CreateReadLine()
                           .Publish()
                           .RefCount();
         }
@@ -44,27 +49,23 @@ namespace TheRuleOfSilvester.UI.Inputs
             => keyInfos;
 
         public static IObservable<string> ReadLine()
-            => Observable.Create<string>(observer =>
-            {
-                StringBuilder builder = new();
-                var subj = new Subject<string>();
-                var sub = keyInfos
-                            .Do(keyInfo =>
-                            {
-                                if (IsComplete(keyInfo))
-                                    CompleteString(builder, subj);
+            => readLine;
 
-                                if (IsAppend(keyInfo))
-                                    AppendKeyInfo(keyInfo, builder);
+        private static IObservable<string> CreateReadLine()
+            => keyInfos
+                .Window(keyInfos.Where(IsComplete))
+                .SelectMany(keys =>
+                    keys.Aggregate(new StringBuilder(), (builder, keyInfo) =>
+                    {
+                        if (IsAppend(keyInfo))
+                            AppendKeyInfo(keyInfo, builder);
 
-                                if (IsUndo(keyInfo) && Console.CursorLeft != 0 && builder.Length != 0)
-                                    UndoAppend(builder);
-                            })
-                            .Subscribe();
+                        if (IsUndo(keyInfo) && Console.CursorLeft != 0 && builder.Length != 0)
+                            UndoAppend(builder);
 
-                return StableCompositeDisposable.Create(subj, sub);
-
-            });
+                        return builder;
+                    }))
+                .Select(builder => builder.ToString());
 
         private static void UndoAppend(StringBuilder builder)
         {
@@ -80,11 +81,6 @@ namespace TheRuleOfSilvester.UI.Inputs
             builder.Append(keyInfo.KeyChar);
         }
 
-        private static void CompleteString(StringBuilder builder, Subject<string> subj)
-        {
-            subj.OnNext(builder.ToString());
-            builder.Clear();
-        }
 
         private static IObservable<ConsoleKeyInfo> CreateObservable()
             => Observable.Create<ConsoleKeyInfo>((observer, token) => Task.Run(() =>
@@ -103,6 +99,6 @@ namespace TheRuleOfSilvester.UI.Inputs
             => keyInfo.Key == ConsoleKey.Backspace;
 
         private static bool IsAppend(ConsoleKeyInfo keyInfo)
-            => keyInfo.Key == ConsoleKey.Enter;
+            => !IsComplete(keyInfo) && !IsUndo(keyInfo);
     }
 }

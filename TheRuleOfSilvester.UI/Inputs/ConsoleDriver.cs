@@ -103,6 +103,6 @@ namespace TheRuleOfSilvester.UI.Inputs
             => keyInfo.Key == ConsoleKey.Backspace;
 
         private static bool IsAppend(ConsoleKeyInfo keyInfo)
-            => keyInfo.Key == ConsoleKey.Enter;
+            => keyInfo.Key != ConsoleKey.Enter;
     }
 }

@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TheRuleOfSilvester.UI\TheRuleOfSilvester.UI.csproj" />
+    <ProjectReference Include="..\TheRuleOfSilvester.Core\TheRuleOfSilvester.Core.csproj" />
   </ItemGroup>
 
 </Project>

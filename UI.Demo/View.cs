@@ -15,7 +15,8 @@ namespace UI.Demo
         public View(IObservable<ViewState> viewState)
         {
             internalObservable = viewState
-                                    .Where(s => s != currentState)
+                                    .Where(s => !string.IsNullOrWhiteSpace(s.Instructions))
+                                    .DistinctUntilChanged()
                                     .Do(s =>
                                     {
                                         var oldState = currentState;
@@ -35,7 +36,8 @@ namespace UI.Demo
 
         public IEnumerable<GraphicInstruction> Draw(ViewState viewState)
         {
-            yield return new GraphicInstruction.WriteLine(viewState.Instructions);
+            yield return new GraphicInstruction.WriteLine("");
+            yield return new GraphicInstruction.WriteLine("This instruction: " + viewState.Instructions);
             yield return new GraphicInstruction.WriteLine("");
 
         }

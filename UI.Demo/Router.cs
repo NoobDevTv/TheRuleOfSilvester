@@ -22,17 +22,17 @@ namespace UI.Demo
         }
 
 
-        public void Show()
+        public IDisposable Show()
         {
             var view = new View(input.ReadLine().Select(s => new ViewState(s)));
-            view
+            return view
                 .Show()
                 .SelectMany(s => s.Instructions)
                 .MapMany(
                     (IObservable<GraphicInstruction.WriteLine> writeLine) => graphic.WriteLine(writeLine.Select(w => w.Value)).Select(v => new ConsoleState(v)),
                     (IObservable<GraphicInstruction.Write> write) => graphic.Write(write.Select(w => w.Value)).Select(v => new ConsoleState(v)),
                     (IObservable<GraphicInstruction.SetPosition> setPosition) => graphic.CursorPosition(setPosition.Select(p => p.Value)).Select(v => new ConsoleState(v))
-                );
+                ).Subscribe();
         }
     }
 }
