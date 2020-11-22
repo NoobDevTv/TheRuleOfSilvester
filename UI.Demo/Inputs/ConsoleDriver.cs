@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
+using UI.Demo;
 
 namespace TheRuleOfSilvester.UI.Inputs
 {
@@ -26,11 +27,19 @@ namespace TheRuleOfSilvester.UI.Inputs
                           .RefCount();
         }
 
-        public static IObservable<string> WriteLine(IObservable<string> strings)
-            => strings.Do(Console.WriteLine);
+        public static IObservable<GraphicInstruction.WriteLine> WriteLine(IObservable<GraphicInstruction.WriteLine> stringInput)
+            => stringInput.Do(s =>
+            {
+                Console.SetCursorPosition(s.Position.X, s.Position.Y);
+                Console.WriteLine(s.Value);
+            });
 
-        public static IObservable<string> Write(IObservable<string> strings)
-            => strings.Do(Console.Write);
+        public static IObservable<GraphicInstruction.Write> Write(IObservable<GraphicInstruction.Write> stringInput)
+              => stringInput.Do(s =>
+              {
+                  Console.SetCursorPosition(s.Position.X, s.Position.Y);
+                  Console.Write(s.Value);
+              });
 
         public static IObservable<ConsoleColor> ForegroundColor(IObservable<ConsoleColor> forgroundColors)
             => forgroundColors
@@ -40,10 +49,11 @@ namespace TheRuleOfSilvester.UI.Inputs
             => backgroundColors
                 .Do(c => Console.BackgroundColor = c);
 
-        public static IObservable<Point> SetCursorPosition(IObservable<Point> cursorPosition)
-            => cursorPosition
+        public static IObservable<GraphicInstruction.SetPosition> SetCursorPosition(IObservable<GraphicInstruction.SetPosition> position)
+            => position
+                    .Select(p => p.Position)
                     .Do(p => { Console.CursorLeft = p.X; Console.CursorTop = p.Y; })
-                    .Select(p => new Point(Console.CursorLeft, Console.CursorTop));
+                    .Select(p => new GraphicInstruction.SetPosition(new(Console.CursorLeft, Console.CursorTop)));
 
         public static IObservable<ConsoleKeyInfo> ReadKey()
             => keyInfos;

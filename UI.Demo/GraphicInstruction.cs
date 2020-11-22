@@ -20,29 +20,11 @@ namespace UI.Demo
         {
         }
 
-        public readonly struct WriteLine
-        {
-            public string Value { get; }
+        public record WriteLine (string Value, Point Position) : SetPosition(Position);
 
-            public WriteLine(string value) 
-                => Value = value;
-        }
+        public record Write(string Value, Point Position) : SetPosition(Position);
 
-        public readonly struct Write
-        {
-            public string Value { get; }
-
-            public Write(string value)
-                => Value = value;
-        }
-
-        public readonly struct SetPosition
-        {
-            public Point Value { get; }
-
-            public SetPosition(Point value)
-                => Value = value;
-        }
+        public record SetPosition(Point Position);
 
         public static implicit operator GraphicInstruction(WriteLine value)
             => new(value);

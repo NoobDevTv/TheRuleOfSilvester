@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -7,39 +8,30 @@ using System.Threading.Tasks;
 
 namespace UI.Demo
 {
-    class View
+    internal abstract class View<T>
     {
-        private ViewState currentState;
+        public Rectangle Boundry { get; set; }
+
+        private T currentState;
         private readonly IObservable<GraphicViewState> internalObservable;
 
-        public View(IObservable<ViewState> viewState)
-        {
-            internalObservable = viewState
-                                    .Where(s => !string.IsNullOrWhiteSpace(s.Instructions))
+        public View(IObservable<T> viewState) 
+            => internalObservable = viewState
                                     .DistinctUntilChanged()
                                     .Do(s =>
                                     {
-                                        var oldState = currentState;
-                                        currentState = s;
-                                        HandleStateChange(oldState, currentState);
+                                        T oldState = currentState;
+                                        currentState = HandleStateChange(oldState, s);
                                     })
                                     .Select(Draw)
                                     .Select(i => new GraphicViewState(i));
-        }
 
         public IObservable<GraphicViewState> Show()
             => internalObservable;
 
-        private void HandleStateChange(ViewState oldState, ViewState newState)
-        {
-        }
+        protected virtual T HandleStateChange(T oldState, T newState)
+            => newState;
 
-        public IEnumerable<GraphicInstruction> Draw(ViewState viewState)
-        {
-            yield return new GraphicInstruction.WriteLine("");
-            yield return new GraphicInstruction.WriteLine("This instruction: " + viewState.Instructions);
-            yield return new GraphicInstruction.WriteLine("");
-
-        }
+        public abstract IEnumerable<GraphicInstruction> Draw(T viewState);
     }
 }

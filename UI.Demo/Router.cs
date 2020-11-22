@@ -29,9 +29,9 @@ namespace UI.Demo
                 .Show()
                 .SelectMany(s => s.Instructions)
                 .MapMany(
-                    (IObservable<GraphicInstruction.WriteLine> writeLine) => graphic.WriteLine(writeLine.Select(w => w.Value)).Select(v => new ConsoleState(v)),
-                    (IObservable<GraphicInstruction.Write> write) => graphic.Write(write.Select(w => w.Value)).Select(v => new ConsoleState(v)),
-                    (IObservable<GraphicInstruction.SetPosition> setPosition) => graphic.CursorPosition(setPosition.Select(p => p.Value)).Select(v => new ConsoleState(v))
+                    (IObservable<GraphicInstruction.WriteLine> writeLine) => graphic.WriteLine(writeLine),
+                    (IObservable<GraphicInstruction.Write> write) => graphic.Write(write),
+                    (IObservable<GraphicInstruction.SetPosition> setPosition) => graphic.CursorPosition(setPosition)
                 ).Subscribe();
         }
     }
