@@ -1,10 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace TheRuleOfSilvester.Generators
@@ -72,8 +73,14 @@ namespace TheRuleOfSilvester.Generators
 
             builder.AppendLine("}");
 
-            context.AddSource("variantGenerator", SourceText.From(builder.ToString(), Encoding.UTF8));
-
+            var tree = CSharpSyntaxTree.ParseText(builder.ToString());
+            var root = tree.GetCompilationUnitRoot();
+            var treeContainer = tree.GetText().Container;
+            var workspace = new AdhocWorkspace();
+            workspace.AddSolution(SolutionInfo.Create(SolutionId.CreateNewId("formatter"), VersionStamp.Default));
+            var formatted = Formatter.Format(root, workspace);
+            
+            context.AddSource("variantGenerator", SourceText.From(formatted.ToString(), Encoding.UTF8));
         }
 
         private void GenerateIEnumerableExtensions(StringBuilder builder, string[] typeParams)
