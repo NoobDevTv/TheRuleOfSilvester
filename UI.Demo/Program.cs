@@ -9,7 +9,7 @@ namespace UI.Demo
     {
         static void Main(string[] args)
         {
-            var reset = new ManualResetEvent(false);
+            using var reset = new ManualResetEvent(false);
             var input = new Input(ConsoleDriver.ReadKey, ConsoleDriver.ReadLine);
             var graphic = new Graphic(
                 ConsoleDriver.Write,
@@ -17,8 +17,8 @@ namespace UI.Demo
                 ConsoleDriver.ForegroundColor,
                 ConsoleDriver.BackgroundColor,
                 ConsoleDriver.SetCursorPosition);
-            var router = new Router(graphic, input);
-            router.Show();
+            using var router = new Router(graphic, input);
+            using var disp = router.Show();
 
             reset.WaitOne();
         }

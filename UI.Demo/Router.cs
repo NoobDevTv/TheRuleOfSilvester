@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using TheRuleOfSilvester.Core.SumTypes;
@@ -11,19 +12,20 @@ using UI.Demo.Views;
 
 namespace UI.Demo
 {
-    public class Router
+    public class Router : IDisposable
     {
         private readonly Graphic graphic;
-
-
         private readonly Input input;
+
+        private readonly BehaviorSubject<View> focusable;
 
         public Router(Graphic graphic, Input input)
         {
             this.graphic = graphic;
             this.input = input;
-        }
 
+            focusable = new BehaviorSubject<View>(default);
+        }
 
         public IDisposable Show()
         {
@@ -38,18 +40,21 @@ namespace UI.Demo
             //    ).Subscribe();
         }
 
-        internal IObservable<FocusState> ControlAsFocusable<T>(View<T> view)
-        {
-            var hasFocus = false;
-            var focus = Observable.Return(hasFocus);
+        internal void SetFocus(View view) 
+            => focusable.OnNext(view);
 
-            return Observable.Merge(
+        internal IObservable<FocusState> ControlAsFocusable(View view) 
+            => Observable.Merge(
                     input.ReadLine().Cast<FocusState>(),
                     input.ReadKey().Select(k => (FocusState)k),
-                    focus.Select(f => (FocusState)f)
+                    focusable.Select(f => (FocusState)(f == view))
                     )
-                .TakeWhile(str => hasFocus)
-                .RepeatWhen(objs => Observable.Empty<object>());
+                .TakeWhile(str => view == focusable.Value)
+                .RepeatWhen(objs => focusable.Where(v => v == view));
+
+        public void Dispose()
+        {
+            focusable?.Dispose();
         }
 
         public class FocusState : Variant<FocusState.Focus, FocusState.PressedKey, FocusState.NewLine>
@@ -83,5 +88,7 @@ namespace UI.Demo
             public static implicit operator FocusState(string value)
                 => new(new NewLine(value));
         }
+
+
     }
 }

@@ -8,10 +8,14 @@ using System.Threading.Tasks;
 
 namespace UI.Demo
 {
-    internal abstract class View<T>
+    internal abstract class View
     {
         public Rectangle Boundry { get; set; }
+        public abstract IObservable<GraphicViewState> Show();
+    }
 
+    internal abstract class View<T> : View
+    {
         private T currentState;
         private readonly IObservable<GraphicViewState> internalObservable;
 
@@ -26,7 +30,7 @@ namespace UI.Demo
                                     .Select(Draw)
                                     .Select(i => new GraphicViewState(i));
 
-        public IObservable<GraphicViewState> Show()
+        public override IObservable<GraphicViewState> Show()
             => internalObservable;
 
         protected virtual T HandleStateChange(T oldState, T newState)
