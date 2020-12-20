@@ -16,19 +16,26 @@ namespace UI.Demo
 
     internal abstract class View<T> : View
     {
-        private T currentState;
+        protected T CurrentState;
         private readonly IObservable<GraphicViewState> internalObservable;
 
-        public View(IObservable<T> viewState) 
-            => internalObservable = viewState
+        public View(IObservable<T> viewState, Func<IObservable<T>, IObservable<T>> createViewStates = null)
+        {
+            var states = createViewStates ?? CreateViewStates;
+            internalObservable = states(viewState)
                                     .DistinctUntilChanged()
                                     .Do(s =>
                                     {
-                                        T oldState = currentState;
-                                        currentState = HandleStateChange(oldState, s);
+                                        T oldState = CurrentState;
+                                        CurrentState = HandleStateChange(oldState, s);
                                     })
                                     .Select(Draw)
                                     .Select(i => new GraphicViewState(i));
+
+        }
+
+        protected virtual IObservable<T> CreateViewStates(IObservable<T> viewStates)
+            => viewStates;
 
         public override IObservable<GraphicViewState> Show()
             => internalObservable;

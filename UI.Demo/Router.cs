@@ -40,17 +40,17 @@ namespace UI.Demo
             //    ).Subscribe();
         }
 
-        internal void SetFocus(View view) 
+        internal void SetFocus(View view)
             => focusable.OnNext(view);
 
-        internal IObservable<FocusState> ControlAsFocusable(View view) 
+        internal IObservable<FocusState> ControlAsFocusable(View view)
             => Observable.Merge(
                     input.ReadLine().Cast<FocusState>(),
                     input.ReadKey().Select(k => (FocusState)k),
-                    focusable.Select(f => (FocusState)(f == view))
+                    focusable.Select<View, FocusState>(focus => new FocusState.Focus(focus == view))
                     )
-                .TakeWhile(str => view == focusable.Value)
-                .RepeatWhen(objs => focusable.Where(v => v == view));
+                .TakeWhile(state => !state.TryGet(out FocusState.Focus _) && view == focusable.Value)
+                .RepeatWhen(objs => focusable.Where(fous => fous == view));
 
         public void Dispose()
         {
@@ -88,7 +88,6 @@ namespace UI.Demo
             public static implicit operator FocusState(string value)
                 => new(new NewLine(value));
         }
-
 
     }
 }
