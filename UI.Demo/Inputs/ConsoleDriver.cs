@@ -8,6 +8,7 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using UI.Demo;
+using UI.Demo.Inputs;
 
 namespace TheRuleOfSilvester.UI.Inputs
 {
@@ -62,35 +63,7 @@ namespace TheRuleOfSilvester.UI.Inputs
             => readLine;
 
         private static IObservable<string> CreateReadLine()
-            => keyInfos
-                .Window(keyInfos.Where(IsComplete))
-                .SelectMany(keys =>
-                    keys.Aggregate(new StringBuilder(), (builder, keyInfo) =>
-                    {
-                        if (IsAppend(keyInfo))
-                            AppendKeyInfo(keyInfo, builder);
-
-                        if (IsUndo(keyInfo) && Console.CursorLeft != 0 && builder.Length != 0)
-                            UndoAppend(builder);
-
-                        return builder;
-                    }))
-                .Select(builder => builder.ToString());
-
-        private static void UndoAppend(StringBuilder builder)
-        {
-            Console.CursorLeft--;
-            Console.Write(' ');
-            Console.CursorLeft--;
-            builder.Remove(builder.Length - 1, 1);
-        }
-
-        private static void AppendKeyInfo(ConsoleKeyInfo keyInfo, StringBuilder builder)
-        {
-            Console.Write(keyInfo.KeyChar);
-            builder.Append(keyInfo.KeyChar);
-        }
-
+            => UIConsoleUtils.StringBuilder(keyInfos);
 
         private static IObservable<ConsoleKeyInfo> CreateObservable()
             => Observable.Create<ConsoleKeyInfo>((observer, token) => Task.Run(() =>
@@ -102,13 +75,5 @@ namespace TheRuleOfSilvester.UI.Inputs
                 }
             }, token));
 
-        private static bool IsComplete(ConsoleKeyInfo keyInfo)
-            => keyInfo.Key == ConsoleKey.Enter || keyInfo.Key == ConsoleKey.Escape;
-
-        private static bool IsUndo(ConsoleKeyInfo keyInfo)
-            => keyInfo.Key == ConsoleKey.Backspace;
-
-        private static bool IsAppend(ConsoleKeyInfo keyInfo)
-            => !IsComplete(keyInfo) && !IsUndo(keyInfo);
     }
 }

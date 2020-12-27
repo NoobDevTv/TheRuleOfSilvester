@@ -29,15 +29,15 @@ namespace UI.Demo
 
         public IDisposable Show()
         {
-            //var view = new View(input.ReadLine().Select(s => new ViewState(s)));
-            //return view
-            //    .Show()
-            //    .SelectMany(s => s.Instructions)
-            //    .MapMany(
-            //        (IObservable<GraphicInstruction.WriteLine> writeLine) => graphic.WriteLine(writeLine),
-            //        (IObservable<GraphicInstruction.Write> write) => graphic.Write(write),
-            //        (IObservable<GraphicInstruction.SetPosition> setPosition) => graphic.CursorPosition(setPosition)
-            //    ).Subscribe();
+            var view = new GridView(input.ReadLine().Select(s => new ViewState(s)));
+            return view
+                .Show()
+                .SelectMany(s => s.Instructions)
+                .MapMany(
+                    (IObservable<GraphicInstruction.WriteLine> writeLine) => graphic.WriteLine(writeLine),
+                    (IObservable<GraphicInstruction.Write> write) => graphic.Write(write),
+                    (IObservable<GraphicInstruction.SetPosition> setPosition) => graphic.CursorPosition(setPosition)
+                ).Subscribe();
         }
 
         internal void SetFocus(View view)
